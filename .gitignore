@@ -1,0 +1,13 @@
+# Swap files (vi/vim)
+*.swp
+*.swo
+
+# Object files and binaries
+*.o
+*.out
+*.exe
+ids
+
+# Temporary files
+*.tmp
+
