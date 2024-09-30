@@ -1,13 +1,7 @@
-# Swap files (vi/vim)
-*.swp
-*.swo
+# 모든 파일 무시
+*
 
-# Object files and binaries
-*.o
-*.out
-*.exe
-ids
-
-# Temporary files
-*.tmp
-
+# .c, .cpp, .h 파일은 예외
+!*.c
+!*.cpp
+!*.h
