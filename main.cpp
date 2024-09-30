@@ -11,10 +11,16 @@
 #include <sys/ioctl.h>  // ioctl 함수 사용을 위한 헤더
 #include <net/if.h>     // ifreq 구조체와 네트워크 인터페이스 관련 상수를 위한 헤더
 
+#include "cQueue.h"
+
+#define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
+#define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
+Queue_t canMsgQueue; //CAN 데이터를 담을 큐
+
 // 구조체 정의
 typedef struct qCANMsg {
     double timestamp;      // 타임스탬프 (초 단위)
-    uint8_t can_id[3];     // CAN ID (3바이트 크기 배열)
+    uint32_t can_id;     // CAN ID 
     int DLC;               // 데이터 길이 코드 (Data Length Code)
     uint8_t data[8];       // CAN 데이터 (최대 8바이트)
 } EnqueuedCANMsg;
@@ -40,16 +46,16 @@ int receive_can_frame(int s, EnqueuedCANMsg *msg) {
     // 타임스탬프 저장
     msg->timestamp = get_timestamp();  // 타임스탬프를 구조체에 저장
 
-    // CAN ID를 3바이트로 변환 (CAN ID는 최대 11비트이므로 3바이트 크기로 사용 가능)
-    msg->can_id[0] = (frame.can_id >> 8) & 0xFF;  // 상위 8비트
-    msg->can_id[1] = frame.can_id & 0xFF;         // 하위 8비트
-    msg->can_id[2] = 0;                           // 남은 1바이트는 0으로 채움
-
+    msg->can_id = frame.can_id;
+    
     // DLC와 데이터 저장
     msg->DLC = frame.can_dlc;
     memset(msg->data, 0, sizeof(msg->data));  // 데이터 배열을 초기화
     memcpy(msg->data, frame.data, frame.can_dlc);  // 수신한 데이터 저장
 
+    if(!q_push(&canMsgQueue, msg)){ 
+	    printf("Queue is full.\n");
+    }
     return 0;
 }
 
@@ -80,21 +86,26 @@ int main() {
         return 1;
     }
 
+    q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
+    
     // CAN 패킷을 수신하고 구조체에 저장
     while (1) {
         if (receive_can_frame(s, &can_msg) == 0) {
             // 저장된 CAN 메시지 출력 (디버그용)
-            printf("Timestamp: %.6f\n", can_msg.timestamp);
-            printf("CAN ID: %02X %02X %02X\n", can_msg.can_id[0], can_msg.can_id[1], can_msg.can_id[2]);
-            printf("DLC: %d\n", can_msg.DLC);
-            printf("Data: ");
-            for (int i = 0; i < can_msg.DLC; i++) {
-                printf("%02X ", can_msg.data[i]);
-            }
-            printf("\n");
-        }
+            EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
+	    if(q_pop(&canMsgQueue, &dequeuedMsg)){
+		    printf("Timestamp: %.6f\n", dequeuedMsg.timestamp);
+		    printf("CAN ID:%03X\n",dequeuedMsg.can_id);
+		    printf("DLC: %d\n", dequeuedMsg.DLC);
+		    printf("Data: ");
+		    for (int i = 0; i < dequeuedMsg.DLC; i++) {
+			    printf("%02X ", dequeuedMsg.data[i]);
+		    }
+		    printf("\n");
+	    }
+	}
     }
-
+    
     close(s);
     return 0;
 }
