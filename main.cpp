@@ -1,29 +1,10 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/socket.h>
-#include <linux/can.h>
-#include <linux/can/raw.h>
-#include <sys/time.h>
-#include <stdint.h>
-#include <sys/ioctl.h>  // ioctl 함수 사용을 위한 헤더
-#include <net/if.h>     // ifreq 구조체와 네트워크 인터페이스 관련 상수를 위한 헤더
+#include "header.h"
+#include "periodic.h"
 
-#include "cQueue.h"
 
 #define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
 Queue_t canMsgQueue; //CAN 데이터를 담을 큐
-
-// 구조체 정의
-typedef struct qCANMsg {
-    double timestamp;      // 타임스탬프 (초 단위)
-    uint32_t can_id;     // CAN ID 
-    int DLC;               // 데이터 길이 코드 (Data Length Code)
-    uint8_t data[8];       // CAN 데이터 (최대 8바이트)
-} EnqueuedCANMsg;
 
 // 현재 타임스탬프를 초와 마이크로초 단위로 구하는 함수
 double get_timestamp() {
@@ -65,6 +46,10 @@ int main() {
     struct ifreq ifr;
     EnqueuedCANMsg can_msg;  // 수신된 CAN 메시지를 저장할 구조체
 
+    struct timeval tv;
+    gettimeofday(&tv, NULL);  // 현재 시간을 가져옴
+    double start_time = tv.tv_sec + (tv.tv_usec / 1000000.0);  // 초와 마이크로초를 합쳐서 double로 변환
+
     // 소켓 생성
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Socket creation error");
@@ -93,17 +78,23 @@ int main() {
         if (receive_can_frame(s, &can_msg) == 0) {
             // 저장된 CAN 메시지 출력 (디버그용)
             EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
-	    if(q_pop(&canMsgQueue, &dequeuedMsg)){
-		    printf("Timestamp: %.6f\n", dequeuedMsg.timestamp);
-		    printf("CAN ID:%03X\n",dequeuedMsg.can_id);
-		    printf("DLC: %d\n", dequeuedMsg.DLC);
-		    printf("Data: ");
-		    for (int i = 0; i < dequeuedMsg.DLC; i++) {
-			    printf("%02X ", dequeuedMsg.data[i]);
-		    }
-		    printf("\n");
-	    }
-	}
+	        if(q_pop(&canMsgQueue, &dequeuedMsg)){
+                printf("Timestamp: %.6f\n", dequeuedMsg.timestamp);
+                printf("CAN ID:%03X\n",dequeuedMsg.can_id);
+                printf("DLC: %d\n", dequeuedMsg.DLC);
+                printf("Data: ");
+                for (int i = 0; i < dequeuedMsg.DLC; i++) {
+                    printf("%02X ", dequeuedMsg.data[i]);
+                }
+                printf("\n");
+
+                if(start_time - dequeuedMsg.timestamp <= 10){
+                    calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+                    printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
+                }
+
+            }
+        }
     }
     
     close(s);
