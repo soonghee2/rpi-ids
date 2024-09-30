@@ -1,4 +1,4 @@
 #include "CANStats.h"
 
 // Define the unordered_map
-std::unordered_map<unsigned int, CANStats> can_stats;
+std::unordered_map<uint32_t, CANStats> can_stats;
