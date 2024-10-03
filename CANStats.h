@@ -2,6 +2,7 @@
 #define CANSTATS_H
 
 #include <unordered_map>
+#include <cstdint>
 
 struct CANStats {
     double periodic = 0;
