@@ -40,6 +40,19 @@ int receive_can_frame(int s, EnqueuedCANMsg *msg) {
     return 0;
 }
 
+// 저장된 CAN 메시지 출력 (디버그용)
+void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
+	printf("Timestamp: %.6f\n", dequeuedMsg->timestamp);
+        printf("CAN ID:%03X\n",dequeuedMsg->can_id);
+        printf("DLC: %d\n", dequeuedMsg->DLC);
+        printf("Data: ");
+	for (int i = 0; i < dequeuedMsg->DLC; i++) {
+		printf("%02X ", dequeuedMsg->data[i]);
+	}
+	printf("\n");
+}
+
+
 int main() {
     int s;
     struct sockaddr_can addr;
@@ -76,28 +89,16 @@ int main() {
     // CAN 패킷을 수신하고 구조체에 저장
     while (1) {
         if (receive_can_frame(s, &can_msg) == 0) {
-            // 저장된 CAN 메시지 출력 (디버그용)
-            EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
-	        if(q_pop(&canMsgQueue, &dequeuedMsg)){
-                printf("Timestamp: %.6f\n", dequeuedMsg.timestamp);
-                printf("CAN ID:%03X\n",dequeuedMsg.can_id);
-                printf("DLC: %d\n", dequeuedMsg.DLC);
-                printf("Data: ");
-                for (int i = 0; i < dequeuedMsg.DLC; i++) {
-                    printf("%02X ", dequeuedMsg.data[i]);
-                }
-                printf("\n");
-
-                if(start_time - dequeuedMsg.timestamp <= 10){
-                    calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-                    printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
-                }
-
-            }
-        }
+		EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
+		if(q_pop(&canMsgQueue, &dequeuedMsg)){
+			debugging_dequeuedMsg(&dequeuedMsg);
+			if(start_time - dequeuedMsg.timestamp <= 10){
+				calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+				printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
+			}
+		}
+	}
     }
-    
     close(s);
     return 0;
 }
-
