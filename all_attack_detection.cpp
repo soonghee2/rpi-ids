@@ -65,7 +65,7 @@ bool filtering_process() {
     }
 
     // 2. i-1 패킷과의 평균값이 정상 주기 범위 내에 있는가?
-    if (check_previous_packet_of_avg()) {
+    if (check_previous_packet_of_avg()) { //여기서 들어온 패킷이 첫번째 비정상 주기 패킷이면 다음 패킷의 비정상 패킷과 비교해야함. 그리고 비정상 주기에 대한 범위는 정상 주기에 대략 2배(?) 이하여야함
         // 정상 패킷
         return normal_packet;
     }
