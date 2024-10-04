@@ -92,30 +92,20 @@ int main() {
             EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
 
             if(q_pop(&canMsgQueue, &dequeuedMsg)){
-                debugging_dequeuedMsg(&dequeuedMsg);
-                
-		//add feature/dbc-detection-criteria
-		/*if(check_can_id(dequeuedMsg.can_id) || check_payload(dequeuedMsg)){
-                    // need Dos or Fuzzing check
-                    detected_malicious = true;
-                }*/
-
-                //else {
-                    if(start_time - dequeuedMsg.timestamp <= 10){
-                        calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-                        printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
-                    } 
-                    else if (filtering_process()){
-                        printf("Malicious packet!\n");
-                    } 
-                    else {
-                        printf("Normal packet!\n");
-                    }
-                //}
+                debugging_dequeuedMsg(&dequeuedMsg);                
+                if(start_time - dequeuedMsg.timestamp <= 10){
+                    calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+                    printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
+                } 
+                else if (filtering_process()){
+                    printf("Malicious packet!\n");
+                } 
+                else {
+                    printf("Normal packet!\n");
+                }
             }
         }
     }
     close(s);
     return 0;
 }
-
