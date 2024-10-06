@@ -52,7 +52,6 @@ void calc_periodic(uint32_t can_id, double timestamp) {
                 stats.is_periodic = false; 
                 printf("0x%x is non-periodic\n", can_id);
             }
-            if(can_id==0x52A){exit(0);}
         }
     } 
     
