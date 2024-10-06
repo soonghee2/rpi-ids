@@ -96,20 +96,12 @@ int main() {
                 if(dequeuedMsg.timestamp - start_time <= 10){
                     calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                     printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
-                                        // 주기적인지 비주기적인지 판단
-                    if (can_stats[dequeuedMsg.can_id].is_periodic) {  // 특정 임계값 이하이면 주기적인 것으로 간주
-                        printf("CAN ID: 0x%x is Periodic.\n", dequeuedMsg.can_id);
-                    } else {
-                        printf("CAN ID: 0x%x is Non-periodic.\n", dequeuedMsg.can_id);
-                    }
-                } 
+                }
                 else if (filtering_process()){
                     printf("Malicious packet!\n");
                 } 
                 else {
                     printf("Normal packet!\n");
-                    close(s);
-                    return 0;
                 }
             }
         }
