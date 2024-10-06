@@ -9,8 +9,6 @@ struct CANStats {
     double squared_diff_sum = 0;
     double last_timestamp = 0;
     bool is_periodic=false;
-    double sum_time_diff = 0.0;  // 시간 차이의 합계
-    double sum_time_diff_squared = 0.0;  // 시간 차이 제곱의 합계
     int count = 0;
 };
 

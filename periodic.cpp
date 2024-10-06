@@ -18,15 +18,8 @@ double get_standard_deviation(uint32_t can_id) {
     return 0.0;  // 데이터가 부족한 경우 표준편차는 0
 }
 
-double get_coefficient_of_variation(uint32_t can_id) {
-    CANStats& stats = can_stats[can_id];
-    if (stats.count > 1) {
-        // 변동계수 (CV) = 표준편차 / 평균
-        double mean = stats.sum_time_diff / (stats.count - 1);
-        if (mean == 0.0) {
-            return 0.0;  // 평균이 0이면 CV는 0으로 설정
-        }
-        double stddev = get_standard_deviation(can_id);
+double get_coefficient_of_variation(double mean, double stddev) {
+    if (mean!=0) {
         return stddev / mean;
     }
     return 0.0;  // 데이터가 부족한 경우 CV는 0
@@ -40,21 +33,16 @@ void calc_periodic(uint32_t can_id, double timestamp) {
     if (stats.count > 1) {
         double time_diff = timestamp - stats.last_timestamp;
 
-        // 평균을 바로 계산하지 않고 누적 평균 및 제곱 합계로 계산
-        stats.sum_time_diff += time_diff;
-        stats.sum_time_diff_squared += time_diff * time_diff;
-
         double prev_periodic = stats.periodic;
         stats.periodic += (time_diff - prev_periodic) / (stats.count -1);
 
         double diff = time_diff - prev_periodic;
         stats.squared_diff_sum += diff * (time_diff - stats.periodic);
 
-        // 주기성 판단: 표준편차,변동계수 모두 임계값 이하인지 확인
-        double stddev = get_standard_deviation(can_id);
-        // double mad = get_mad(can_id);
-        double cv = get_coefficient_of_variation(can_id);
         if (stats.count==PERIODIC_SAMPLE_THRESHOLD){
+            double stddev = get_standard_deviation(can_id);
+            double cv = get_coefficient_of_variation(stats.periodic, stddev);
+
             printf("-0x%x - stddev: %lf, cv: %lf\n", can_id, stddev, cv);
             
             if (stddev < PERIODIC_STD_THRESHOLD && cv < PERIODIC_CV_THRESHOLD) {
@@ -63,8 +51,8 @@ void calc_periodic(uint32_t can_id, double timestamp) {
             } else { 
                 stats.is_periodic = false; 
                 printf("0x%x is non-periodic\n", can_id);
-            } // 그렇지 않으면 비주기적}
-            if (can_id==0x52A){exit(0);}
+            }
+            if(can_id==0x52A){exit(0);}
         }
     } 
     
