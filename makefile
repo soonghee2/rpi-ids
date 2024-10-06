@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -Wall -g
 
 # 소스 파일 및 헤더 파일
-SRCS = main.cpp periodic.cpp CANStat.cpp cQueue.cpp
+SRCS = main.cpp periodic.cpp CANStats.cpp cQueue.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 # 실행 파일 이름
