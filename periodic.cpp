@@ -50,7 +50,7 @@ void calc_periodic(uint32_t can_id, double timestamp) {
         double diff = time_diff - prev_periodic;
         stats.squared_diff_sum += diff * (time_diff - stats.periodic);
 
-        // 주기성 판단: 표준편차, MAD, 변동계수 모두 임계값 이하인지 확인
+        // 주기성 판단: 표준편차,변동계수 모두 임계값 이하인지 확인
         double stddev = get_standard_deviation(can_id);
         // double mad = get_mad(can_id);
         double cv = get_coefficient_of_variation(can_id);
@@ -59,7 +59,7 @@ void calc_periodic(uint32_t can_id, double timestamp) {
             
             if (stddev < PERIODIC_STD_THRESHOLD && cv < PERIODIC_CV_THRESHOLD) {
                 stats.is_periodic = true;  
-                printf("0x%x is periodic\n", can_id);// 세 가지 기준을 모두 만족하면 주기적
+                printf("0x%x is periodic\n", can_id);// 두 가지 기준을 모두 만족하면 주기적
             } else { 
                 stats.is_periodic = false; 
                 printf("0x%x is non-periodic\n", can_id);
