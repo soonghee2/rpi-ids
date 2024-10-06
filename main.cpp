@@ -97,7 +97,7 @@ int main() {
                     calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                     printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
                 } 
-                else if (filtering_process()){
+                else if (check_clock_error(dequeuedMsg.can_id, dequeuedMsg.timestamp)){
                     printf("Malicious packet!\n");
                 } 
                 else {
