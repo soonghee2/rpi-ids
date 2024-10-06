@@ -88,7 +88,7 @@ int main() {
                 }
                 printf("\n");
 
-                if(start_time - dequeuedMsg.timestamp <= 10){
+                if(dequeuedMsg.timestamp - start_time <= 10){
                     calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                     printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
                 }
