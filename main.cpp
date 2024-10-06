@@ -1,9 +1,11 @@
 #include "header.h"
 #include "periodic.h"
-
+#include "all_attack_detection.h"
+#include "can_id_sort.h"
 
 #define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
+
 Queue_t canMsgQueue; //CAN 데이터를 담을 큐
 
 // 현재 타임스탬프를 초와 마이크로초 단위로 구하는 함수
@@ -18,7 +20,7 @@ int receive_can_frame(int s, EnqueuedCANMsg *msg) {
     struct can_frame frame;
 
     // 패킷 수신
-    ssize_t nbytes = read(s, &frame, sizeof(struct can_frame));
+    size_t nbytes = read(s, &frame, sizeof(struct can_frame));
     if (nbytes < 0) {
         perror("CAN read error");
         return -1;
@@ -42,16 +44,17 @@ int receive_can_frame(int s, EnqueuedCANMsg *msg) {
 
 // 저장된 CAN 메시지 출력 (디버그용)
 void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
+        if(dequeuedMsg->can_id == 0x541) {
 	printf("Timestamp: %.6f\n", dequeuedMsg->timestamp);
         printf("CAN ID:%03X\n",dequeuedMsg->can_id);
         printf("DLC: %d\n", dequeuedMsg->DLC);
         printf("Data: ");
-	for (int i = 0; i < dequeuedMsg->DLC; i++) {
-		printf("%02X ", dequeuedMsg->data[i]);
+        for (int i = 0; i < dequeuedMsg->DLC; i++) {
+                printf("%02X ", dequeuedMsg->data[i]);
+        }
+        printf("\n");
 	}
-	printf("\n");
 }
-
 
 int main() {
     int s;
@@ -86,17 +89,36 @@ int main() {
 
     q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
     
-    // CAN 패킷을 수신하고 구조체에 저장
+    std::unordered_set<uint32_t> canIDSet = {123, 456, 789, 101, 202, 303, 404};//test
+
+    lowest_can_id(canIDSet);  // 가장 낮은 CAN ID 설정
+    
+    printf("Starting Periodic Calculation 10 seconds\n");
+
     while (1) {
         if (receive_can_frame(s, &can_msg) == 0) {
-		EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
-		if(q_pop(&canMsgQueue, &dequeuedMsg)){
-			debugging_dequeuedMsg(&dequeuedMsg);
-			if(start_time - dequeuedMsg.timestamp <= 10){
-				calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-				printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
-			}
+            EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
+            CANStats& stats = can_stats[dequeuedMsg.can_id];
+	    
+	    if(q_pop(&canMsgQueue, &dequeuedMsg)){
+                debugging_dequeuedMsg(&dequeuedMsg);                
+		/*if (dequeuedMsg.timestamp - start_time <=30){
+			calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+			//printf("Periodic: %.06f\n", can_stats[dequeuedMsg.can_id].periodic);
+		}*/
+		if(0.1*0.7<= dequeuedMsg.timestamp - stats.last_timestamp && dequeuedMsg.timestamp - stats.last_timestamp <= 0.7 * 1.3) filtering_process(&dequeuedMsg);
+		/*else if(stats.periodic * 0.7 <= dequeuedMsg.timestamp - stats.last_timestamp && dequeuedMsg.timestamp - stats.last_timestamp <= stats.periodic * 1.3 ){
+			if(stats.event_count==1) stats.event_count =0;
 		}
+		else if (filtering_process(&dequeuedMsg)){
+                    printf("Malicious packet!\n");
+                }*/ 
+                else {
+                    //printf("Normal packet!\n");
+                }
+		if(stats.event_count==0) stats.no_event_last_timestamp = dequeuedMsg.timestamp;
+		stats.last_timestamp = dequeuedMsg.timestamp;
+            }
 	}
     }
     close(s);

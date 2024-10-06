@@ -3,12 +3,17 @@
 
 #include <unordered_map>
 #include <cstdint>
+#include <set>
 
 struct CANStats {
     double periodic = 0;
     double squared_diff_sum = 0;
     double last_timestamp = 0;
     int count = 0;
+
+    int event_count = 0;
+    double event_last_timestamp = 0;
+    double no_event_last_timestamp =0;
 };
 
 typedef struct qCANMsg {
@@ -20,5 +25,5 @@ typedef struct qCANMsg {
 
 
 extern std::unordered_map<uint32_t, CANStats> can_stats;
-
+extern std::set<uint32_t> sorted_canIDSet;
 #endif
