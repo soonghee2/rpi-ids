@@ -8,7 +8,9 @@ struct CANStats {
     double periodic = 0;
     double squared_diff_sum = 0;
     double last_timestamp = 0;
+    uint8_t last_data[8];
     int count = 0;
+    int suspected_count = 0;
 };
 
 typedef struct qCANMsg {
