@@ -1,8 +1,10 @@
 #include "periodic.h"
 
+const int PERIODIC_SAMPLE_THRESHOLD = 300;
+
 // 주기성을 판단할 임계값 (실험적으로 설정)
 const double PERIODIC_STD_THRESHOLD = 0.05;  // 표준편차 기준 임계값
-const double PERIODIC_CV_THRESHOLD = 0.02;  // 변동계수 기준 임계값
+const double PERIODIC_CV_THRESHOLD = 0.1;  // 변동계수 기준 임계값
 
 // // CANStats를 CAN ID별로 저장하기 위한 맵 (CAN ID -> CANStats)
 // std::unordered_map<uint32_t, CANStats> can_stats;
@@ -52,16 +54,17 @@ void calc_periodic(uint32_t can_id, double timestamp) {
         double stddev = get_standard_deviation(can_id);
         // double mad = get_mad(can_id);
         double cv = get_coefficient_of_variation(can_id);
-        if (stats.count==300){
-            printf("-------------stddev: %lf, cv: %lf\n", stddev, cv);
+        if (stats.count==PERIODIC_SAMPLE_THRESHOLD){
+            printf("-0x%x - stddev: %lf, cv: %lf\n", can_id, stddev, cv);
             
             if (stddev < PERIODIC_STD_THRESHOLD && cv < PERIODIC_CV_THRESHOLD) {
                 stats.is_periodic = true;  
-                printf("0x%x is periodic", can_id);// 세 가지 기준을 모두 만족하면 주기적
+                printf("0x%x is periodic\n", can_id);// 세 가지 기준을 모두 만족하면 주기적
             } else { 
                 stats.is_periodic = false; 
-                printf("0x%x is non-periodic", can_id);
+                printf("0x%x is non-periodic\n", can_id);
             } // 그렇지 않으면 비주기적}
+            if (can_id==0x52A){exit(0);}
         }
     } 
     
