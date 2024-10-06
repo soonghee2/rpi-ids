@@ -6,7 +6,7 @@
 #include <set>
 
 struct CANStats {
-    double periodic = 0;
+    double periodic = 0.1;
     double squared_diff_sum = 0;
     double last_timestamp = 0;
     int count = 0;

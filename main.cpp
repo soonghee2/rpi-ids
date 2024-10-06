@@ -44,7 +44,6 @@ int receive_can_frame(int s, EnqueuedCANMsg *msg) {
 
 // 저장된 CAN 메시지 출력 (디버그용)
 void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
-        if(dequeuedMsg->can_id == 0x541) {
 	printf("Timestamp: %.6f\n", dequeuedMsg->timestamp);
         printf("CAN ID:%03X\n",dequeuedMsg->can_id);
         printf("DLC: %d\n", dequeuedMsg->DLC);
@@ -53,7 +52,6 @@ void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
                 printf("%02X ", dequeuedMsg->data[i]);
         }
         printf("\n");
-	}
 }
 
 int main() {
@@ -102,20 +100,21 @@ int main() {
 	    
 	    if(q_pop(&canMsgQueue, &dequeuedMsg)){
                 debugging_dequeuedMsg(&dequeuedMsg);                
+		//printf("bbb");
 		/*if (dequeuedMsg.timestamp - start_time <=30){
 			calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
 			//printf("Periodic: %.06f\n", can_stats[dequeuedMsg.can_id].periodic);
 		}*/
-		if(0.1*0.7<= dequeuedMsg.timestamp - stats.last_timestamp && dequeuedMsg.timestamp - stats.last_timestamp <= 0.7 * 1.3) filtering_process(&dequeuedMsg);
-		/*else if(stats.periodic * 0.7 <= dequeuedMsg.timestamp - stats.last_timestamp && dequeuedMsg.timestamp - stats.last_timestamp <= stats.periodic * 1.3 ){
+		//filtering_process(&dequeuedMsg);
+		if(stats.periodic * 0.7 <= dequeuedMsg.timestamp - stats.last_timestamp && dequeuedMsg.timestamp - stats.last_timestamp <= stats.periodic * 1.3 ){
 			if(stats.event_count==1) stats.event_count =0;
 		}
 		else if (filtering_process(&dequeuedMsg)){
                     printf("Malicious packet!\n");
-                }*/ 
-                else {
-                    //printf("Normal packet!\n");
                 }
+                //else {
+                    //printf("Normal packet!\n");
+                //}
 		if(stats.event_count==0) stats.no_event_last_timestamp = dequeuedMsg.timestamp;
 		stats.last_timestamp = dequeuedMsg.timestamp;
             }

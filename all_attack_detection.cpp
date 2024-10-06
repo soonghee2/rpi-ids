@@ -25,7 +25,7 @@ bool check_previous_packet_of_avg(){
 bool check_low_can_id(uint32_t can_id){
 	//only check lowest can id
 	if(can_id <= lowest_id){
-		return true;
+		return false;
 	} 
 	return false;
 }
@@ -35,7 +35,8 @@ bool check_ddos(){
 }
 
 bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id){
-        if(stats.no_event_last_timestamp==0) {
+	printf("event count : %d\n", stats.event_count);
+	if(stats.no_event_last_timestamp==0) {
             stats.no_event_last_timestamp = timestamp; //last_timestamp에 합칠것인가
         }
 	double event_time_diff = 0;
@@ -50,6 +51,7 @@ bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id){
             if(EVENT_PERIOD *1.2 >= event_time_diff && EVENT_PERIOD*0.8 <= event_time_diff){
                 stats.event_count++;
                 stats.event_last_timestamp = timestamp;
+		printf("%f	%f\n",stats.no_event_last_timestamp , stats.event_last_timestamp);
 
 		if(stats.event_count <10 && stats.event_count>1) {
 		    return true;
