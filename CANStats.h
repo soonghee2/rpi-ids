@@ -8,6 +8,7 @@ struct CANStats {
     double periodic = 0;
     double squared_diff_sum = 0;
     double last_timestamp = 0;
+    double prev_timediff = 0;
     bool is_periodic=false;
     int count = 0;
 };
