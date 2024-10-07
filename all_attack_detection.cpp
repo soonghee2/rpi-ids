@@ -35,8 +35,29 @@ bool check_low_can_id(){
         return true;
 }
 
-bool check_ddos(){
+bool check_DoS(EnqueuedCANMsg dequeuedMsg){
+    CANStats& stats = can_stats[dequeuedMsg.can_id];
+    double time_diff = (dequeuedMsg.timestamp - stats.last_timestamp);
+
+    if(time_diff < DoS_TIME_THRESHOLD_MS){
+        if(memcmp(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data)) == 0){
+            stats.suspected_count++;
+        } else{ 
+            stats.suspected_count = 1;
+        }
+
+        if(stats.suspected_count == DoS_DETECT_THRESHOLD){
+            DoS_can_id = dequeuedMsg.can_id;
+            memcpy(DoS_payload, dequeuedMsg.data, sizeof(DoS_payload));
+            return true;
+        }
+    }
+
+    if(DoS_can_id == dequeuedMsg.can_id && memcmp(DoS_payload, dequeuedMsg.data, sizeof(DoS_payload)) == 0){
         return true;
+    }
+
+    return false;
 }
 
 bool check_onEvent(){
@@ -86,7 +107,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // 2.1 최하위 CAN ID인가?
     if (check_low_can_id()) {
         // 오차가 5ms 이내로 동일한 패킷이 5번 이상 들어오는가?
-        if (check_ddos()) {
+        if (check_DoS(*dequeuedMsg)) {
             // DDoS 공격
             return malicious_packet;
         }
@@ -119,3 +140,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     return malicious_packet;
 }
 
+uint8_t DoS_payload[8];    // 전역 변수 정의
+int suspected_count = 0;   // 전역 변수 정의
+uint32_t DoS_can_id = 0;   // 전역 변수 정의

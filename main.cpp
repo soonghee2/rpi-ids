@@ -109,6 +109,7 @@ int main() {
 
                 stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
                 stats.last_timestamp = dequeuedMsg.timestamp;
+                memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
             }
         }
     }
