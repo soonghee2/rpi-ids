@@ -29,7 +29,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
 
     // CANStats 구조체를 사용하여 해당 CAN ID에 대한 통계 가져오기
     CANStats& stats = can_stats[can_id];
-    printf("===============clock skew ==============\n");
+    // printf("===============clock skew ==============\n");
 
     // 데이터가 충분한지 확인
     if (stats.count < MIN_DATA_CNT) {
@@ -72,11 +72,11 @@ bool ClockSkewDetector::detectAnomaly(double error) {
     stdError = std::sqrt(FORGETTING_FACTOR * stdError * stdError + (1 - FORGETTING_FACTOR) * (error - meanError) * (error - meanError));
 
 
-    printf("Error: %.6f\n", error);
+    // printf("Error: %.6f\n", error);
     // CUSUM 상한 및 하한 제어 한계 업데이트
     upperLimit = std::max(0.0, upperLimit + (error - meanError) / stdError - threshold);
     lowerLimit = std::max(0.0, lowerLimit - (error - meanError) / stdError - threshold);
-    printf("meanError: %.6f, stdError: %.6f, upperLimit: %.6f, lowerLimit: %.6f, CUSUM_THRESHOLD: %.6f", meanError, stdError, upperLimit, lowerLimit, CUSUM_THRESHOLD);
+    // printf("meanError: %.6f, stdError: %.6f, upperLimit: %.6f, lowerLimit: %.6f, CUSUM_THRESHOLD: %.6f\n", meanError, stdError, upperLimit, lowerLimit, CUSUM_THRESHOLD);
 
     // 임계값 초과 시 이상 탐지
     return (upperLimit > CUSUM_THRESHOLD || lowerLimit > CUSUM_THRESHOLD);
