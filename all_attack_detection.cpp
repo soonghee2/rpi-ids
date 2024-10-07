@@ -35,7 +35,7 @@ bool check_ddos(){
 }
 
 bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id){
-	printf("event count : %d\n", stats.event_count);
+	//printf("event count : %d\n", stats.event_count);
 	if(stats.no_event_last_timestamp==0) {
             stats.no_event_last_timestamp = timestamp; //last_timestamp에 합칠것인가
         }
@@ -71,7 +71,7 @@ bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id){
 
 bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_id){
 	if(timestamp - stats.last_timestamp > stats.periodic * 5) {
-		printf("[Suspension Attack Reason] %03x packet with a cycle time of %f minute arrived %f minutes later than the previous one. >> ", can_id, stats.periodic, timestamp - stats.last_timestamp);
+		//parintf("[Suspension Attack Reason] %03x packet with a cycle time of %f minute arrived %f minutes later than the previous one. >> ", can_id, stats.periodic, timestamp - stats.last_timestamp);
 		return true;  
 	}	
 	return false;
@@ -129,7 +129,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // 2.2 On-Event 패킷인가?
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id)) {
         // 정상 패킷
-        printf("ID: %03x\n",dequeuedMsg->can_id);
+        if(dequeuedMsg->can_id==0x1f1) printf("ID: %03x\n",dequeuedMsg->can_id);
 	return normal_packet;
     }
 

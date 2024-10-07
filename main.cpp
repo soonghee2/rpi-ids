@@ -3,15 +3,24 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include <iostream>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 #include "header.h"
 #include "periodic.h"
 #include "all_attack_detection.h"
 #include "can_id_sort.h"
 
 
+
 #define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
 
+std::mutex queueMutex;
+std::condition_variable queueCondVar;
+bool done = false;
 std::mutex queueMutex;
 std::condition_variable queueCondVar;
 bool done = false;
@@ -36,6 +45,10 @@ int receive_can_frame(int s, EnqueuedCANMsg* msg) {
             return -1;
         }
 
+        msg->timestamp = get_timestamp();  // 타임스탬프를 구조체에 저장
+        msg->can_id = frame.can_id;
+        msg->DLC = frame.can_dlc;
+        memcpy(msg->data, frame.data, frame.can_dlc);  // 수신한 데이터 저장
         msg->timestamp = get_timestamp();  // 타임스탬프를 구조체에 저장
         msg->can_id = frame.can_id;
         msg->DLC = frame.can_dlc;
@@ -145,4 +158,5 @@ int main() {
     close(s);
     return 0;
 }
+
 

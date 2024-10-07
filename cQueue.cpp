@@ -151,3 +151,12 @@ uint16_t q_getSize(const Queue_t* const q)
 {
     return q->cnt; // Return the current count of elements in the queue
 }
+
+bool q_isEmpty(const Queue_t* const q)
+{
+    return (q->cnt == 0);
+}
+uint16_t q_getSize(const Queue_t* const q)
+{
+    return q->cnt; // Return the current count of elements in the queue
+}
