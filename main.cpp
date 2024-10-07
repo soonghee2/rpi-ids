@@ -64,6 +64,7 @@ int receive_can_frame(int s, EnqueuedCANMsg* msg) {
 
 // 큐에서 메시지를 꺼내고 처리하는 함수 
 void process_can_msg(double start_time){
+    int mal_count = 0;
     while(!done){
         std::unique_lock<std::mutex> lock(queueMutex);
         queueCondVar.wait(lock, []{return !q_isEmpty(&canMsgQueue)|| done; });
@@ -141,7 +142,7 @@ int main() {
     }
 
     q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
-
+    
     printf("Starting Periodic Calculation 10 seconds\n");
     
     std::thread producerThread(receive_can_frame, s, &can_msg);
