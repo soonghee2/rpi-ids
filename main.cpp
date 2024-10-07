@@ -93,10 +93,10 @@ int main() {
 
             if(q_pop(&canMsgQueue, &dequeuedMsg)){
                 debugging_dequeuedMsg(&dequeuedMsg);                
-                if(dequeuedMsg.timestamp - start_time <= 10){
+                if(dequeuedMsg.timestamp - start_time <= 40){
                     calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                     printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
-                } 
+                }
                 else if (filtering_process()){
                     printf("Malicious packet!\n");
                 } 
