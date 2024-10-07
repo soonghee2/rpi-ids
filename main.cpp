@@ -13,8 +13,6 @@
 #include "all_attack_detection.h"
 #include "can_id_sort.h"
 
-
-
 #define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
 
@@ -76,19 +74,22 @@ void process_can_msg(double start_time){
             lock.unlock();
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
-            if (dequeuedMsg.timestamp - start_time <=30){
-			    calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-            }
-            else if(stats.periodic * 0.7 <= dequeuedMsg.timestamp - stats.last_timestamp && dequeuedMsg.timestamp - stats.last_timestamp <= stats.periodic * 1.3 ){
-                if(stats.event_count==1) {
-                    stats.event_count =0;
-                }
-            }
+          
+            if(dequeuedMsg.timestamp - start_time <= 40){
+                calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+                printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
+            } 
+            //lowest_can_id(canIDSet);
             else if (filtering_process(&dequeuedMsg)){
-                std::cout << "Malicious packet detected!" << std::endl;
+                printf("Malicious packet! count: %d\n", mal_count++);
             }
-            if(stats.event_count==0) stats.no_event_last_timestamp = dequeuedMsg.timestamp;
+            else {
+                printf("Normal packet!\n");
+            }
+
+            stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
             stats.last_timestamp = dequeuedMsg.timestamp;
+            memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
 
             lock.lock();
         }
@@ -140,12 +141,9 @@ int main() {
     }
 
     q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
-    std::unordered_set<uint32_t> canIDSet = {123, 456, 789, 101, 202, 303, 404};//test
-    lowest_can_id(canIDSet);  // 가장 낮은 CAN ID 설정
-    
-    printf("Starting Periodic Calculation 10 seconds\n");
 
- // 수정된 스레드 생성 부분
+    printf("Starting Periodic Calculation 10 seconds\n");
+    
     std::thread producerThread(receive_can_frame, s, &can_msg);
     std::thread consumerThread(process_can_msg, start_time);
     
@@ -153,6 +151,7 @@ int main() {
     producerThread.join();
     consumerThread.join();
     
+
     close(s);
     return 0;
 }
