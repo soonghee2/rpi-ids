@@ -21,9 +21,7 @@
 std::mutex queueMutex;
 std::condition_variable queueCondVar;
 bool done = false;
-std::mutex queueMutex;
-std::condition_variable queueCondVar;
-bool done = false;
+
 Queue_t canMsgQueue; //CAN 데이터를 담을 큐
 
 // 현재 타임스탬프를 초와 마이크로초 단위로 구하는 함수

@@ -146,16 +146,6 @@ bool q_peekIdx(const Queue_t* const q, void* const record, const uint16_t idx)
 	memcpy(record, pStart, q->rec_sz);
 	return true;
 }
-
-uint16_t q_getSize(const Queue_t* const q)
-{
-    return q->cnt; // Return the current count of elements in the queue
-}
-
-bool q_isEmpty(const Queue_t* const q)
-{
-    return (q->cnt == 0);
-}
 uint16_t q_getSize(const Queue_t* const q)
 {
     return q->cnt; // Return the current count of elements in the queue

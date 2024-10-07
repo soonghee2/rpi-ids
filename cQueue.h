@@ -59,6 +59,5 @@ inline bool q_peekPrevious(const Queue_t* const q, void* const record) {
 	const uint16_t idx = q_getCount(q) - 1;
 	return q_peekIdx(q, record, idx);
 }
-bool q_isEmpty(const Queue_t* const q)
 
 uint16_t q_getSize(const Queue_t* const q);
