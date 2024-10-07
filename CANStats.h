@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <cstdint>
+#include <set>
 
 struct CANStats {
     double periodic = 0;
@@ -12,6 +13,11 @@ struct CANStats {
     double prev_timediff = 0;
     bool is_periodic=false;
     int count = 0;
+
+    int event_count = 0;
+    double event_last_timestamp = 0;
+    double no_event_last_timestamp =0;
+   
     int suspected_count = 0;
 };
 
@@ -22,7 +28,7 @@ typedef struct qCANMsg {
     uint8_t data[8];       // CAN 데이터 (최대 8바이트)
 } EnqueuedCANMsg;
 
-
+extern std::int MIN_CAN_ID = 0x00;
 extern std::unordered_map<uint32_t, CANStats> can_stats;
-
+extern std::set<uint32_t> sorted_canIDSet;
 #endif

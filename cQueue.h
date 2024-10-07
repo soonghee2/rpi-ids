@@ -60,3 +60,4 @@ inline bool q_peekPrevious(const Queue_t* const q, void* const record) {
 	return q_peekIdx(q, record, idx);
 }
 
+uint16_t q_getSize(const Queue_t* const q);
