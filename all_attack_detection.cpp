@@ -1,8 +1,5 @@
 #include "all_attack_detection.h"
 
-bool check_periodic(){
-	return true;
-}
 bool check_periodic_range(double time_diff, double periodic){
     if(periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2)
         return true;
@@ -58,7 +55,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     CANStats& stats = can_stats[dequeuedMsg->can_id];
 
     // 비주기 패킷일 경우
-    if (!check_periodic()) {
+    if (!stats.is_periodic) {
         // 비주기 패킷은 정상 패킷으로 처리
         return normal_packet;
     }
