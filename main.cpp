@@ -93,8 +93,9 @@ int main() {
             EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
 
             if(q_pop(&canMsgQueue, &dequeuedMsg)){
+                CANStats& stats = can_stats[dequeuedMsg.can_id];
                 debugging_dequeuedMsg(&dequeuedMsg);                
-                if(false){//start_time - dequeuedMsg.timestamp <= 10
+                if(dequeuedMsg.timestamp - start_time <= 10){//
                     printf("start_time - %.6f, remainning time: %.6f\n", start_time, start_time - dequeuedMsg.timestamp);
                     calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                     printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
@@ -105,7 +106,8 @@ int main() {
                 else {
                     printf("Normal packet!\n");
                 }
-            }
+                stats.last_timestamp = dequeuedMsg.timestamp;
+            } 
         }
     }
     close(s);
