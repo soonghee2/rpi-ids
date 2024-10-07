@@ -2,7 +2,7 @@
 #define PERIODIC_H
 
 #include "CANStats.h"
-// #include "check_clock_error.h"
+#include "check_clock_error.h"
 
 bool check_periodic();
 bool check_periodic_range();

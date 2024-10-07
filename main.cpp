@@ -1,7 +1,6 @@
 #include "header.h"
 #include "periodic.h"
-// #include "all_attack_detection.h"
-#include "check_clock_error.h"
+#include "all_attack_detection.h"
 
 #define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
@@ -85,7 +84,8 @@ int main() {
     }
 
     q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
-    int pck_cnt=0;
+    int mal_count = 0;
+    
     // CAN 패킷을 수신하고 구조체에 저장
     while (1) {
         if (receive_can_frame(s, &can_msg) == 0) {
@@ -93,24 +93,25 @@ int main() {
             EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
 
             if(q_pop(&canMsgQueue, &dequeuedMsg)){
-                CANStats& stats = can_stats[dequeuedMsg.can_id];
-                //debugging_dequeuedMsg(&dequeuedMsg);                
-                if(dequeuedMsg.timestamp - start_time <= 10){//
-                    // printf("start_time - %.6f, remainning time: %.6f\n", start_time, start_time - dequeuedMsg.timestamp);
+                debugging_dequeuedMsg(&dequeuedMsg);  
+                CANStats& stats = can_stats[dequeuedMsg.can_id];              
+    
+                if(dequeuedMsg.timestamp - start_time <= 40){
                     calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-                    // printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
+                    printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
                 } 
-                else if (check_clock_error(dequeuedMsg.can_id, dequeuedMsg.timestamp)){
-                    printf("%d: Malicious packet! - timestamp: %.6f, can id: 0x%x\n", pck_cnt, dequeuedMsg.timestamp, dequeuedMsg.can_id);
-                } 
-                else {
-                    // printf("Normal packet!\n");
+                else if (filtering_process(&dequeuedMsg)){
+                    printf("Malicious packet! count: %d\n", mal_count++);
                 }
+                else {
+                    printf("Normal packet!\n");
+                }
+
+                stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
                 stats.last_timestamp = dequeuedMsg.timestamp;
-            } 
+                memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
+            }
         }
-        // printf("pck_cnt: %d\n", pck_cnt);
-        pck_cnt++;
     }
     close(s);
     return 0;

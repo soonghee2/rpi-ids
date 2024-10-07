@@ -1,6 +1,5 @@
 #include "all_attack_detection.h"
 
-
 bool check_periodic(){
 	return true;
 }
@@ -53,7 +52,7 @@ bool filtering_process(const EnqueuedCANMsg* msg) {
         if (check_similarity_with_previous_packet()) {
             // 1.2 시계 오차가 있는가?
             // if (check_clock_error(msg->can_id, msg->timestamp)) {
-            if (true) {
+            if (check_clock_error(msg->can_id, msg->timestamp)) {
                 // 정상 패킷
                 return normal_packet;
             } else {
