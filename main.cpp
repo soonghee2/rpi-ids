@@ -1,6 +1,7 @@
 #include "header.h"
 #include "periodic.h"
-#include "all_attack_detection.h"
+// #include "all_attack_detection.h"
+#include "check_clock_error.h"
 
 #define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용

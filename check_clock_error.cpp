@@ -1,50 +1,66 @@
 #include "check_clock_error.h"
-#include <unordered_map>
+#include <iostream>
 
-const int MIN_DATA_CNT=100;
-
-// CAN ID별로 ClockSkewDetector를 관리하는 맵
+// CAN ID별로 ClockSkewDetector를 관리하는 전역 맵 정의
 std::unordered_map<uint32_t, ClockSkewDetector> clockSkewDetectors;
 
-// 클럭 스큐를 추정하고, 비정상적인 변화가 발생하는지 확인하는 클래스
-class ClockSkewDetector {
-public:
-    ClockSkewDetector(double threshold = 5.0) : threshold(threshold), L_plus(0.0), L_minus(0.0) {}
+// ClockSkewDetector 생성자 정의
+ClockSkewDetector::ClockSkewDetector(double threshold)
+    : L_plus(0.0), L_minus(0.0), kappa(0.5), threshold(threshold) {}
 
-    // 클럭 스큐 오차를 체크하는 함수
-    bool checkClockError(uint32_t can_id, double timestamp) {
-        CANStats& stats = can_stats[can_id];
+// 복사 생성자 정의
+ClockSkewDetector::ClockSkewDetector(const ClockSkewDetector& other)
+    : L_plus(other.L_plus), L_minus(other.L_minus), kappa(0.5), threshold(other.threshold) {}
 
-        if (stats.count < MIN_DATA_CNT) {
-            // 데이터가 부족할 경우 검사를 건너뜁니다.
-            return false;
-        }
 
-        double time_diff = timestamp - stats.last_timestamp;
-        double error = time_diff - stats.periodic;
+// 복사 대입 연산자 정의
+ClockSkewDetector& ClockSkewDetector::operator=(const ClockSkewDetector& other) {
+    if (this != &other) {
+        L_plus = other.L_plus;
+        L_minus = other.L_minus;
+        threshold = other.threshold;
+        // kappa는 const이므로 복사하지 않음
+    }
+    return *this;
+}
 
-        // CUSUM(누적합) 계산
-        L_plus = std::max(0.0, L_plus + error - kappa);
-        L_minus = std::max(0.0, L_minus - error - kappa);
+// 클럭 스큐 오차를 체크하는 함수 구현
+bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
+    CANStats& stats = can_stats[can_id];
 
-        if (L_plus > threshold || L_minus > threshold) {
-            return true; // 비정상적인 타이밍 탐지
-        }
-
+    if (stats.count < MIN_DATA_CNT) {
+        std::cout << "CAN ID " << can_id << ": 데이터 부족 (현재 데이터 수: " << stats.count << ")\n";
         return false;
     }
 
-private:
-    double L_plus;
-    double L_minus;
-    const double kappa = 0.5;   // 누적합 계산에 사용할 상수
-    double threshold;           // 탐지 임계값
-};
+    // 타임스탬프 간 시간차 계산
+    double time_diff = timestamp - stats.last_timestamp;
+    double error = time_diff - stats.periodic;
 
-// 클럭 스큐 오류 체크를 수행하는 함수
+    // CUSUM(누적합) 계산
+    L_plus = std::max(0.0, L_plus + error - kappa);
+    L_minus = std::max(0.0, L_minus - error - kappa);
+
+    // 디버그 출력: 오차와 CUSUM 값들 출력
+    std::cout << "CAN ID " << can_id << ": "
+              << "time_diff = " << time_diff << ", "
+              << "error = " << error << ", "
+              << "L_plus = " << L_plus << ", "
+              << "L_minus = " << L_minus << "\n";
+
+    if (L_plus > threshold || L_minus > threshold) {
+        std::cout << "CAN ID " << can_id << ": 비정상적인 타이밍 탐지\n";
+        return true;
+    }
+
+    return false;
+}
+
+// 전역 함수 check_clock_error 구현
 bool check_clock_error(uint32_t can_id, double timestamp) {
     // 해당 CAN ID에 대한 ClockSkewDetector가 없으면 새로 생성
     if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
+        std::cout << "CAN ID " << can_id << ": 새 ClockSkewDetector 생성\n";
         clockSkewDetectors[can_id] = ClockSkewDetector();
     }
 
