@@ -83,8 +83,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
 
 
-    printf("canID: 0x%03x\n", dequeuedMsg->can_id);
-
     // 2.1 최하위 CAN ID인가?
     if (check_low_can_id()) {
         // 오차가 5ms 이내로 동일한 패킷이 5번 이상 들어오는가?
