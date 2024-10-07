@@ -9,6 +9,8 @@ struct CANStats {
     double squared_diff_sum = 0;
     double last_timestamp = 0;
     uint8_t last_data[8];
+    double prev_timediff = 0;
+    bool is_periodic=false;
     int count = 0;
     int suspected_count = 0;
 };

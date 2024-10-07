@@ -1,11 +1,12 @@
 #include "all_attack_detection.h"
 
-bool check_periodic(){
-	return true;
+bool check_periodic_range(double time_diff, double periodic){
+    if(periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2)
+        return true;
+    
+    return false;
 }
-bool check_periodic_range(){
-	return true;
-}
+
 bool check_similarity_with_previous_packet(){
         return true;
 }
@@ -14,8 +15,20 @@ bool check_clock_error(){
         return true;
 }
 
-bool check_previous_packet_of_avg(){
+bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
+    if(stats.prev_timediff == 0.0 && current_timediff > stats.periodic * 1.2){
+        stats.prev_timediff = current_timediff;
+        return false;
+    }
+
+    if(check_periodic_range((current_timediff + stats.prev_timediff) / 2, stats.periodic)){
+        // printf("current_timediff: %.6f prev_timediff: %.6f periodic: %.6f\n", current_timediff, stats.prev_timediff, stats.periodic);
+        stats.prev_timediff = 0;
         return true;
+    }
+
+    stats.prev_timediff = 0;
+    return false;
 }
 
 bool check_low_can_id(){
@@ -60,15 +73,20 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool malicious_packet = true;
     bool normal_packet = false;
 
+    CANStats& stats = can_stats[dequeuedMsg->can_id];
+
     // 비주기 패킷일 경우
-    if (!check_periodic()) {
+    if (!stats.is_periodic) {
         // 비주기 패킷은 정상 패킷으로 처리
         return normal_packet;
     }
 
     // 주기 패킷일 경우
-    // 1. 정상 주기 범위 내에 있는가?
-    if (check_periodic_range()) {
+    // 1. 정상 주기 범위 내에 있는가? 또는 i-1 패킷과의 평균값이 정상 주기 범위 내에 있는가?
+    double time_diff = dequeuedMsg->timestamp - stats.last_timestamp;
+    // printf("time_diff: %.6f\n", time_diff);
+
+    if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         // 1.1 이전 패킷과 상관관계가 있는가?
         if (check_similarity_with_previous_packet()) {
             // 1.2 시계 오차가 있는가?
@@ -85,11 +103,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         }
     }
 
-    // 2. i-1 패킷과의 평균값이 정상 주기 범위 내에 있는가?
-    if (check_previous_packet_of_avg()) { //여기서 들어온 패킷이 첫번째 비정상 주기 패킷이면 다음 패킷의 비정상 패킷과 비교해야함. 그리고 비정상 주기에 대한 범위는 정상 주기에 대략 2배(?) 이하여야함
-        // 정상 패킷
-        return normal_packet;
-    }
 
     // 2.1 최하위 CAN ID인가?
     if (check_low_can_id()) {

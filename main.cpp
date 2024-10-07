@@ -84,6 +84,7 @@ int main() {
     }
 
     q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
+    int mal_count = 0;
     
     // CAN 패킷을 수신하고 구조체에 저장
     while (1) {
@@ -92,18 +93,21 @@ int main() {
             EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
 
             if(q_pop(&canMsgQueue, &dequeuedMsg)){
-                CANStats& stats = can_stats[dequeuedMsg.can_id];
-                debugging_dequeuedMsg(&dequeuedMsg);                
-                if(dequeuedMsg.timestamp - start_time <= 10){
+                debugging_dequeuedMsg(&dequeuedMsg);  
+                CANStats& stats = can_stats[dequeuedMsg.can_id];              
+    
+                if(dequeuedMsg.timestamp - start_time <= 40){
                     calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                     printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
                 } 
                 else if (filtering_process(&dequeuedMsg)){
-                    printf("Malicious packet!\n");
-                } 
+                    printf("Malicious packet! count: %d\n", mal_count++);
+                }
                 else {
                     printf("Normal packet!\n");
                 }
+
+                stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
                 stats.last_timestamp = dequeuedMsg.timestamp;
                 memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
             }
