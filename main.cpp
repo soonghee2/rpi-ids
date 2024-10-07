@@ -1,11 +1,20 @@
+#include <iostream>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 #include "header.h"
 #include "periodic.h"
 #include "all_attack_detection.h"
 #include "can_id_sort.h"
 
+
 #define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
 
+std::mutex queueMutex;
+std::condition_variable queueCondVar;
+bool done = false;
 Queue_t canMsgQueue; //CAN 데이터를 담을 큐
 
 // 현재 타임스탬프를 초와 마이크로초 단위로 구하는 함수
@@ -16,30 +25,63 @@ double get_timestamp() {
 }
 
 // CAN 패킷을 수신하고 qCANMsg 구조체에 저장하는 함수
-int receive_can_frame(int s, EnqueuedCANMsg *msg) {
-    struct can_frame frame;
+void receive_can_frame(int s) {
+    while(!done){
+	    std::cout <<"save queue num : %d"<<q_getSize()<<std::endl;
+        EnqueuedCANMsg *msg;
+        struct can_frame frame;
 
-    // 패킷 수신
-    size_t nbytes = read(s, &frame, sizeof(struct can_frame));
-    if (nbytes < 0) {
-        perror("CAN read error");
-        return -1;
+        size_t nbytes = read(s, &frame, sizeof(struct can_frame));
+        if (nbytes < 0) {
+            perror("CAN read error");
+            return -1;
+        }
+
+        msg->timestamp = get_timestamp();  // 타임스탬프를 구조체에 저장
+        msg->can_id = frame.can_id;
+        msg->DLC = frame.can_dlc;
+        memcpy(msg->data, frame.data, frame.can_dlc);  // 수신한 데이터 저장
+
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            if(q_push(&canMsgQueue, msg)){
+                queueCondVar.notify_one();
+            }else{
+                printf("Queue is full.\n");
+            }
+        }
+    }
+}
+
+// 큐에서 메시지를 꺼내고 처리하는 함수 
+void process_can_msg(dobule start_time){
+    while(!done){
+        std::unique_lock<std::mutex> lock(queueMutex);
+        queueCondVar.wait(lock, []{return !q_isEmpty(canMsgQueue)|| done; });
+        while ((!q_isEmpty(canMsgQueue))){
+            EnqueuedCANMsg dequeuedMsg;
+            q_pop(&canMsgQueue, &dequeuedMsg);
+            lock.unlock();
+
+            CANStats& stats = can_stats[dequeuedMsg.can_id];
+            if (dequeuedMsg.timestamp - start_time <=30){
+			    calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+            }
+            else if(stats.periodic * 0.7 <= dequeuedMsg.timestamp - stats.last_timestamp && dequeuedMsg.timestamp - stats.last_timestamp <= stats.periodic * 1.3 ){
+                if(stats.event_count==1) {
+                    stats.event_count =0;
+                }
+            }
+            else if (filtering_process(&dequeuedMsg)){
+                std::cout << "Malicious packet detected!" << std::endl;
+            }
+            if(stats.event_count==0) stats.no_event_last_timestamp = dequeuedMsg.timestamp;
+            stats.last_timestamp = dequeuedMsg.timestamp;
+
+            lock.lock();
+        }
     }
 
-    // 타임스탬프 저장
-    msg->timestamp = get_timestamp();  // 타임스탬프를 구조체에 저장
-
-    msg->can_id = frame.can_id;
-    
-    // DLC와 데이터 저장
-    msg->DLC = frame.can_dlc;
-    memset(msg->data, 0, sizeof(msg->data));  // 데이터 배열을 초기화
-    memcpy(msg->data, frame.data, frame.can_dlc);  // 수신한 데이터 저장
-
-    if(!q_push(&canMsgQueue, msg)){ 
-	    printf("Queue is full.\n");
-    }
-    return 0;
 }
 
 // 저장된 CAN 메시지 출력 (디버그용)
@@ -86,40 +128,15 @@ int main() {
     }
 
     q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
-    
     std::unordered_set<uint32_t> canIDSet = {123, 456, 789, 101, 202, 303, 404};//test
-
     lowest_can_id(canIDSet);  // 가장 낮은 CAN ID 설정
     
     printf("Starting Periodic Calculation 10 seconds\n");
 
-    while (1) {
-        if (receive_can_frame(s, &can_msg) == 0) {
-            EnqueuedCANMsg dequeuedMsg; //canMsgQueue에서 pop한 뒤 데이터를 저장할 공간
-            CANStats& stats = can_stats[dequeuedMsg.can_id];
-	    
-	    if(q_pop(&canMsgQueue, &dequeuedMsg)){
-                debugging_dequeuedMsg(&dequeuedMsg);                
-		//printf("bbb");
-		/*if (dequeuedMsg.timestamp - start_time <=30){
-			calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-			//printf("Periodic: %.06f\n", can_stats[dequeuedMsg.can_id].periodic);
-		}*/
-		//filtering_process(&dequeuedMsg);
-		if(stats.periodic * 0.7 <= dequeuedMsg.timestamp - stats.last_timestamp && dequeuedMsg.timestamp - stats.last_timestamp <= stats.periodic * 1.3 ){
-			if(stats.event_count==1) stats.event_count =0;
-		}
-		else if (filtering_process(&dequeuedMsg)){
-                    printf("Malicious packet!\n");
-                }
-                //else {
-                    //printf("Normal packet!\n");
-                //}
-		if(stats.event_count==0) stats.no_event_last_timestamp = dequeuedMsg.timestamp;
-		stats.last_timestamp = dequeuedMsg.timestamp;
-            }
-	}
-    }
+    std::thread producerThread(receive_can_frame, s);
+    std::thread consumerThread(process_can_msg, start_time);
+
     close(s);
     return 0;
 }
+
