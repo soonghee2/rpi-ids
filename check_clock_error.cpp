@@ -1,5 +1,6 @@
 #include "check_clock_error.h"
 #include <iostream>
+#include "periodic.h"
 
 // CAN ID별로 ClockSkewDetector를 관리하는 전역 맵 정의
 std::unordered_map<uint32_t, ClockSkewDetector> clockSkewDetectors;
@@ -26,10 +27,11 @@ ClockSkewDetector& ClockSkewDetector::operator=(const ClockSkewDetector& other) 
 
 // 클럭 스큐 오차를 체크하는 함수 구현
 bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
+    calc_periodic(can_id, timestamp);
     CANStats& stats = can_stats[can_id];
 
     if (stats.count < MIN_DATA_CNT) {
-        std::cout << "CAN ID " << can_id << ": 데이터 부족 (현재 데이터 수: " << stats.count << ")\n";
+        std::cout << "CAN ID " << can_id << ": leat of data(current data cnt): " << stats.count << ")\n";
         return false;
     }
 
@@ -49,7 +51,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
               << "L_minus = " << L_minus << "\n";
 
     if (L_plus > threshold || L_minus > threshold) {
-        std::cout << "CAN ID " << can_id << ": 비정상적인 타이밍 탐지\n";
+        std::cout << "CAN ID " << can_id << ": abnormal timing detection\n";
         return true;
     }
 
@@ -60,7 +62,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
 bool check_clock_error(uint32_t can_id, double timestamp) {
     // 해당 CAN ID에 대한 ClockSkewDetector가 없으면 새로 생성
     if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
-        std::cout << "CAN ID " << can_id << ": 새 ClockSkewDetector 생성\n";
+        std::cout << "CAN ID " << can_id << ": Create new ClockSkewDetector\n";
         clockSkewDetectors[can_id] = ClockSkewDetector();
     }
 

@@ -94,7 +94,8 @@ int main() {
 
             if(q_pop(&canMsgQueue, &dequeuedMsg)){
                 debugging_dequeuedMsg(&dequeuedMsg);                
-                if(start_time - dequeuedMsg.timestamp <= 10){
+                if(false){//start_time - dequeuedMsg.timestamp <= 10
+                    printf("start_time - %.6f, remainning time: %.6f\n", start_time, start_time - dequeuedMsg.timestamp);
                     calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                     printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
                 } 
