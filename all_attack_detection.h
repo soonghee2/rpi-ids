@@ -5,6 +5,7 @@
 #include <cstddef>
 #include "periodic.h"
 #include "CANStats.h" 
+#include "check_clock_error.h"
 
 #define EVENT_PERIOD 0.03
 #define DoS_TIME_THRESHOLD_MS 0.005

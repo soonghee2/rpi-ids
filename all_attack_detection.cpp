@@ -133,7 +133,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         // 1.1 이전 패킷과 상관관계가 있는가?
         if (check_similarity_with_previous_packet()) {
             // 1.2 시계 오차가 있는가?
-            if (check_clock_error()) {
+            if (check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
                 return normal_packet;
             } else {
