@@ -16,7 +16,7 @@ all: $(TARGET) clean_objs
 
 # 실행 파일 생성
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -pthread
 
 # 개별 소스 파일 컴파일
 %.o: %.cpp

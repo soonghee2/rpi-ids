@@ -10,13 +10,13 @@ bool check_periodic_range(double time_diff, double periodic){
 
 bool check_similarity_with_previous_packet(){
 	//no -> stats.event_count=0;
-        return false;
+    return true;
 }
 
 bool check_clock_error(){
 	//stats.event_count=2;
 	//check = true;
-        return false;
+    return true;
 }
 
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
@@ -38,7 +38,7 @@ bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
 bool check_low_can_id(uint32_t can_id){
 	//only check lowest can id
 	if(can_id <= MIN_CAN_ID){
-		return false;
+		return true;
 	} 
 	return false;
 }
@@ -69,38 +69,36 @@ bool check_DoS(EnqueuedCANMsg dequeuedMsg){
 }
 
 bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id){
-	//printf("event count : %d\n", stats.event_count);
 	if(stats.no_event_last_timestamp==0) {
-            stats.no_event_last_timestamp = timestamp; //last_timestamp에 합칠것인가
-        }
+        stats.no_event_last_timestamp = timestamp; //last_timestamp에 합칠것인가
+    }
 	double event_time_diff = 0;
-        double time_diff = timestamp - stats.no_event_last_timestamp;
+    double time_diff = timestamp - stats.no_event_last_timestamp;
 
-        if(stats.event_count==0){
-            stats.event_count=1;
+    if(stats.event_count==0){
+        stats.event_count=1;
+        stats.event_last_timestamp = timestamp;
+    }
+    else {
+        event_time_diff = timestamp - stats.event_last_timestamp;
+        if(EVENT_PERIOD *1.2 >= event_time_diff && EVENT_PERIOD*0.8 <= event_time_diff){
+            stats.event_count++;
             stats.event_last_timestamp = timestamp;
-        }
-        else {
-            event_time_diff = timestamp - stats.event_last_timestamp;
-            if(EVENT_PERIOD *1.2 >= event_time_diff && EVENT_PERIOD*0.8 <= event_time_diff){
-                stats.event_count++;
-                stats.event_last_timestamp = timestamp;
-		printf("%f	%f\n",stats.no_event_last_timestamp , stats.event_last_timestamp);
 
-		if(stats.event_count <10 && stats.event_count>1) {
-		    return true;
-                }
-                else {
-                    printf("[On-Event] %03x so many packet with short time(30ms)\n",can_id);
-		    return false;
-                }
+            if(stats.event_count <10 && stats.event_count>1) {
+                return true;
             }
-            else if((stats.periodic * 1.2 >= time_diff /2 && stats.periodic*0.8<=time_diff/2)||(stats.periodic*1.2 >= event_time_diff && stats.periodic *0.8 <= event_time_diff)){
-                stats.event_count = 0;
-                stats.no_event_last_timestamp = timestamp;
+            else {
+                printf("[On-Event] %03x so many packet with short time(30ms)\n",can_id);
+                return false;
             }
         }
-        return false;
+        else if((stats.periodic * 1.2 >= time_diff /2 && stats.periodic*0.8<=time_diff/2)||(stats.periodic*1.2 >= event_time_diff && stats.periodic *0.8 <= event_time_diff)){
+            stats.event_count = 0;
+            stats.no_event_last_timestamp = timestamp;
+        }
+    }
+    return false;
 }
 
 bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_id){
@@ -138,6 +136,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
                 return normal_packet;
             } else {
                 // Masquerade 공격
+                printf("Masquerade: 0x%3x ", dequeuedMsg->can_id);
                 return malicious_packet;
             }
         } else {
@@ -151,20 +150,22 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         // 오차가 5ms 이내로 동일한 패킷이 5번 이상 들어오는가?
         if (check_DoS(*dequeuedMsg)) {
             // DDoS 공격
+            printf("DoS: 0x%3x ", dequeuedMsg->can_id);
             return malicious_packet;
-	}
+	    }
     }
 
     // 2.2 On-Event 패킷인가?
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id)) {
         // 정상 패킷
-        if(dequeuedMsg->can_id==0x1f1) printf("ID: %03x\n",dequeuedMsg->can_id);
-	return normal_packet;
+        printf("Event ID: %03x\n",dequeuedMsg->can_id);
+        return normal_packet;
     }
 
     // 2.3 오차가 정상 주기의 2배 이상인가?
     if (check_over_double_periodic(dequeuedMsg->timestamp, stats, dequeuedMsg->can_id)) {
-	// Suspension 공격
+	    // Suspension 공격
+        printf("Suspension: 0x%3x ", dequeuedMsg->can_id);
         return malicious_packet;
     }
 
