@@ -42,15 +42,11 @@ void calc_periodic(uint32_t can_id, double timestamp) {
         if (stats.count==PERIODIC_SAMPLE_THRESHOLD){
             double stddev = get_standard_deviation(can_id);
             double cv = get_coefficient_of_variation(stats.periodic, stddev);
-
-            printf("-0x%x - stddev: %lf, cv: %lf\n", can_id, stddev, cv);
             
             if (stddev < PERIODIC_STD_THRESHOLD && cv < PERIODIC_CV_THRESHOLD) {
                 stats.is_periodic = true;  
-                printf("0x%x is periodic\n", can_id);// 두 가지 기준을 모두 만족하면 주기적
             } else { 
                 stats.is_periodic = false; 
-                printf("0x%x is non-periodic\n", can_id);
             }
         }
     } 
