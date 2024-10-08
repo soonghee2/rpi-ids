@@ -1,3 +1,6 @@
+#ifndef CQUEUE_H
+#define CQUEUE_H
+
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -61,3 +64,5 @@ inline bool q_peekPrevious(const Queue_t* const q, void* const record) {
 }
 
 uint16_t q_getSize(const Queue_t* const q);
+
+#endif
