@@ -1,7 +1,6 @@
 #include "all_attack_detection.h"
 #include "CANStats.h"
 
-
 bool check_periodic_range(double time_diff, double periodic){
     if(periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2)
         return true;
@@ -106,7 +105,7 @@ bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id){
 
 bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_id){
 	if(timestamp - stats.last_timestamp > stats.periodic * 5) {
-		//parintf("[Suspension Attack Reason] %03x packet with a cycle time of %f minute arrived %f minutes later than the previous one. >> ", can_id, stats.periodic, timestamp - stats.last_timestamp);
+		//printf("[Suspension Attack Reason] %03x packet with a cycle time of %f minute arrived %f minutes later than the previous one. >> ", can_id, stats.periodic, timestamp - stats.last_timestamp);
 		return true;  
 	}	
 	return false;

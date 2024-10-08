@@ -28,7 +28,6 @@ typedef struct qCANMsg {
     uint8_t data[8];       // CAN 데이터 (최대 8바이트)
 } EnqueuedCANMsg;
 
-extern std::uint32_t MIN_CAN_ID = 0x00;
+extern const uint32_t MIN_CAN_ID;
 extern std::unordered_map<uint32_t, CANStats> can_stats;
-extern std::set<uint32_t> sorted_canIDSet;
 #endif

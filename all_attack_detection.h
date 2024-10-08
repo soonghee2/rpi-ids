@@ -5,7 +5,6 @@
 #include <cstddef>
 #include "periodic.h"
 #include "CANStats.h" 
-#include "can_id_sort.h"
 
 #define EVENT_PERIOD 0.03
 #define DoS_TIME_THRESHOLD_MS 0.005
