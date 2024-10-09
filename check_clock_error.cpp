@@ -33,7 +33,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
 
     // 데이터가 충분한지 확인
     if (stats.count < MIN_DATA_CNT) {
-        std::cout << "CAN ID " << can_id << ": Insufficient data (current data count: " << stats.count << ")\n";
+        //std::cout << "CAN ID " << can_id << ": Insufficient data (current data count: " << stats.count << ")\n";
         return false;
     }
 
@@ -49,7 +49,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
     bool isAnomalous = detectAnomaly(error);
 
     if (isAnomalous) {
-        std::cerr << "CAN ID " << can_id << ": Anomaly detected! Possible malicious activity.\n";
+        //std::cerr << "CAN ID " << can_id << ": Anomaly detected! Possible malicious activity.\n";
         return false; // 이상 탐지 시 true 반환
     }
 
@@ -76,8 +76,8 @@ bool ClockSkewDetector::detectAnomaly(double error) {
     // CUSUM 상한 및 하한 제어 한계 업데이트
     upperLimit = std::max(0.0, upperLimit + (error - meanError) / stdError - threshold);
     lowerLimit = std::max(0.0, lowerLimit - (error - meanError) / stdError - threshold);
-     printf("Error: %.6f\n, meanError: %.6f, stdError: %.6f, \n upperLimit: %.6f, lowerLimit: %.6f, CUSUM_THRESHOLD: %.6f\n", 
-        error, meanError, stdError, upperLimit, lowerLimit, CUSUM_THRESHOLD);
+    //printf("Error: %.6f\n, meanError: %.6f, stdError: %.6f, \n upperLimit: %.6f, lowerLimit: %.6f, CUSUM_THRESHOLD: %.6f\n", 
+        //error, meanError, stdError, upperLimit, lowerLimit, CUSUM_THRESHOLD);
 
     // 임계값 초과 시 이상 탐지
     return (upperLimit > CUSUM_THRESHOLD || lowerLimit > CUSUM_THRESHOLD);
@@ -87,7 +87,7 @@ bool ClockSkewDetector::detectAnomaly(double error) {
 bool check_clock_error(uint32_t can_id, double timestamp) {
     // 해당 CAN ID에 대한 ClockSkewDetector가 없으면 새로 생성
     if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
-        std::cout << "CAN ID " << can_id << ": Creating a new ClockSkewDetector instance.\n";
+        //std::cout << "CAN ID " << can_id << ": Creating a new ClockSkewDetector instance.\n";
         clockSkewDetectors[can_id] = ClockSkewDetector(CUSUM_THRESHOLD);
     }
     CANStats& stats = can_stats[can_id];
