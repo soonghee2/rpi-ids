@@ -33,7 +33,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
 
     // 데이터가 충분한지 확인
     if (stats.count < MIN_DATA_CNT) {
-        std::cout << "CAN ID " << can_id << ": Insufficient data (current data count: " << stats.count << ")\n";
+        // std::cout << "CAN ID " << can_id << ": Insufficient data (current data count: " << stats.count << ")\n";
         return false;
     }
 
@@ -49,7 +49,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
     bool isAnomalous = detectAnomaly(error);
 
     if (isAnomalous) {
-        std::cerr << "CAN ID " << can_id << ": Anomaly detected! Possible malicious activity.\n";
+        // std::cerr << "CAN ID " << can_id << ": Anomaly detected! Possible malicious activity.\n";
         return true; // 이상 탐지 시 true 반환
     }
 
@@ -86,7 +86,7 @@ bool ClockSkewDetector::detectAnomaly(double error) {
 bool check_clock_error(uint32_t can_id, double timestamp) {
     // 해당 CAN ID에 대한 ClockSkewDetector가 없으면 새로 생성
     if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
-        std::cout << "CAN ID " << can_id << ": Creating a new ClockSkewDetector instance.\n";
+        // std::cout << "CAN ID " << can_id << ": Creating a new ClockSkewDetector instance.\n";
         clockSkewDetectors[can_id] = ClockSkewDetector(CUSUM_THRESHOLD);
     }
     CANStats& stats = can_stats[can_id];
