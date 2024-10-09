@@ -9,7 +9,7 @@
 const double INITIAL_P_VALUE = 1.0;       // RLS 초기 공분산 값
 const double FORGETTING_FACTOR = 0.9995;  // RLS 및 CUSUM에 사용되는 가중치
 const double CUSUM_THRESHOLD = 5.0;       // CUSUM 임계값
-const int MIN_DATA_CNT = 10;              // 최소 데이터 수
+const int MIN_DATA_CNT = 100;              // 최소 데이터 수
 
 /// ClockSkewDetector 클래스 선언
 class ClockSkewDetector {

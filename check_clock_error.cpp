@@ -50,10 +50,10 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
 
     if (isAnomalous) {
         std::cerr << "CAN ID " << can_id << ": Anomaly detected! Possible malicious activity.\n";
-        return true; // 이상 탐지 시 true 반환
+        return false; // 이상 탐지 시 true 반환
     }
 
-    return false; // 이상이 없는 경우 false 반환
+    return true; // 이상이 없는 경우 false 반환
 }
 
 // RLS 알고리즘을 사용하여 클럭 스큐 추정 업데이트
@@ -76,7 +76,8 @@ bool ClockSkewDetector::detectAnomaly(double error) {
     // CUSUM 상한 및 하한 제어 한계 업데이트
     upperLimit = std::max(0.0, upperLimit + (error - meanError) / stdError - threshold);
     lowerLimit = std::max(0.0, lowerLimit - (error - meanError) / stdError - threshold);
-    // printf("meanError: %.6f, stdError: %.6f, upperLimit: %.6f, lowerLimit: %.6f, CUSUM_THRESHOLD: %.6f\n", meanError, stdError, upperLimit, lowerLimit, CUSUM_THRESHOLD);
+     printf("Error: %.6f\n, meanError: %.6f, stdError: %.6f, \n upperLimit: %.6f, lowerLimit: %.6f, CUSUM_THRESHOLD: %.6f\n", 
+        error, meanError, stdError, upperLimit, lowerLimit, CUSUM_THRESHOLD);
 
     // 임계값 초과 시 이상 탐지
     return (upperLimit > CUSUM_THRESHOLD || lowerLimit > CUSUM_THRESHOLD);

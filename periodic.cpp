@@ -45,8 +45,12 @@ void calc_periodic(uint32_t can_id, double timestamp) {
             
             if (stddev < PERIODIC_STD_THRESHOLD && cv < PERIODIC_CV_THRESHOLD) {
                 stats.is_periodic = true;  
+                printf("Complete analysis 0x%x's periodic: true: %.6f ", can_id, stats.periodic);
+
             } else { 
-                stats.is_periodic = false; 
+                stats.is_periodic = false;
+                printf("Complete analysis 0x%x's periodic: false ", can_id);
+                
             }
         }
     } 
