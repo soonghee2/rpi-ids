@@ -6,8 +6,7 @@
 #include "periodic.h"
 #include "CANStats.h" 
 #include "check_clock_error.h"
-#include "similarity_check.h"
-#include "validation_check.h"
+#include "dbc.h"
 
 #define EVENT_PERIOD 0.03
 #define DoS_TIME_THRESHOLD_MS 0.005

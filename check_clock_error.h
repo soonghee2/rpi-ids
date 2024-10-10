@@ -6,10 +6,10 @@
 #include "CANStats.h" // CANStats 구조체 포함
 
 // 상수 선언
-const double INITIAL_P_VALUE = 1.0;       // RLS 초기 공분산 값
-const double FORGETTING_FACTOR = 0.9995;  // RLS 및 CUSUM에 사용되는 가중치
+const double FORGETTING_FACTOR = 0.95;  // RLS 및 CUSUM에 사용되는 가중치
 const double CUSUM_THRESHOLD = 5.0;       // CUSUM 임계값
-const int MIN_DATA_CNT = 10;              // 최소 데이터 수
+const int MIN_DATA_CNT = 100;              // 최소 수데이터 
+const double ERROR_SCALING_FACTOR = 1000.0; // 작은 오차 값을 확대하기 위한 스케일링
 
 /// ClockSkewDetector 클래스 선언
 class ClockSkewDetector {
@@ -20,17 +20,16 @@ public:
     bool checkClockError(uint32_t can_id, double timestamp);  // 클럭 스큐 오류를 체크하는 함수
 
 private:
-    double S;                 // 추정된 클럭 스큐 값
-    double P;                 // RLS 공분산 값
+    int m_detect_cnt;               // RLS 공분산 값
     double accumulatedOffset; // 누적된 클럭 오프셋
     double upperLimit;        // CUSUM 상한 제어 값
     double lowerLimit;        // CUSUM 하한 제어 값
     double meanError;         // CUSUM용 평균 오류
+    double last_meanError;      //직전 meanError
     double stdError;          // CUSUM용 표준 편차
     double threshold;         // CUSUM 임계값
 
-    void updateSkewEstimate(double time_diff, double error);  // RLS 알고리즘을 사용한 스큐 추정 업데이트
-    bool detectAnomaly(double error);  // CUSUM을 사용한 이상 탐지
+    bool detectAnomaly(double error, uint32_t can_id);  // CUSUM을 사용한 이상 탐지
 };
 
 

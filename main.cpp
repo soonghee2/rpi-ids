@@ -75,16 +75,16 @@ void process_can_msg(double start_time){
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
           
-            /*if(dequeuedMsg.timestamp - start_time <= 40){
+            if(dequeuedMsg.timestamp - start_time <= 40){
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                 //printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
-            }*/
+            }
             //lowest_can_id(canIDSet);
-            if (filtering_process(&dequeuedMsg)){
+	    else if (filtering_process(&dequeuedMsg)){
                 printf("Malicious packet! count: %d\n", mal_count++);
             }
             else {
-                printf("Normal packet!\n");
+                //printf("Normal packet!\n");
             }
 
             stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
@@ -114,7 +114,10 @@ int main() {
     struct sockaddr_can addr;
     struct ifreq ifr;
     EnqueuedCANMsg can_msg;  // 수신된 CAN 메시지를 저장할 구조체
-
+    
+    char filename[256];
+    read_dbc("output.json");
+    
     struct timeval tv;
     gettimeofday(&tv, NULL);  // 현재 시간을 가져옴
     double start_time = tv.tv_sec + (tv.tv_usec / 1000000.0);  // 초와 마이크로초를 합쳐서 double로 변환

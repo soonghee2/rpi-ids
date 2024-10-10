@@ -100,7 +100,7 @@ bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id){
 
 bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_id){
 	if(timestamp - stats.last_timestamp > stats.periodic * 5) {
-		//printf("[Suspension Attack Reason] %03x packet with a cycle time of %f minute arrived %f minutes later than the previous one. >> ", can_id, stats.periodic, timestamp - stats.last_timestamp);
+		printf("[Suspension Attack Reason] %03x packet with a cycle time of %f minute arrived %f minutes later than the previous one. >> ", can_id, stats.periodic, timestamp - stats.last_timestamp);
 		return true;  
 	}	
 	return false;
@@ -110,17 +110,14 @@ bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_i
 bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool malicious_packet = true;
     bool normal_packet = false;
-     Validation_Check validationObj;
-     Similarity_Check similarityObj;
 
     CANStats& stats = can_stats[dequeuedMsg->can_id];
 
     //유효하지 CAN ID인 경우
-    if(!validationObj.validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+    if(!validation_check(dbc, dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
 	    printf("NO DBC ID %03x\n",dequeuedMsg->can_id);
 	    return malicious_packet;
     }
-    printf("DBC ID %03x\n",dequeuedMsg->can_id);
     // 비주기 패킷일 경우
     if (!stats.is_periodic) {
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
@@ -133,20 +130,22 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     double time_diff = dequeuedMsg->timestamp - stats.last_timestamp;
     // printf("time_diff: %.6f\n", time_diff);
 
-    if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
+    if (!check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         // 1.1 이전 패킷과 상관관계가 있는가?
-        if (similarityObj.check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data)) {
+        if (check_similarity_with_previous_packet(dbc, dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data)) {
             // 1.2 시계 오차가 있는가?
-            if (check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
+            if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
                 memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
                 return normal_packet;
             } else {
                 // Masquerade 공격
+		printf("Masquarade attack \n");
                 return malicious_packet;
             }
         } else {
             // Fuzzing or Replay 공격
+	    printf("Fuzzing or Replay\n");
             return malicious_packet;
         }
     }
@@ -156,6 +155,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         // 오차가 5ms 이내로 동일한 패킷이 5번 이상 들어오는가?
         if (check_DoS(*dequeuedMsg)) {
             // DDoS 공격
+	    printf("Dos Attack\n");
             return malicious_packet;
 	}
     }
@@ -171,6 +171,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // 2.3 오차가 정상 주기의 2배 이상인가?
     if (check_over_double_periodic(dequeuedMsg->timestamp, stats, dequeuedMsg->can_id)) {
 	// Suspension 공격
+	printf("Suspenstion\n");
         return malicious_packet;
     }
 
