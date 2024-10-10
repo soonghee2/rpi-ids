@@ -19,6 +19,8 @@ struct CANStats {
     double no_event_last_timestamp =0;
    
     int suspected_count = 0;
+
+    uint8_t valid_last_data[8];
 };
 
 typedef struct qCANMsg {

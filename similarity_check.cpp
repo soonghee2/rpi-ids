@@ -26,7 +26,7 @@ unsigned long long Similarity_Check::to_little_endian_int(unsigned long long num
     return result;
 }
 
-bool Similarity_Check::similarity_check(uint32_t can_id, uint8_t data[8], int DLC, /*can id에 해당하는 이전 정상 패이로드*/ ) {
+bool Similarity_Check::check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload) {
 
     dbc_file.open("output.json", std::ifstream::binary);
     Json::Value dbc;

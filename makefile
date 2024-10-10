@@ -2,7 +2,7 @@
 CXX = g++
 
 # 컴파일러 옵션
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -g $(shell pkg-config --cflags jsoncpp)
 
 # 소스 파일 및 헤더 파일
 
@@ -18,7 +18,7 @@ all: $(TARGET) clean_objs
 
 # 실행 파일 생성
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(shell pkg-config --libs jsoncpp)
 
 # 개별 소스 파일 컴파일
 %.o: %.cpp

@@ -1,16 +1,15 @@
 #include "all_attack_detection.h"
 #include "CANStats.h"
 
+bool check_valid_id(){
+}
+bool check_valid_payload_range(){
+}
 bool check_periodic_range(double time_diff, double periodic){
     if(periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2)
         return true;
     
     return false;
-}
-
-bool check_similarity_with_previous_packet(){
-	//no -> stats.event_count=0;
-        return false;
 }
 
 bool check_clock_error(){
@@ -118,6 +117,11 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     CANStats& stats = can_stats[dequeuedMsg->can_id];
 
+    //유효하지 CAN ID인 경우
+    if(!validation_check(deququedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+	    return malicious_packet;
+    }
+    memcpy(dequeuedMsg->valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data);
     // 비주기 패킷일 경우
     if (!stats.is_periodic) {
         // 비주기 패킷은 정상 패킷으로 처리
@@ -131,7 +135,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         // 1.1 이전 패킷과 상관관계가 있는가?
-        if (check_similarity_with_previous_packet()) {
+        if (check_similarity_with_previous_packect(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, dequeuedMsg->valid_last_data)) {
             // 1.2 시계 오차가 있는가?
             if (check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
