@@ -80,7 +80,7 @@ bool check_similarity_with_previous_packet(const Json::Value& dbc, uint32_t can_
     // 문자열로 저장
     std::string valid_payload_hexStr = valid_payload_string.str();
     for (const auto &message : dbc) {
-            if ("0x" + data[1] == message["CAN ID"].asString()) {
+            if ("0x" + can_id_hexStr == message["CAN ID"].asString()) {
     if(is_initial_data){
         is_initial_data = false;
         return true;
