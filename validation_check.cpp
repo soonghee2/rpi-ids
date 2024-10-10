@@ -1,5 +1,11 @@
 #include "validation_check.h"
-
+#include <sys/time.h>
+// 현재 타임스탬프를 초와 마이크로초 단위로 구하는 함수
+double get_timestamp1() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);  // 현재 시간을 가져옴
+    return tv.tv_sec + (tv.tv_usec / 1000000.0);  // 초와 마이크로초를 합쳐서 double로 변환
+}
 unsigned long long Validation_Check::get_bits_from_hex_string(const std::string &hex_string, int start_bit, int bit_length) {
     // Convert hex string to unsigned long long
     unsigned long long value = 0;
@@ -27,8 +33,10 @@ unsigned long long Validation_Check::to_little_endian_int(unsigned long long num
 }
 
 bool Validation_Check::validation_check(uint32_t can_id, uint8_t* data, int DLC) {
+    printf("start : %f",get_timestamp1());
     bool is_valid_id=false;
     bool is_valid_range_data=false;
+
     dbc_file.open("output.json", std::ifstream::binary);
     Json::Value dbc;
     dbc_file >> dbc;
@@ -68,17 +76,20 @@ bool Validation_Check::validation_check(uint32_t can_id, uint8_t* data, int DLC)
                     }
                     //std::cout << "payload:" <<binary_value << "\n";
                     if (signal["Low Min Value"].asDouble() <= binary_value && binary_value <= signal["Low Max Value"].asDouble()) {
+			    printf("finish %f",get_timestamp1());
                         return true;
                     } else {
                         return is_valid_range_data;
                     }
                 } else {
-                    return true;
+			return true;
+			printf("finish %f",get_timestamp1());
                 }
             }
             return true;
         }
     }
+    printf("finish %f",get_timestamp1());
     return is_valid_id;
 }
 

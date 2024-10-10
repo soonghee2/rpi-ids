@@ -31,7 +31,7 @@ double get_timestamp() {
 // CAN 패킷을 수신하고 qCANMsg 구조체에 저장하는 함수
 int receive_can_frame(int s, EnqueuedCANMsg* msg) {
     while(!done){
-	std::cout <<"queue size:"<<q_getSize(&canMsgQueue)<<std::endl;
+	//std::cout <<"queue size:"<<q_getSize(&canMsgQueue)<<std::endl;
 	struct can_frame frame;
 
         size_t nbytes = read(s, &frame, sizeof(struct can_frame));
@@ -70,17 +70,17 @@ void process_can_msg(double start_time){
         while ((!q_isEmpty(&canMsgQueue))){
             EnqueuedCANMsg dequeuedMsg;
             q_pop(&canMsgQueue, &dequeuedMsg);
-            std::cout<<"queue pop"<<std::endl;
+            //std::cout<<"queue pop"<<std::endl;
             lock.unlock();
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
           
-            if(dequeuedMsg.timestamp - start_time <= 40){
+            /*if(dequeuedMsg.timestamp - start_time <= 40){
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-                printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
-            } 
+                //printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
+            }*/
             //lowest_can_id(canIDSet);
-            else if (filtering_process(&dequeuedMsg)){
+            if (filtering_process(&dequeuedMsg)){
                 printf("Malicious packet! count: %d\n", mal_count++);
             }
             else {

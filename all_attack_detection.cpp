@@ -1,10 +1,6 @@
 #include "all_attack_detection.h"
 #include "CANStats.h"
 
-bool check_valid_id(){
-}
-bool check_valid_payload_range(){
-}
 bool check_periodic_range(double time_diff, double periodic){
     if(periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2)
         return true;
@@ -121,9 +117,10 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     //유효하지 CAN ID인 경우
     if(!validationObj.validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+	    printf("NO DBC ID %03x\n",dequeuedMsg->can_id);
 	    return malicious_packet;
     }
-    
+    printf("DBC ID %03x\n",dequeuedMsg->can_id);
     // 비주기 패킷일 경우
     if (!stats.is_periodic) {
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
