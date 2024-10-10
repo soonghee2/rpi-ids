@@ -114,16 +114,19 @@ bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_i
 bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool malicious_packet = true;
     bool normal_packet = false;
+     Validation_Check validationObj;
+     Similarity_Check similarityObj;
 
     CANStats& stats = can_stats[dequeuedMsg->can_id];
 
     //유효하지 CAN ID인 경우
-    if(!validation_check(deququedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+    if(!validationObj.validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
 	    return malicious_packet;
     }
-    memcpy(dequeuedMsg->valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data);
+    
     // 비주기 패킷일 경우
     if (!stats.is_periodic) {
+        memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         // 비주기 패킷은 정상 패킷으로 처리
         return normal_packet;
     }
@@ -135,10 +138,11 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         // 1.1 이전 패킷과 상관관계가 있는가?
-        if (check_similarity_with_previous_packect(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, dequeuedMsg->valid_last_data)) {
+        if (similarityObj.check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data)) {
             // 1.2 시계 오차가 있는가?
             if (check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
+                memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
                 return normal_packet;
             } else {
                 // Masquerade 공격
@@ -163,6 +167,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id)) {
         // 정상 패킷
         if(dequeuedMsg->can_id==0x1f1) printf("ID: %03x\n",dequeuedMsg->can_id);
+        memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
 	return normal_packet;
     }
 
@@ -180,3 +185,4 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 uint8_t DoS_payload[8];    // 전역 변수 정의
 int suspected_count = 0;   // 전역 변수 정의
 uint32_t DoS_can_id = 0;   // 전역 변수 정의
+

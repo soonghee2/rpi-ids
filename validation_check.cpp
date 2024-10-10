@@ -26,13 +26,12 @@ unsigned long long Validation_Check::to_little_endian_int(unsigned long long num
     return result;
 }
 
-bool Validation_Check::validation_check(uint32_t can_id, uint8_t data[8], int DLC) {
+bool Validation_Check::validation_check(uint32_t can_id, uint8_t* data, int DLC) {
     bool is_valid_id=false;
     bool is_valid_range_data=false;
     dbc_file.open("output.json", std::ifstream::binary);
     Json::Value dbc;
     dbc_file >> dbc;
-    bool error_found = false;
     std::stringstream can_id_string;
     can_id_string << std::hex << can_id;
     std::string can_id_hexStr = can_id_string.str();
@@ -69,7 +68,7 @@ bool Validation_Check::validation_check(uint32_t can_id, uint8_t data[8], int DL
                     }
                     //std::cout << "payload:" <<binary_value << "\n";
                     if (signal["Low Min Value"].asDouble() <= binary_value && binary_value <= signal["Low Max Value"].asDouble()) {
-                        error_found = false;
+                        return true;
                     } else {
                         return is_valid_range_data;
                     }
@@ -81,16 +80,5 @@ bool Validation_Check::validation_check(uint32_t can_id, uint8_t data[8], int DL
         }
     }
     return is_valid_id;
-}
-
-int main() {
-    uint8_t data[8]={63,192,00,00,00,00,00,00};
-    Validation_Check validator;
-    if (validator.validation_check(64,data,8)){
-        std::cout << "Comparison successful.\n";
-    } else {
-        std::cout << "Comparison failed.\n";
-    }
-    return 0;
 }
 

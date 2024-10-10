@@ -26,8 +26,9 @@ unsigned long long Similarity_Check::to_little_endian_int(unsigned long long num
     return result;
 }
 
-bool Similarity_Check::check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload) {
-
+bool Similarity_Check::check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool is_initial_data) {
+    int total_same_percent=0;
+    int total_length=0;
     dbc_file.open("output.json", std::ifstream::binary);
     Json::Value dbc;
     dbc_file >> dbc;
@@ -43,54 +44,51 @@ bool Similarity_Check::check_similarity_with_previous_packet(uint32_t can_id, ui
     // 문자열로 저장
     std::string payload_hexStr = payload_string.str();
     //std::cout << payload_hexStr << "\n";
-
-    for (size_t index = 0; index < pair_list.size(); ++index) {
-        if ("0x" + can_id_hexStr == message["CAN ID"].asString()) {
-            pair_found = true;
-            for (const auto &signal : message["Signals"]) {
-                total_length += signal['Length']
-                unsigned long long old_value, new_value;
-                if (signal["Byte Order"].asInt() == 1) {
-                    int first = signal["Start Bit"].asInt() / 8;
-                    int end = ((signal["Start Bit"].asInt() + signal["Length"].asInt()) / 8);
-                    int bit_length = (end - first) * 8;
-                    old_value = get_bits_from_hex_string(pair_list[index].second, first * 8, bit_length);
-                    new_value = get_bits_from_hex_string(connected_values, first * 8, bit_length);
-                    old_value = bitset<64>(to_little_endian_int(old_value, (end - first))).to_ullong();
-                    new_value = bitset<64>(to_little_endian_int(new_value, (end - first))).to_ullong();
-                    old_value = cut_bits(old_value, ((end - first) * 8) - signal["Length"].asInt() - (signal["Start Bit"].asInt() % 8), signal["Length"].asInt());
-                    new_value = cut_bits(new_value, ((end - first) * 8) - signal["Length"].asInt() - (signal["Start Bit"].asInt() % 8), signal["Length"].asInt());
-                } else {
-                    old_value = get_bits_from_hex_string(pair_list[index].second, signal["Start Bit"].asInt(), signal["Length"].asInt());
-                    new_value = get_bits_from_hex_string(connected_values, signal["Start Bit"].asInt(), signal["Length"].asInt());
-                }
-                if (old_value == new_value) {
-                    total_same_percent += signal["Length"].asInt() * 100;
-                } else {
-                    double diff = abs((double)old_value - (double)new_value) / (double)max(old_value, new_value) * 100;
-                    total_same_percent += signal["Length"].asInt() * (100 - diff);
-                }
-            }
-
-            if ((total_same_percent / total_length) >= 40) { //수용치
-                pair_list[index].second = connected_values;
-                //정상 페이로드이므로 저장
-                return true;std::ostringstream payload_string;
-                
+    
+    std::ostringstream valid_payload_string;
     for (int i = 0; i < DLC; ++i) {
-        payload_string << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(data[i]);
+        valid_payload_string << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(data[i]);
     }
     // 문자열로 저장
-    std::string payload_hexStr = payload_string.str();
-    //std::cout << payload_hexStr << "\n";
-            } else {
-                return false;
-            }
-        }
-    }
-    if (!pair_found) {
-        //정상 페이로드이므로 저장
-        pair_list.emplace_back("0x" + data[1], connected_values);
+    std::string valid_payload_hexStr = valid_payload_string.str();
+    for (const auto &message : dbc) {
+            if ("0x" + data[1] == message["CAN ID"].asString()) {
+    if(is_initial_data){
+        is_initial_data = false;
         return true;
-    }
+    }else{
+        for (const auto &signal : message["Signals"]) {
+          total_length += signal["Length"].asInt();;
+          unsigned long long old_value, new_value;
+          if (signal["Byte Order"].asInt() == 1) {
+              int first = signal["Start Bit"].asInt() / 8;
+              int end = ((signal["Start Bit"].asInt() + signal["Length"].asInt()) / 8);
+              int bit_length = (end - first) * 8;
+              old_value = get_bits_from_hex_string(valid_payload_hexStr, first * 8, bit_length);
+              new_value = get_bits_from_hex_string(payload_hexStr, first * 8, bit_length);
+              old_value = std::bitset<64>(to_little_endian_int(old_value, (end - first))).to_ullong();
+              new_value = std::bitset<64>(to_little_endian_int(new_value, (end - first))).to_ullong();
+              old_value = cut_bits(old_value, ((end - first) * 8) - signal["Length"].asInt() - (signal["Start Bit"].asInt() % 8), signal["Length"].asInt());
+              new_value = cut_bits(new_value, ((end - first) * 8) - signal["Length"].asInt() - (signal["Start Bit"].asInt() % 8), signal["Length"].asInt());
+          } else {
+              old_value = get_bits_from_hex_string(valid_payload_hexStr, signal["Start Bit"].asInt(), signal["Length"].asInt());
+              new_value = get_bits_from_hex_string(payload_hexStr, signal["Start Bit"].asInt(), signal["Length"].asInt());
+          }
+          if (old_value == new_value) {
+              total_same_percent += signal["Length"].asInt() * 100;
+          } else {
+              double diff = abs((double)old_value - (double)new_value) / (double)std::max(old_value, new_value) * 100;
+              total_same_percent += signal["Length"].asInt() * (100 - diff);
+          }
+      } 
+
+      if ((total_same_percent / total_length) >= 40) { //수용치
+          return true;
+      } else {
+          return false;
+      }
+    }}
 }
+  return true;
+}
+

@@ -13,14 +13,14 @@
 
 class Similarity_Check {
 public:
-    bool similarity_check(uint32_t can_id, uint8_t data[8], int DLC);
+    bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool is_initial_data);
 private:
     unsigned long long get_bits_from_hex_string(const std::string &hex_string, int start_bit, int bit_length);
     unsigned long long cut_bits(unsigned long long number, int start, int length);
     unsigned long long to_little_endian_int(unsigned long long number, int byte_size);
     bool is_binary_string_valid(const std::string &binary_string);
     bool parse_csv_line(const std::string &line, std::vector<std::string> &data);
-
+    
     std::ifstream dbc_file;
     std::ifstream dataset;
 
@@ -29,3 +29,4 @@ private:
 };
 
 #endif // DBC_COMPARE_H
+

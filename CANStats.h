@@ -20,7 +20,8 @@ struct CANStats {
    
     int suspected_count = 0;
 
-    uint8_t valid_last_data[8];
+    uint8_t valid_last_data[8] = {0};
+    bool is_initial_data = true;
 };
 
 typedef struct qCANMsg {
@@ -33,3 +34,4 @@ typedef struct qCANMsg {
 extern const uint32_t MIN_CAN_ID;
 extern std::unordered_map<uint32_t, CANStats> can_stats;
 #endif
+
