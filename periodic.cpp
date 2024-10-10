@@ -1,6 +1,7 @@
 #include "periodic.h"
 
-const int PERIODIC_SAMPLE_THRESHOLD = 300;
+const int PERIODIC_SAMPLE_THRESHOLD = 30;
+const int SECOND_PERIODIC_SAMPLE_THRESHOLD = 300;
 
 // 주기성을 판단할 임계값 (실험적으로 설정)
 const double PERIODIC_STD_THRESHOLD = 0.05;  // 표준편차 기준 임계값
@@ -42,17 +43,28 @@ void calc_periodic(uint32_t can_id, double timestamp) {
         if (stats.count==PERIODIC_SAMPLE_THRESHOLD){
             double stddev = get_standard_deviation(can_id);
             double cv = get_coefficient_of_variation(stats.periodic, stddev);
-            
             if (stddev < PERIODIC_STD_THRESHOLD && cv < PERIODIC_CV_THRESHOLD) {
-                stats.is_periodic = true;  
-                printf("Complete analysis 0x%x's periodic: true: %.6f ", can_id, stats.periodic);
+                stats.is_periodic = true;
+                printf("1st analysis 0x%x's periodic: stddev:%.6f, cv: %.6f, true( %.6f )\n", can_id, stddev, cv, stats.periodic);
 
             } else { 
                 stats.is_periodic = false;
-                printf("Complete analysis 0x%x's periodic: false ", can_id);
+                printf("1st analysis 0x%x's periodic: stddev:%.6f, cv: %.6f,false \n", can_id, stddev, cv);
                 
             }
-        }
+        } else if (stats.count==SECOND_PERIODIC_SAMPLE_THRESHOLD){
+            double stddev = get_standard_deviation(can_id);
+            double cv = get_coefficient_of_variation(stats.periodic, stddev);
+            if (stddev < PERIODIC_STD_THRESHOLD && cv < PERIODIC_CV_THRESHOLD) {
+                stats.is_periodic = true;  
+                printf("2nd analysis 0x%x's periodic: stddev:%.6f, cv: %.6f, true( %.6f )\n", can_id, stddev, cv, stats.periodic);
+
+            } else { 
+                stats.is_periodic = false;
+                printf("2nd analysis 0x%x's periodic: stddev:%.6f, cv: %.6f,false \n", can_id, stddev, cv);
+                
+            }
+        }    
     } 
     
     else {
