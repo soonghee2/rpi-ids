@@ -59,7 +59,7 @@ bool ClockSkewDetector::detectAnomaly(double error, uint32_t can_id) {
     //     return true;
     // }
 
-    if (std::abs(last_meanError - meanError) > 1.5) { m_detect_cnt++; }
+    if (std::abs(last_meanError - meanError) > 1.5) { m_detect_cnt++; }else{ m_detect_cnt=0;}
 
     if (m_detect_cnt > 5) {
         printf("m_detect_cnt===\nError: %.6f\n, meanError: %.6f, last_meanError:%.6f, stdError: %.6f, \n upperLimit: %.6f,CUSUM_THRESHOLD: %.6f\n", 
