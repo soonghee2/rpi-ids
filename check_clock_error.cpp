@@ -24,7 +24,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
 
     // 데이터가 충분한지 확인
     if (stats.count < MIN_DATA_CNT) {
-        //std::cout << "CAN ID " << can_id << ": Insufficient data (current data count: " << stats.count << ")\n";
+        // std::cout << "CAN ID " << can_id << ": Insufficient data (current data count: " << stats.count << ")\n";
         return false;
     }
 
@@ -93,7 +93,7 @@ bool ClockSkewDetector::detectAnomaly(double error, uint32_t can_id) {
 // 전역 함수 check_clock_error 구현
 bool check_clock_error(uint32_t can_id, double timestamp) {
     // 해당 CAN ID에 대한 ClockSkewDetector가 없으면 새로 생성
-    if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
+    if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) 
         clockSkewDetectors[can_id] = ClockSkewDetector(CUSUM_THRESHOLD);
     }
     CANStats& stats = can_stats[can_id];

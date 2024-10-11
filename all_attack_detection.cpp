@@ -2,10 +2,7 @@
 #include "CANStats.h"
 
 bool check_periodic_range(double time_diff, double periodic){
-    if(periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2)
-        return true;
-    
-    return false;
+    return (periodic * 0.7 <= time_diff && time_diff <= periodic * 1.3);
 }
 
 bool check_similarity_with_previous_packet(){
@@ -20,7 +17,7 @@ bool check_clock_error(){
 }
 
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
-    if(stats.prev_timediff == 0.0 && current_timediff > stats.periodic * 1.2){
+    if(stats.prev_timediff == 0.0){
         stats.prev_timediff = current_timediff;
         return false;
     }
@@ -37,10 +34,7 @@ bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
 
 bool check_low_can_id(uint32_t can_id){
 	//only check lowest can id
-	if(can_id <= MIN_CAN_ID){
-		return true;
-	} 
-	return false;
+    return (can_id <= MIN_CAN_ID);
 }
 
 bool check_DoS(EnqueuedCANMsg dequeuedMsg){
@@ -68,34 +62,35 @@ bool check_DoS(EnqueuedCANMsg dequeuedMsg){
     return false;
 }
 
-bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id){
-	if(stats.no_event_last_timestamp==0) {
-        stats.no_event_last_timestamp = timestamp; //last_timestamp에 합칠것인가
-    }
+bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id, uint8_t data[]){
 	double event_time_diff = 0;
-    double time_diff = timestamp - stats.no_event_last_timestamp;
+    double time_diff = timestamp - stats.last_normal_timestamp;
 
-    if(stats.event_count==0){
-        stats.event_count=1;
+    if(stats.event_count == -1){
+        memset(stats.event_payload, 0, sizeof(stats.event_payload));
+        stats.event_count = 0;
         stats.event_last_timestamp = timestamp;
-    }
-    else {
+    } else {
         event_time_diff = timestamp - stats.event_last_timestamp;
-        if(EVENT_PERIOD *1.2 >= event_time_diff && EVENT_PERIOD*0.8 <= event_time_diff){
+        if(EVENT_PERIOD * 1.2 >= event_time_diff && EVENT_PERIOD * 0.8 <= event_time_diff){
             stats.event_count++;
             stats.event_last_timestamp = timestamp;
+            memcpy(stats.event_payload, data, sizeof(stats.event_payload));
 
-            if(stats.event_count <10 && stats.event_count>1) {
+            if(stats.event_count <= 10 && stats.event_count >= 1) {
                 return true;
             }
             else {
                 printf("[On-Event] %03x so many packet with short time(30ms)\n",can_id);
+                stats.event_count = -1;
                 return false;
             }
-        }
-        else if((stats.periodic * 1.2 >= time_diff /2 && stats.periodic*0.8<=time_diff/2)||(stats.periodic*1.2 >= event_time_diff && stats.periodic *0.8 <= event_time_diff)){
-            stats.event_count = 0;
-            stats.no_event_last_timestamp = timestamp;
+        } else if(check_periodic_range(time_diff / 2, stats.periodic) || memcmp(stats.event_payload, data, sizeof(stats.event_payload)) == 0){
+            stats.event_count = -1;
+            stats.last_normal_timestamp = timestamp;
+            return true;
+        } else {
+            stats.event_count = -1;
         }
     }
     return false;
@@ -133,6 +128,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
             // 1.2 시계 오차가 있는가?
             if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
+                stats.last_normal_timestamp = dequeuedMsg->can_id;
                 return normal_packet;
             } else {
                 // Masquerade 공격
@@ -141,6 +137,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
             }
         } else {
             // Fuzzing or Replay 공격
+            printf("Fuzzing or Replay: 0x%3x ", dequeuedMsg->can_id);
             return malicious_packet;
         }
     }
@@ -156,7 +153,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
 
     // 2.2 On-Event 패킷인가?
-    if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id)) {
+    if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id, dequeuedMsg->data)) {
         // 정상 패킷
         printf("Event ID: %03x\n",dequeuedMsg->can_id);
         return normal_packet;
@@ -169,9 +166,16 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         return malicious_packet;
     }
 
+    if(stats.event_count >= 0 || stats.prev_timediff != 0){
+        return normal_packet;
+    }
+
+    printf("canID: 0x%03x, count: %d, prev_timediff: %.6f, current_timediff: %.6f, periodic: %.6f\n", dequeuedMsg->can_id, stats.event_count, stats.prev_timediff, time_diff, stats.periodic);
+    
 
     // Fuzzing or Replay 공격
-    return normal_packet;
+    printf("Fuzzing or Replay: 0x%03x ", dequeuedMsg->can_id);
+    return malicious_packet;
 }
 
 uint8_t DoS_payload[8];    // 전역 변수 정의

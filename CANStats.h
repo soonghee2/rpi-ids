@@ -16,8 +16,9 @@ struct CANStats {
 
     int event_count = 0;
     double event_last_timestamp = 0;
-    double no_event_last_timestamp =0;
-   
+    uint8_t event_payload[8];
+
+    double last_normal_timestamp =0;
     int suspected_count = 0;
 };
 
