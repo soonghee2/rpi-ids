@@ -131,12 +131,12 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         // 1.1 이전 패킷과 상관관계가 있는가?
         if (check_similarity_with_previous_packet()) {
             // 1.2 시계 오차가 있는가?
-            if (check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)==false) {
+            if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
                 return normal_packet;
             } else {
                 // Masquerade 공격
-                printf("Masquerade: 0x%3x \n", dequeuedMsg->can_id);
+                printf("Masquerade: 0x%3x ", dequeuedMsg->can_id);
                 return malicious_packet;
             }
         } else {

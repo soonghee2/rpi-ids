@@ -77,16 +77,14 @@ void process_can_msg(double start_time){
           
             if(dequeuedMsg.timestamp - start_time <= 40){
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-                //printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
+                printf("Periodic: %.6f\n", can_stats[dequeuedMsg.can_id].periodic);
             } 
             //lowest_can_id(canIDSet);
             else if (filtering_process(&dequeuedMsg)){
-                printf("timestamp:%.6f\n", dequeuedMsg.timestamp);
                 printf("Malicious packet! count: %d\n", mal_count++);
-                exit(0);
             }
             else {
-                //printf("Normal packet!\n");
+                printf("Normal packet!\n");
             }
 
             stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;

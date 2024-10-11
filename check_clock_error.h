@@ -21,6 +21,7 @@ public:
 
 private:
     int m_detect_cnt;               // RLS 공분산 값
+    int m_undetect_cnt;
     double accumulatedOffset; // 누적된 클럭 오프셋
     double upperLimit;        // CUSUM 상한 제어 값
     double lowerLimit;        // CUSUM 하한 제어 값

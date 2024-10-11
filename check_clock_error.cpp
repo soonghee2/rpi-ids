@@ -59,11 +59,28 @@ bool ClockSkewDetector::detectAnomaly(double error, uint32_t can_id) {
     //     return true;
     // }
 
-    if (std::abs(last_meanError - meanError) > 1.5) { m_detect_cnt++; }
+    // uint32_t target_id=0x2B0;
+    // if (can_id==target_id){
+    //     // printf("DBG -- detect_cnt===\nError: %.6f\n, meanError: %.6f, last_meanError:%.6f, stdError: %.6f, \n upperLimit: %.6f,CUSUM_THRESHOLD: %.6f\n", 
+    //     // error, meanError, last_meanError, stdError, upperLimit, CUSUM_THRESHOLD);
+    //     if (last_meanError - meanError>=0){
+    //         printf("DeBug(%x): +%lf\n", can_id, last_meanError - meanError);
+    //     } else {
+    //         printf("DeBug(%x): %lf\n", can_id, last_meanError - meanError);
+    //     }
+    // }
+
+    // if (std::abs(last_meanError - meanError) > 0.8) { 
+    //     m_detect_cnt++; 
+    // } else{ 
+    //     m_detect_cnt=0;
+    // }
+
+    if (std::abs(last_meanError - meanError) > 1.5) { m_detect_cnt++; } else{ m_detect_cnt=0;}
 
     if (m_detect_cnt > 5) {
-        printf("m_detect_cnt===\nError: %.6f\n, meanError: %.6f, last_meanError:%.6f, stdError: %.6f, \n upperLimit: %.6f,CUSUM_THRESHOLD: %.6f\n", 
-        error, meanError, last_meanError, stdError, upperLimit, CUSUM_THRESHOLD);
+        //printf("m_detect_cnt===\nError: %.6f, meanError: %.6f, last_meanError:%.6f, stdError: %.6f, upperLimit: %.6f,CUSUM_THRESHOLD: %.6f\n", 
+        // error, meanError, last_meanError, stdError, upperLimit, CUSUM_THRESHOLD);
         m_detect_cnt = 0;  // Reset the detection count after detection
         return true;       // Return true if anomaly is detected
     }
