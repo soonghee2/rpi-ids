@@ -59,6 +59,7 @@ unsigned long long to_little_endian_int(unsigned long long number, int byte_size
 }
 
 bool check_similarity_with_previous_packet(const Json::Value& dbc, uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool is_initial_data) {
+    if(dbc.isNull()) return true;
     int total_same_percent=0;
     int total_length=0;
 
