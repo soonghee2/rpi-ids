@@ -1,21 +1,22 @@
 #include "all_attack_detection.h"
 #include "CANStats.h"
 
+uint32_t last_can_id = 0; 
+int consecutive_count = 0;
+uint32_t last_can_data[8] ={0,};
+
 bool check_periodic_range(double time_diff, double periodic){
-    if(periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2)
-        return true;
-    
-    return false;
+    return (periodic * 0.7 <= time_diff && time_diff <= periodic * 1.3);
 }
 
-bool check_clock_error(){
-	//stats.event_count=2;
-	//check = true;
-        return false;
+bool check_similarity_with_previous_packet(){
+	//no -> stats.event_count=0;
+    return true;
 }
+
 
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
-    if(stats.prev_timediff == 0.0 && current_timediff > stats.periodic * 1.2){
+    if(stats.prev_timediff == 0.0){
         stats.prev_timediff = current_timediff;
         return false;
     }
@@ -32,10 +33,7 @@ bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
 
 bool check_low_can_id(uint32_t can_id){
 	//only check lowest can id
-	if(can_id <= MIN_CAN_ID){
-		return false;
-	} 
-	return false;
+    return (can_id <= MIN_CAN_ID);
 }
 
 bool check_DoS(EnqueuedCANMsg dequeuedMsg){
@@ -79,6 +77,7 @@ bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id, uint8_t d
             memcpy(stats.event_payload, data, sizeof(stats.event_payload));
 
             if(stats.event_count <= 10 && stats.event_count >= 1) {
+		    printf("%d Count Size\n",stats.event_count);
                 return true;
             }
             else {
@@ -116,9 +115,16 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     if(!dbc.isNull() && !validation_check(dbc, dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
 	    printf("Fuzzing or Relay : NO DBC ID %03x", dequeuedMsg->can_id);
 	    return malicious_packet;
+    } else{
     }
     // 비주기 패킷일 경우
-    if (!stats.is_periodic) {
+    if (!stats.is_periodic||stats.count<=1) {
+	    if (check_low_can_id(dequeuedMsg->can_id)) {
+		    if((check_DoS(*dequeuedMsg))){
+			 printf("%03x DDoS Attack\n", dequeuedMsg->can_id);
+	    		 return malicious_packet;
+		    }
+	    }
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         // 비주기 패킷은 정상 패킷으로 처리
         return normal_packet;
@@ -140,11 +146,11 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
             } else {
                 // Masquerade 공격
 		printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
-                return malicious_packet;
+		return malicious_packet;
             }
         } else {
             // Fuzzing or Replay 공격
-	    printf("%03x Fuzzing or Replay\n", dequeuedMsg->can_id);
+	    printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
             return malicious_packet;
         }
     }
@@ -156,15 +162,15 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
             // DDoS 공격
 	    printf("%03x Dos Attack\n", dequeuedMsg->can_id);
             return malicious_packet;
-	}
+	    }
     }
 
     // 2.2 On-Event 패킷인가?
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id, dequeuedMsg->data)) {
         // 정상 패킷
-        if(dequeuedMsg->can_id==0x1f1) printf("ID: %03x\n",dequeuedMsg->can_id);
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
-	return normal_packet;
+        printf("Event ID: %03x\n",dequeuedMsg->can_id);
+        return normal_packet;
     }
 
     // 2.3 오차가 정상 주기의 2배 이상인가?
@@ -174,8 +180,26 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         return malicious_packet;
     }
 
+    if(stats.event_count >= 0 || stats.prev_timediff != 0){
+        return normal_packet;
+    }
 
+    //오탐을 낮추기위해 임시적으로 넣은 코드
+    if(dequeuedMsg->can_id == last_can_id && memcmp(last_can_data,stats.last_data,8)==0) {
+        consecutive_count++; // 같은 CAN ID가 연속으로 나올 때마다 증가
+    } else {
+        last_can_id = dequeuedMsg->can_id; // CAN ID가 바뀌면 리셋a
+	memcpy(last_can_data,stats.last_data, sizeof(stats.last_data));
+        consecutive_count = 1;
+    }
+
+    if (consecutive_count >= 7) {
+        printf("Double Fuzzing or Replay: 0x%03x, count: %d\n", dequeuedMsg->can_id, consecutive_count);
+        printf("-> canID: 0x%03x, count: %d, prev_timediff: %.6f, current_timediff: %.6f, periodic: %.6f\n", dequeuedMsg->can_id, stats.event_count, stats.prev_timediff, time_diff, stats.periodic);
+	return malicious_packet;
+    }
     // Fuzzing or Replay 공격
+    //printf("Double Fuzzing or Replay: 0x%03x \n", dequeuedMsg->can_id);
     return normal_packet;
 }
 

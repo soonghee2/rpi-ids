@@ -65,9 +65,10 @@ int receive_can_frame(int s, EnqueuedCANMsg* msg) {
 }
 
 // 큐에서 메시지를 꺼내고 처리하는 함수 
-void process_can_msg(){
+void process_can_msg(const char *log_filename){
     int mal_count = 0;
-    FILE *logfile_whole = fopen("../dataset/whole_replay.log", "w");
+    FILE *logfile_whole = fopen(log_filename, "w");
+
     while(!done){
         std::unique_lock<std::mutex> lock(queueMutex);
         queueCondVar.wait(lock, []{return !q_isEmpty(&canMsgQueue)|| done; });
@@ -83,12 +84,13 @@ void process_can_msg(){
             }
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
-	    if(dequeuedMsg.timestamp - start_time <= 40){
+	    if(dequeuedMsg.timestamp - start_time <= 10){
                 fprintf(logfile_whole, " 0\n");
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
 	    }
 	    else if (filtering_process(&dequeuedMsg)){
 		stats.event_count = -1;
+          
                 stats.prev_timediff = 0;
                 fprintf(logfile_whole, " 1\n");
                 printf("Malicious packet! count: %d\n", mal_count++);
@@ -100,7 +102,7 @@ void process_can_msg(){
             stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
-
+	    //printf("%f\n",stats.prev_timediff);
             lock.lock();
 	    fflush(logfile_whole);
         }
@@ -122,10 +124,13 @@ void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
 
 int main() {
     int s;
+    char log_filename[100];
     struct sockaddr_can addr;
     struct ifreq ifr;
     EnqueuedCANMsg can_msg;  // 수신된 CAN 메시지를 저장할 구조체
-    
+    std::cout << "Enter the name of the log file (e.g., ../dataset/whole_replay.log): ";
+    std::cin.getline(log_filename, sizeof(log_filename));
+
     std::string filename;
     std::cout<<"input dbc file name(continue except dbc file, input -1): ";
     std::getline(std::cin, filename);
@@ -159,7 +164,7 @@ int main() {
     printf("Starting Periodic Calculation 10 seconds\n");
     
     std::thread producerThread(receive_can_frame, s, &can_msg);
-    std::thread consumerThread(process_can_msg);
+    std::thread consumerThread(process_can_msg, log_filename);
     
     // Wait for the threads to finish before exiting the program
     producerThread.join();
