@@ -93,7 +93,7 @@ bool ClockSkewDetector::detectAnomaly(double error, uint32_t can_id) {
 // 전역 함수 check_clock_error 구현
 bool check_clock_error(uint32_t can_id, double timestamp) {
     // 해당 CAN ID에 대한 ClockSkewDetector가 없으면 새로 생성
-    if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) 
+    if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
         clockSkewDetectors[can_id] = ClockSkewDetector(CUSUM_THRESHOLD);
     }
     CANStats& stats = can_stats[can_id];
