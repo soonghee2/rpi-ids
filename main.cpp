@@ -23,6 +23,23 @@ struct timeval tv;
 
 Queue_t canMsgQueue; //CAN 데이터를 담을 큐
 
+uint32_t get_lowest_can_id() {
+    if (can_stats.empty()) {
+        std::cerr << "No CAN IDs found in the stats." << std::endl;
+        return 0; // can_stats가 비어있으면 0을 반환
+    }
+
+    uint32_t lowest_can_id = UINT32_MAX; // 처음에는 최대값으로 설정
+
+    for (const auto& entry : can_stats) {
+        if (entry.first < lowest_can_id) {
+            lowest_can_id = entry.first;
+        }
+    }
+
+    return lowest_can_id;
+}
+
 // 현재 타임스탬프를 초와 마이크로초 단위로 구하는 함수
 double get_timestamp() {
     struct timeval tv;
@@ -68,7 +85,7 @@ int receive_can_frame(int s, EnqueuedCANMsg* msg) {
 void process_can_msg(const char *log_filename){
     int mal_count = 0;
     FILE *logfile_whole = fopen(log_filename, "w");
-
+    bool check = true;
     while(!done){
         std::unique_lock<std::mutex> lock(queueMutex);
         queueCondVar.wait(lock, []{return !q_isEmpty(&canMsgQueue)|| done; });
@@ -84,16 +101,22 @@ void process_can_msg(const char *log_filename){
             }
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
-	    if(dequeuedMsg.timestamp - start_time <= 10){
+	    if(dequeuedMsg.timestamp - start_time <= 40){
                 fprintf(logfile_whole, " 0\n");
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+		if(check){
+		}
+	    }
+	    else if(check){
+		MIN_CAN_ID = get_lowest_can_id();
+		check = false;
 	    }
 	    else if (filtering_process(&dequeuedMsg)){
 		stats.event_count = -1;
           
                 stats.prev_timediff = 0;
                 fprintf(logfile_whole, " 1\n");
-                printf("Malicious packet! count: %d\n", mal_count++);
+		printf("Malicious packet! count: %d\n", mal_count++);
             }
             else {
 		fprintf(logfile_whole, " 0\n");
