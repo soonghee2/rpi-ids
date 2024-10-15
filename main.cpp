@@ -153,14 +153,7 @@ int main() {
     EnqueuedCANMsg can_msg;  // 수신된 CAN 메시지를 저장할 구조체
     std::cout << "Enter the name of the log file (e.g., ../dataset/whole_replay.log): ";
     std::cin.getline(log_filename, sizeof(log_filename));
-
-    std::string filename;
     std::cout<<"input dbc file name(continue except dbc file, input -1): ";
-    std::getline(std::cin, filename);
-    if(filename != "-1") {
-	    read_dbc(filename);
-    }
-
     // 소켓 생성
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Socket creation error");

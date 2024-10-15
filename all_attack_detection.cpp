@@ -112,7 +112,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     CANStats& stats = can_stats[dequeuedMsg->can_id];
 
     //유효하지 CAN ID인 경우
-    if(!dbc.isNull() && !validation_check(dbc, dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+    if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
 	    printf("Fuzzing or Relay : NO DBC ID %03x", dequeuedMsg->can_id);
 	    return malicious_packet;
     } else{
@@ -137,7 +137,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         // 1.1 이전 패킷과 상관관계가 있는가?
-        if (check_similarity_with_previous_packet(dbc, dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data)) {
+        if (check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data)) {
             // 1.2 시계 오차가 있는가?
             if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷

@@ -14,7 +14,6 @@
 
 bool check_periodic();
 bool check_periodic_range(double time_diff, double periodic);
-bool check_similarity_with_previous_packet();
 bool check_clock_error();
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats);
 bool check_low_can_id(uint32_t can_id);

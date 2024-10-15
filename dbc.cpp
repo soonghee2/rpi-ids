@@ -1,39 +1,7 @@
 #include "dbc.h"
-#include "CANStats.h"
-Json::Value dbc;
-Json::CharReaderBuilder readerBuilder;
-std::string errs;
 
-void read_dbc(const std::string& filename){
-
-    FILE *dbc_file = fopen(filename.c_str(), "r");
-    if (dbc_file == NULL) {
-        perror("Could not open the period file");
-        exit(1);
-    }
-
-    // JSON 파일을 읽어서 파싱
-    fseek(dbc_file, 0, SEEK_END);
-    long length = ftell(dbc_file);
-    fseek(dbc_file, 0, SEEK_SET);
-    char *jsonData = new char[length + 1];
-    fread(jsonData, 1, length, dbc_file);
-    jsonData[length] = '\0';
-
-    std::string jsonStr(jsonData);
-    std::istringstream jsonStream(jsonStr);
-
-    if (!Json::parseFromStream(readerBuilder, jsonStream, &dbc, &errs)) {
-        fprintf(stderr, "Error parsing JSON: %s\n", errs.c_str());
-        delete[] jsonData;
-        fclose(dbc_file);
-        return ;
-    }
-
-    delete[] jsonData;
-    fclose(dbc_file); // JSON 파일 닫기
-}
-
+//extern std::vector<CANMessage> CANMessages;
+    
 unsigned long long get_bits_from_hex_string(const std::string &hex_string, int start_bit, int bit_length) {
     unsigned long long value = 0;
     for (char c : hex_string) {
@@ -58,14 +26,12 @@ unsigned long long to_little_endian_int(unsigned long long number, int byte_size
     return result;
 }
 
-bool check_similarity_with_previous_packet(const Json::Value& dbc, uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool is_initial_data) {
-    if(dbc.isNull()) return true;
+bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool is_initial_data) {
+    
+    extern std::vector<CANMessage> CANMessages;
+
     int total_same_percent=0;
     int total_length=0;
-
-    std::stringstream can_id_string;
-    can_id_string << std::hex << can_id;
-    std::string can_id_hexStr = can_id_string.str();
 
     std::ostringstream payload_string;
     for (int i = 0; i < DLC; ++i) {
@@ -80,34 +46,34 @@ bool check_similarity_with_previous_packet(const Json::Value& dbc, uint32_t can_
     }
     // 문자열로 저장
     std::string valid_payload_hexStr = valid_payload_string.str();
-    for (const auto &message : dbc) {
-            if ("0x" + can_id_hexStr == message["CAN ID"].asString()) {
+    for (const auto& message : CANMessages) {
+            if (can_id == message.CANID) {
     if(is_initial_data){
         is_initial_data = false;
         return true;
     }else{
-        for (const auto &signal : message["Signals"]) {
-          total_length += signal["Length"].asInt();;
+        for (const auto& signal : message.Signals) {
+          total_length += signal.Length;
           unsigned long long old_value, new_value;
-          if (signal["Byte Order"].asInt() == 1) {
-              int first = signal["Start Bit"].asInt() / 8;
-              int end = ((signal["Start Bit"].asInt() + signal["Length"].asInt()) / 8);
+          if (signal.ByteOrder == 1) {
+              int first = signal.StartBit / 8;
+              int end = ((signal.StartBit + signal.Length) / 8);
               int bit_length = (end - first) * 8;
               old_value = get_bits_from_hex_string(valid_payload_hexStr, first * 8, bit_length);
               new_value = get_bits_from_hex_string(payload_hexStr, first * 8, bit_length);
               old_value = std::bitset<64>(to_little_endian_int(old_value, (end - first))).to_ullong();
               new_value = std::bitset<64>(to_little_endian_int(new_value, (end - first))).to_ullong();
-              old_value = cut_bits(old_value, ((end - first) * 8) - signal["Length"].asInt() - (signal["Start Bit"].asInt() % 8), signal["Length"].asInt());
-              new_value = cut_bits(new_value, ((end - first) * 8) - signal["Length"].asInt() - (signal["Start Bit"].asInt() % 8), signal["Length"].asInt());
+              old_value = cut_bits(old_value, ((end - first) * 8) - signal.Length - (signal.StartBit % 8), signal.Length);
+              new_value = cut_bits(new_value, ((end - first) * 8) - signal.Length - (signal.StartBit % 8), signal.Length);
           } else {
-              old_value = get_bits_from_hex_string(valid_payload_hexStr, signal["Start Bit"].asInt(), signal["Length"].asInt());
-              new_value = get_bits_from_hex_string(payload_hexStr, signal["Start Bit"].asInt(), signal["Length"].asInt());
+              old_value = get_bits_from_hex_string(valid_payload_hexStr, signal.StartBit, signal.Length);
+              new_value = get_bits_from_hex_string(payload_hexStr, signal.StartBit, signal.Length);
           }
           if (old_value == new_value) {
-              total_same_percent += signal["Length"].asInt() * 100;
+              total_same_percent += signal.Length * 100;
           } else {
               double diff = abs((double)old_value - (double)new_value) / (double)std::max(old_value, new_value) * 100;
-              total_same_percent += signal["Length"].asInt() * (100 - diff);
+              total_same_percent += signal.Length * (100 - diff);
           }
       }
 
@@ -118,16 +84,15 @@ bool check_similarity_with_previous_packet(const Json::Value& dbc, uint32_t can_
       }
     }}
 }
-  return true;
+  return false;
 }
 
-bool validation_check(const Json::Value& dbc, uint32_t can_id, uint8_t* data, int DLC) {
+bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
+
+    extern std::vector<CANMessage> CANMessages;
+
     bool is_valid_id=false;
     bool is_valid_range_data=false;
-
-    std::stringstream can_id_string;
-    can_id_string << std::hex << can_id;
-    std::string can_id_hexStr = can_id_string.str();
 
     std::ostringstream payload_string;
     for (int i = 0; i < DLC; ++i) {
@@ -136,31 +101,31 @@ bool validation_check(const Json::Value& dbc, uint32_t can_id, uint8_t* data, in
     // 문자열로 저장
     std::string payload_hexStr = payload_string.str();
 
-    for (const auto &message : dbc) {
-        if ("0x" + can_id_hexStr == message["CAN ID"].asString()){ //can_id check
+    for (const auto& message : CANMessages) {
+        if (can_id == message.CANID) { //can_id check
             is_valid_id = true;
-            for (const auto &signal : message["Signals"]) {
-                if (!signal["Skipable"].asBool()) {
-                    int start_bit = signal["Start Bit"].asInt();
-                    int length = signal["Length"].asInt();
-                    int first = start_bit / 8;
-                    int end = ((start_bit + length) / 8);
-                    unsigned long long binary_value = 0;
-                    if (signal["Byte Order"].asInt() == 1 && (end - first) > 1) {
-                        unsigned long long binary_value = get_bits_from_hex_string(payload_hexStr, first * 8, (end - first) * 8);
-                        binary_value = to_little_endian_int(binary_value, (end - first));
-                        binary_value = cut_bits(binary_value, ((end - first) * 8) - length - (start_bit % 8), length);
-                    } else {
-                        binary_value = get_bits_from_hex_string(payload_hexStr, start_bit, length);
-                    }
-                    if (signal["Low Min Value"].asDouble() <= binary_value && binary_value <= signal["Low Max Value"].asDouble()) {
-                        return true;
-                    } else {
-                        return is_valid_range_data;
-                    }
-                } else {
-			return true;
+            if (message.Skipable) {
+                for (const auto& signal : message.Signals) {
+                        int start_bit = signal.StartBit;
+                        int length = signal.Length;
+                        int first = start_bit / 8;
+                        int end = ((start_bit + length) / 8);
+                        unsigned long long binary_value = 0;
+                        if (signal.ByteOrder == 1 && (end - first) > 1) {
+                            unsigned long long binary_value = get_bits_from_hex_string(payload_hexStr, first * 8, (end - first) * 8);
+                            binary_value = to_little_endian_int(binary_value, (end - first));
+                            binary_value = cut_bits(binary_value, ((end - first) * 8) - length - (start_bit % 8), length);
+                        } else {
+                            binary_value = get_bits_from_hex_string(payload_hexStr, start_bit, length);
+                        }
+                        if (signal.LowMinValue <= binary_value && binary_value <= signal.LowMaxValue) {
+                            return true;
+                        } else {
+                            return is_valid_range_data;
+                        }
                 }
+            } else {
+	        return true;
             }
             return true;
         }
