@@ -69,6 +69,7 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
               old_value = get_bits_from_hex_string(valid_payload_hexStr, signal.StartBit, signal.Length);
               new_value = get_bits_from_hex_string(payload_hexStr, signal.StartBit, signal.Length);
           }
+
           if (old_value == new_value) {
               total_same_percent += signal.Length * 100;
           } else {
@@ -82,7 +83,8 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
       } else {
           return false;
       }
-    }}
+    }
+    }
 }
   return false;
 }
@@ -90,9 +92,6 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
 bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
 
     extern std::vector<CANMessage> CANMessages;
-
-    bool is_valid_id=false;
-    bool is_valid_range_data=false;
 
     std::ostringstream payload_string;
     for (int i = 0; i < DLC; ++i) {
@@ -103,8 +102,7 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
 
     for (const auto& message : CANMessages) {
         if (can_id == message.CANID) { //can_id check
-            is_valid_id = true;
-            if (message.Skipable) {
+            if (!message.Skipable) {
                 for (const auto& signal : message.Signals) {
                         int start_bit = signal.StartBit;
                         int length = signal.Length;
@@ -118,17 +116,18 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
                         } else {
                             binary_value = get_bits_from_hex_string(payload_hexStr, start_bit, length);
                         }
+                        
                         if (signal.LowMinValue <= binary_value && binary_value <= signal.LowMaxValue) {
-                            return true;
+
                         } else {
-                            return is_valid_range_data;
+                            return false;
                         }
                 }
+                return true;
             } else {
-	        return true;
+	            return true;
             }
-            return true;
         }
     }
-    return is_valid_id;
+    return false;
 }

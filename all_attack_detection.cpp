@@ -113,9 +113,8 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     //유효하지 CAN ID인 경우
     if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
-	    printf("Fuzzing or Relay : NO DBC ID %03x", dequeuedMsg->can_id);
+	    printf("Fuzzing or Relay : NO DBC ID %03x\n", dequeuedMsg->can_id);
 	    return malicious_packet;
-    } else{
     }
     // 비주기 패킷일 경우
     if (!stats.is_periodic||stats.count<=1) {
