@@ -102,12 +102,11 @@ void process_can_msg(const char *log_filename){
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
 	    if(dequeuedMsg.timestamp - start_time <= 40){
-                fprintf(logfile_whole, " 0\n");
+                fprintf(logfile_whole, "0\n");
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-		if(check){
-		}
 	    }
 	    else if(check){
+		fprintf(logfile_whole, "0\n");
 		MIN_CAN_ID = get_lowest_can_id();
 		check = false;
 	    }
