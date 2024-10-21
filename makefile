@@ -2,11 +2,11 @@
 CXX = g++
 
 # 컴파일러 옵션
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -g $(shell pkg-config --cflags jsoncpp) -pthread
 
 # 소스 파일 및 헤더 파일
 
-SRCS = main.cpp periodic.cpp CANStats.cpp cQueue.cpp all_attack_detection.cpp check_clock_error.cpp
+SRCS = main.cpp periodic.cpp CANStats.cpp cQueue.cpp all_attack_detection.cpp check_clock_error.cpp dbc.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
@@ -18,7 +18,7 @@ all: $(TARGET) clean_objs
 
 # 실행 파일 생성
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -pthread
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(shell pkg-config --libs jsoncpp)
 
 # 개별 소스 파일 컴파일
 %.o: %.cpp

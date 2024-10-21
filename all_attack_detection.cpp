@@ -1,6 +1,10 @@
 #include "all_attack_detection.h"
 #include "CANStats.h"
 
+uint32_t last_can_id = 0; 
+int consecutive_count = 0;
+uint32_t last_can_data[8] ={0,};
+
 bool check_periodic_range(double time_diff, double periodic){
     return (periodic * 0.7 <= time_diff && time_diff <= periodic * 1.3);
 }
@@ -10,11 +14,6 @@ bool check_similarity_with_previous_packet(){
     return true;
 }
 
-bool check_clock_error(){
-	//stats.event_count=2;
-	//check = true;
-    return true;
-}
 
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
     if(stats.prev_timediff == 0.0){
@@ -78,6 +77,7 @@ bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id, uint8_t d
             memcpy(stats.event_payload, data, sizeof(stats.event_payload));
 
             if(stats.event_count <= 10 && stats.event_count >= 1) {
+		    printf("%d Count Size\n",stats.event_count);
                 return true;
             }
             else {
@@ -98,7 +98,7 @@ bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id, uint8_t d
 
 bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_id){
 	if(timestamp - stats.last_timestamp > stats.periodic * 5) {
-		//printf("[Suspension Attack Reason] %03x packet with a cycle time of %f minute arrived %f minutes later than the previous one. >> ", can_id, stats.periodic, timestamp - stats.last_timestamp);
+		printf("[Suspension Attack Reason] %03x packet with a cycle time of %f minute arrived %f minutes later than the previous one. >> ", can_id, stats.periodic, timestamp - stats.last_timestamp);
 		return true;  
 	}	
 	return false;
@@ -111,8 +111,21 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     CANStats& stats = can_stats[dequeuedMsg->can_id];
 
+    //유효하지 CAN ID인 경우
+    if(!dbc.isNull() && !validation_check(dbc, dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+	    printf("Fuzzing or Relay : NO DBC ID %03x", dequeuedMsg->can_id);
+	    return malicious_packet;
+    } else{
+    }
     // 비주기 패킷일 경우
-    if (!stats.is_periodic) {
+    if (!stats.is_periodic||stats.count<=1) {
+	    if (check_low_can_id(dequeuedMsg->can_id)) {
+		    if((check_DoS(*dequeuedMsg))){
+			 printf("%03x DDoS Attack\n", dequeuedMsg->can_id);
+	    		 return malicious_packet;
+		    }
+	    }
+        memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         // 비주기 패킷은 정상 패킷으로 처리
         return normal_packet;
     }
@@ -124,20 +137,20 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         // 1.1 이전 패킷과 상관관계가 있는가?
-        if (check_similarity_with_previous_packet()) {
+        if (check_similarity_with_previous_packet(dbc, dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data)) {
             // 1.2 시계 오차가 있는가?
             if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
-                stats.last_normal_timestamp = dequeuedMsg->can_id;
+                memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
                 return normal_packet;
             } else {
                 // Masquerade 공격
-                printf("Masquerade: 0x%3x ", dequeuedMsg->can_id);
-                return malicious_packet;
+		printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
+		return malicious_packet;
             }
         } else {
             // Fuzzing or Replay 공격
-            printf("Fuzzing or Replay: 0x%3x ", dequeuedMsg->can_id);
+	    printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
             return malicious_packet;
         }
     }
@@ -147,7 +160,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         // 오차가 5ms 이내로 동일한 패킷이 5번 이상 들어오는가?
         if (check_DoS(*dequeuedMsg)) {
             // DDoS 공격
-            printf("DoS: 0x%3x ", dequeuedMsg->can_id);
+	    printf("%03x Dos Attack\n", dequeuedMsg->can_id);
             return malicious_packet;
 	    }
     }
@@ -155,14 +168,15 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // 2.2 On-Event 패킷인가?
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id, dequeuedMsg->data)) {
         // 정상 패킷
+        memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         printf("Event ID: %03x\n",dequeuedMsg->can_id);
         return normal_packet;
     }
 
     // 2.3 오차가 정상 주기의 2배 이상인가?
     if (check_over_double_periodic(dequeuedMsg->timestamp, stats, dequeuedMsg->can_id)) {
-	    // Suspension 공격
-        printf("Suspension: 0x%3x ", dequeuedMsg->can_id);
+	// Suspension 공격
+	printf("%03x Suspenstion\n", dequeuedMsg->can_id);
         return malicious_packet;
     }
 
@@ -170,12 +184,23 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         return normal_packet;
     }
 
-    printf("canID: 0x%03x, count: %d, prev_timediff: %.6f, current_timediff: %.6f, periodic: %.6f\n", dequeuedMsg->can_id, stats.event_count, stats.prev_timediff, time_diff, stats.periodic);
-    
+    //오탐을 낮추기위해 임시적으로 넣은 코드
+    if(dequeuedMsg->can_id == last_can_id && memcmp(last_can_data,stats.last_data,8)==0) {
+        consecutive_count++; // 같은 CAN ID가 연속으로 나올 때마다 증가
+    } else {
+        last_can_id = dequeuedMsg->can_id; // CAN ID가 바뀌면 리셋a
+	memcpy(last_can_data,stats.last_data, sizeof(stats.last_data));
+        consecutive_count = 1;
+    }
 
+    if (consecutive_count >= 7) {
+        printf("Double Fuzzing or Replay: 0x%03x, count: %d\n", dequeuedMsg->can_id, consecutive_count);
+        printf("-> canID: 0x%03x, count: %d, prev_timediff: %.6f, current_timediff: %.6f, periodic: %.6f\n", dequeuedMsg->can_id, stats.event_count, stats.prev_timediff, time_diff, stats.periodic);
+	return malicious_packet;
+    }
     // Fuzzing or Replay 공격
-    printf("Fuzzing or Replay: 0x%03x ", dequeuedMsg->can_id);
-    return malicious_packet;
+    //printf("Double Fuzzing or Replay: 0x%03x \n", dequeuedMsg->can_id);
+    return normal_packet;
 }
 
 uint8_t DoS_payload[8];    // 전역 변수 정의

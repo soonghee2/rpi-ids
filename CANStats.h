@@ -17,9 +17,12 @@ struct CANStats {
     int event_count = 0;
     double event_last_timestamp = 0;
     uint8_t event_payload[8];
-
     double last_normal_timestamp =0;
+
     int suspected_count = 0;
+
+    uint8_t valid_last_data[8] = {0};
+    bool is_initial_data = true;
 };
 
 typedef struct qCANMsg {
@@ -29,6 +32,7 @@ typedef struct qCANMsg {
     uint8_t data[8];       // CAN 데이터 (최대 8바이트)
 } EnqueuedCANMsg;
 
-extern const uint32_t MIN_CAN_ID;
+extern uint32_t MIN_CAN_ID;
 extern std::unordered_map<uint32_t, CANStats> can_stats;
 #endif
+

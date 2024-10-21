@@ -24,7 +24,7 @@ bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
 
     // 데이터가 충분한지 확인
     if (stats.count < MIN_DATA_CNT) {
-        // std::cout << "CAN ID " << can_id << ": Insufficient data (current data count: " << stats.count << ")\n";
+        //std::cout << "CAN ID " << can_id << ": Insufficient data (current data count: " << stats.count << ")\n";
         return false;
     }
 
