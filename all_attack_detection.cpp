@@ -206,4 +206,3 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 uint8_t DoS_payload[8];    // 전역 변수 정의
 int suspected_count = 0;   // 전역 변수 정의
 uint32_t DoS_can_id = 0;   // 전역 변수 정의
-
