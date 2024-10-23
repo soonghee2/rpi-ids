@@ -19,8 +19,9 @@ bool check_clock_error();
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats);
 bool check_low_can_id(uint32_t can_id);
 bool check_DoS(EnqueuedCANMsg dequeuedMsg);
-bool check_onEvent(double timestamp, CANStats& stats,uint32_t can_id);
+bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id, uint8_t data[]);
 bool check_over_double_periodic(double timestamp, CANStats& stats, uint32_t can_id);
+bool check_replay(CANStats& stats, uint8_t data[]);
 
 bool filtering_process(EnqueuedCANMsg* dequeuedMsg);
 
