@@ -1,6 +1,6 @@
 # Define the compilers and flags
 CXX = g++
-CXXFLAGS = -Wall -O2
+CXXFLAGS = -Wall -O2 -pthread
 
 # First attempt source files and object files
 SRCS = main_with_dbc.cpp periodic.cpp CANStats.cpp cQueue.cpp attack_detection_with_dbc.cpp check_clock_error.cpp dbc.cpp dbcparsed.cpp
