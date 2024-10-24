@@ -102,12 +102,11 @@ void process_can_msg(const char *log_filename){
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
 	    if(dequeuedMsg.timestamp - start_time <= 40){
-                fprintf(logfile_whole, " 0\n");
+                fprintf(logfile_whole, "0\n");
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-		if(check){
-		}
 	    }
 	    else if(check){
+		fprintf(logfile_whole, "0\n");
 		MIN_CAN_ID = get_lowest_can_id();
 		check = false;
 	    }
@@ -153,7 +152,14 @@ int main() {
     EnqueuedCANMsg can_msg;  // 수신된 CAN 메시지를 저장할 구조체
     std::cout << "Enter the name of the log file (e.g., ../dataset/whole_replay.log): ";
     std::cin.getline(log_filename, sizeof(log_filename));
-    //std::cout<<"input dbc file name(continue except dbc file, input -1): ";
+
+    std::string filename;
+    std::cout<<"input dbc file name(continue except dbc file, input -1): ";
+    std::getline(std::cin, filename);
+    if(filename != "-1") {
+	    read_dbc(filename);
+    }
+
     // 소켓 생성
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Socket creation error");
@@ -190,4 +196,3 @@ int main() {
     close(s);
     return 0;
 }
-

@@ -20,7 +20,7 @@ public:
     bool checkClockError(uint32_t can_id, double timestamp);  // 클럭 스큐 오류를 체크하는 함수
 
 private:
-    int m_detect_cnt;               // RLS 공분산 값
+    int m_detect_cnt;
     double accumulatedOffset; // 누적된 클럭 오프셋
     double upperLimit;        // CUSUM 상한 제어 값
     double lowerLimit;        // CUSUM 하한 제어 값
