@@ -1,37 +1,51 @@
-# 컴파일러 설정
+# Define the compilers and flags
 CXX = g++
+CXXFLAGS = -Wall -O2
 
-# 컴파일러 옵션
-CXXFLAGS = -Wall -g $(shell pkg-config --cflags jsoncpp) -pthread
-
-# 소스 파일 및 헤더 파일
-
-SRCS = main.cpp periodic.cpp CANStats.cpp cQueue.cpp all_attack_detection.cpp check_clock_error.cpp dbc.cpp
-
+# First attempt source files and object files
+SRCS = main_with_dbc.cpp periodic.cpp CANStats.cpp cQueue.cpp attack_detection_with_dbc.cpp check_clock_error.cpp dbc.cpp dbcparsed.cpp
 OBJS = $(SRCS:.cpp=.o)
 
-# 실행 파일 이름
+# Fallback source files and object files
+SRCS2 = main_without_dbc.cpp periodic.cpp CANStats.cpp cQueue.cpp attack_detection_without_dbc.cpp check_clock_error.cpp
+OBJS2 = $(SRCS2:.cpp=.o)
+
+# Target executable
 TARGET = ids
 
-# 기본 빌드 명령
-all: $(TARGET) clean_objs
+# Primary rule: try to compile with SRCS
+all: try_build clean_objects
 
-# 실행 파일 생성
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(shell pkg-config --libs jsoncpp)
+# First attempt: build target using the first set of source files
+try_build:
+	@if $(MAKE) $(TARGET)_primary; then \
+		echo "Primary build succeeded"; \
+	else \
+		echo "Primary build failed, trying fallback"; \
+		$(MAKE) fallback; \
+	fi
 
-# 개별 소스 파일 컴파일
+# Rule for building the main target using the first set of source files
+$(TARGET)_primary: $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+
+# Fallback rule: only triggered if the first set of sources fails to build
+fallback: clean_fallback $(OBJS2)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS2)
+
+# Clean up object files before fallback
+clean_fallback:
+	rm -f $(OBJS)
+
+# Clean up object files after a successful build
+clean_objects:
+	rm -f $(OBJS) $(OBJS2)
+
+# Rule to compile individual object files from .cpp
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# 빌드 후 오브젝트 파일 삭제
-clean_objs:
-	rm -f $(OBJS)
-
-# 전체 파일 삭제
+# Clean up the entire build (including the executable)
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(OBJS2)
 

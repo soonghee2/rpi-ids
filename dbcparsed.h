@@ -1,28 +1,28 @@
 #ifndef DBCPARSED_H
 #define DBCPARSED_H
 
+#include <unordered_map>
 #include <string>
 #include <vector>
-#include <cstdint>
 
-struct Signal {
-    std::string SignalName;
-    int StartBit;
-    int Length;
-    int ByteOrder;
-    bool isSigned;
-    double LowMinValue;
+struct CANSignal {
+    std::string name;
+    int start_bit;
+    int length;
+    int byte_order;
+    int is_signed;
+    int LowMinValue;
     double LowMaxValue;
 };
 
-// CAN Message structure to represent the entire CAN message
 struct CANMessage {
-    uint32_t CANID;
     bool Skipable;
-    std::string MessageName;
-    int DLC;
-    std::string Transmitter;
-    std::vector<Signal> Signals;
-}; 
+    std::string name;
+    int dlc;
+    std::string source;
+    std::vector<CANSignal> signals;
+};
 
-#endif
+extern std::unordered_map<int, CANMessage> message;
+
+#endif // DBC_COMPARE_H

@@ -1,17 +1,22 @@
+#include <unordered_map>
+#include <string>
+#include <vector>
 #include "dbcparsed.h"
 
-std::vector<CANMessage> CANMessages = {
-    {0x10, true, "ACU13", 8, "ACU", {
+extern std::unordered_map<int, CANMessage> message;
+
+std::unordered_map<int, CANMessage> message = {
+    {0x10, {true, "ACU13", 8, "ACU", {
         {"CF_Acu_CshAct", 0, 1, 1, 0, 0, 1}
-    }},
-    {0x30, true, "EMS18", 6, "EMS", {
+    }}},
+    {0x30, {true, "EMS18", 6, "EMS", {
         {"CF_Ems_DC1NumPerMSV", 0, 8, 1, 0, 0, 255},
         {"CF_Ems_DC2NumPerMSV", 8, 16, 1, 0, 0, 65535},
         {"CR_Ems_DutyCyc1MSV", 24, 8, 1, 0, 0, 255},
         {"CR_Ems_DutyCyc2MSV", 32, 8, 1, 0, 0, 255},
         {"CR_Ems_DutyCyc3MSV", 40, 8, 1, 0, 0, 255}
-    }},
-    {0x40, false, "DATC14", 8, "DATC", {
+    }}},
+    {0x40, {true, "DATC14", 8, "DATC", {
         {"CF_Datc_AqsLevelOut", 0, 4, 1, 0, 0, 3},
         {"CF_Datc_DiagMode", 6, 2, 1, 0, 0, 3},
         {"CR_Datc_SelfDiagCode", 8, 8, 1, 0, 1, 255},
@@ -21,8 +26,8 @@ std::vector<CANMessage> CANMessages = {
         {"DATC_SmartVentOnOffStatus", 24, 2, 1, 0, 0, 3},
         {"DATC_AutoDefogSysOff_Disp", 26, 2, 1, 0, 0, 3},
         {"DATC_ADSDisp", 28, 2, 1, 0, 0, 3}
-    }},
-    {0x42, false, "DATC12", 8, "DATC", {
+    }}},
+    {0x42, {true, "DATC12", 8, "DATC", {
         {"CR_Datc_DrTempDispC", 0, 8, 1, 0, 2, 36},
         {"CR_Datc_DrTempDispF", 8, 8, 1, 0, 2, 34},
         {"CR_Datc_PsTempDispC", 16, 8, 1, 0, 2, 36},
@@ -30,8 +35,8 @@ std::vector<CANMessage> CANMessages = {
         {"CR_Datc_RearDrTempDispC", 40, 8, 1, 0, 2, 36},
         {"CR_Datc_RearDrTempDispF", 48, 8, 1, 0, 0, 32},
         {"CF_Datc_CO2_Warning", 56, 8, 1, 0, 0, 3}
-    }},
-    {0x43, false, "DATC13", 8, "DATC", {
+    }}},
+    {0x43, {true, "DATC13", 8, "DATC", {
         {"CF_Datc_TempDispUnit", 0, 2, 1, 0, 0, 3},
         {"CF_Datc_ModDisp", 2, 4, 1, 0, 0, 15},
         {"CF_Datc_IonClean", 6, 2, 1, 0, 0, 3},
@@ -56,16 +61,16 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Datc_RearBlwDisp", 52, 4, 1, 0, 0, 15},
         {"CF_Datc_PSModDisp", 56, 4, 1, 0, 0, 15},
         {"CF_Datc_FrontBlwDisp", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x44, false, "DATC11", 8, "DATC", {
+    }}},
+    {0x44, {true, "DATC11", 8, "DATC", {
         {"CF_Datc_Type", 0, 8, 1, 0, 0, 255},
         {"CF_Datc_VerMaj", 8, 8, 1, 0, 0, 255},
         {"CF_Datc_VerMin", 16, 8, 1, 0, 0, 255},
         {"CR_Datc_OutTempC", 24, 8, 1, 0, 0, 255},
         {"CR_Datc_OutTempF", 32, 8, 1, 0, 0, 255},
         {"CF_Datc_IncarTemp", 40, 8, 1, 0, 0, 200}
-    }},
-    {0x7f, true, "CGW5", 8, "BCM", {
+    }}},
+    {0x7f, {true, "CGW5", 8, "BCM", {
         {"C_StopLampLhOpenSts", 0, 1, 1, 0, 0, 1},
         {"C_StopLampRhOpenSts", 1, 1, 1, 0, 0, 1},
         {"C_HMSLOpenSts", 2, 1, 1, 0, 0, 1},
@@ -91,8 +96,8 @@ std::vector<CANMessage> CANMessages = {
         {"C_SBendingRhOpenSts", 22, 1, 1, 0, 0, 1},
         {"C_LicensePlateLhOpenSts", 23, 1, 1, 0, 0, 1},
         {"C_LicensePlateRhOpenSts", 24, 1, 1, 0, 0, 1}
-    }},
-    {0x80, true, "EMS_DCT11", 8, "EMS", {
+    }}},
+    {0x80, {true, "EMS_DCT11", 8, "EMS", {
         {"PV_AV_CAN", 0, 8, 1, 0, 0, 255},
         {"TQ_STND", 8, 6, 1, 0, 0, 63},
         {"F_N_ENG", 14, 1, 1, 0, 0, 1},
@@ -103,16 +108,16 @@ std::vector<CANMessage> CANMessages = {
         {"TQI", 48, 8, 1, 0, 0, 255},
         {"CF_Ems_Alive", 56, 4, 1, 0, 0, 15},
         {"CF_Ems_ChkSum", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x81, true, "EMS_DCT12", 8, "EMS", {
+    }}},
+    {0x81, {true, "EMS_DCT12", 8, "EMS", {
         {"CR_Ems_SoakTimeExt", 0, 6, 1, 0, 0, 63},
         {"BRAKE_ACT", 6, 2, 1, 0, 0, 3},
         {"CF_Ems_EngOperStat", 8, 8, 1, 0, 0, 255},
         {"CR_Ems_IndAirTemp", 16, 8, 1, 0, 0, 255},
         {"CF_Ems_Alive2", 56, 4, 1, 0, 0, 15},
         {"CF_Ems_ChkSum2", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x111, false, "TCU11", 8, "TCU", {
+    }}},
+    {0x111, {true, "TCU11", 8, "TCU", {
         {"TQI_TCU_INC", 0, 8, 1, 0, 0, 255},
         {"G_SEL_DISP", 8, 4, 1, 0, 0, 15},
         {"F_TCU", 12, 2, 1, 0, 0, 3},
@@ -126,8 +131,8 @@ std::vector<CANMessage> CANMessages = {
         {"SWI_CC", 56, 2, 1, 0, 0, 3},
         {"CF_Tcu_Alive1", 58, 2, 1, 0, 0, 3},
         {"CF_Tcu_ChkSum1", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x112, false, "TCU12", 8, "TCU", {
+    }}},
+    {0x112, {true, "TCU12", 8, "TCU", {
         {"ETL_TCU", 0, 8, 1, 0, 0, 254},
         {"CUR_GR", 8, 4, 1, 0, 0, 15},
         {"CF_Tcu_Alive", 12, 2, 1, 0, 0, 3},
@@ -140,8 +145,8 @@ std::vector<CANMessage> CANMessages = {
         {"SPK_RTD_TCU", 32, 8, 1, 0, 23, 103},
         {"N_TC_RAW", 40, 16, 1, 0, 0, 65534},
         {"VS_TCU_DECIMAL", 56, 8, 1, 0, 0, 127}
-    }},
-    {0x113, false, "TCU13", 8, "TCU", {
+    }}},
+    {0x113, {true, "TCU13", 8, "TCU", {
         {"N_TGT_LUP", 0, 8, 1, 0, 0, 254},
         {"SLOPE_TCU", 8, 6, 1, 0, 0, 63},
         {"CF_Tcu_InhCda", 14, 1, 1, 0, 0, 1},
@@ -160,8 +165,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Tcu_SbwPInfo", 56, 1, 1, 0, 0, 1},
         {"CF_Tcu_Alive3", 58, 2, 1, 0, 0, 3},
         {"CF_Tcu_ChkSum3", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x130, false, "YRS11", 8, "ACU", {
+    }}},
+    {0x130, {true, "YRS11", 8, "ACU", {
         {"CR_Yrs_Yr", 0, 16, 1, 0, 0, 65534},
         {"CR_Yrs_LatAc", 16, 16, 1, 0, 0, 65534},
         {"CF_Yrs_YrStat", 32, 4, 1, 0, 0, 15},
@@ -169,8 +174,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Yrs_MCUStat", 40, 4, 1, 0, 0, 15},
         {"CR_Yrs_MsgCnt1", 48, 4, 1, 0, 0, 15},
         {"CR_Yrs_Crc1", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x140, false, "YRS12", 8, "ACU", {
+    }}},
+    {0x140, {true, "YRS12", 8, "ACU", {
         {"CF_Yrs_LongAcStat", 16, 4, 1, 0, 0, 15},
         {"CF_IMU_ResetStat", 20, 4, 1, 0, 0, 15},
         {"YRS_Temp", 24, 8, 1, 0, 0, 255},
@@ -179,8 +184,8 @@ std::vector<CANMessage> CANMessages = {
         {"CR_Yrs_MsgCnt2", 48, 4, 1, 0, 0, 15},
         {"CR_Yrs_Crc2", 56, 8, 1, 0, 0, 255},
         {"CR_Yrs_LongAc", 0, 16, 1, 0, 0, 65534}
-    }},
-    {0x153, false, "TCS11", 8, "ESC", {
+    }}},
+    {0x153, {true, "TCS11", 8, "ESC", {
         {"TCS_REQ", 0, 1, 1, 0, 0, 1},
         {"MSR_C_REQ", 1, 1, 1, 0, 0, 1},
         {"TCS_PAS", 2, 1, 1, 0, 0, 1},
@@ -210,8 +215,8 @@ std::vector<CANMessage> CANMessages = {
         {"BLA_CTL", 49, 2, 1, 0, 0, 3},
         {"AliveCounter_TCS1", 52, 4, 1, 0, 0, 14},
         {"CheckSum_TCS1", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x160, false, "AHB1", 8, "iBAU", {
+    }}},
+    {0x160, {true, "AHB1", 8, "iBAU", {
         {"CF_Ahb_SLmp", 0, 2, 1, 0, 0, 3},
         {"CF_Ahb_Def", 2, 2, 1, 0, 0, 3},
         {"CF_Ahb_Act", 4, 2, 1, 0, 0, 3},
@@ -222,27 +227,27 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Ahb_PedalCalStat", 25, 1, 1, 0, 0, 1},
         {"CF_Ahb_Bzzr", 26, 1, 1, 0, 0, 1},
         {"CF_Ahb_ChkSum", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x162, false, "TCU_DCT13", 3, "TCU", {
+    }}},
+    {0x162, {true, "TCU_DCT13", 3, "TCU", {
         {"Clutch_Driving_Tq", 0, 10, 1, 0, 512, 512},
         {"Cluster_Engine_RPM", 10, 13, 1, 0, 0, 0},
         {"Cluster_Engine_RPM_Flag", 23, 1, 1, 0, 0, 0}
-    }},
-    {0x164, true, "VSM11", 4, "ESC", {
+    }}},
+    {0x164, {true, "VSM11", 4, "ESC", {
         {"CR_Esc_StrTqReq", 0, 12, 1, 0, 0, 4095},
         {"CF_Esc_Act", 12, 1, 1, 0, 0, 1},
         {"CF_Esc_CtrMode", 13, 3, 1, 0, 0, 7},
         {"CF_Esc_Def", 16, 1, 1, 0, 0, 1},
         {"CF_Esc_AliveCnt", 17, 4, 1, 0, 0, 15},
         {"CF_Esc_Chksum", 24, 8, 1, 0, 0, 255}
-    }},
-    {0x165, true, "S_MDPS12", 8, "XXX", {
+    }}},
+    {0x165, {true, "S_MDPS12", 8, "XXX", {
         {"NEW_SIGNAL_1", 0, 12, 1, 0, 0, 4095},
         {"NEW_SIGNAL_2", 12, 12, 1, 0, 0, 4095},
         {"Counter", 48, 4, 1, 0, 0, 15},
         {"Checksum", 63, 8, 0, 0, 0, 255}
-    }},
-    {0x183, false, "REA11", 8, "REA", {
+    }}},
+    {0x183, {true, "REA11", 8, "REA", {
         {"CF_EndBst_PwmDuH", 0, 1, 1, 0, 0, 1},
         {"CF_EndBst_PwmDuL", 1, 1, 1, 0, 0, 1},
         {"CF_EndBst_PwmFqOutRng", 2, 1, 1, 0, 0, 1},
@@ -260,8 +265,8 @@ std::vector<CANMessage> CANMessages = {
         {"CR_EndBst_ActPos", 16, 16, 1, 0, 17, 1009},
         {"CR_EndBst_DemPos", 32, 16, 1, 0, 0, 1023},
         {"CR_EndBst_HbriPwr", 48, 16, 1, 0, 0, 2222}
-    }},
-    {0x18f, false, "EMS_H12", 8, "EMS", {
+    }}},
+    {0x18f, {true, "EMS_H12", 8, "EMS", {
         {"R_TqAcnApvC", 0, 8, 1, 0, 0, 255},
         {"R_PAcnC", 8, 8, 1, 0, 0, 255},
         {"TQI_B", 16, 8, 1, 0, 0, 255},
@@ -283,13 +288,13 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Ems_ActEcoAct", 60, 1, 1, 0, 0, 1},
         {"CF_Ems_EngRunNorm", 61, 1, 1, 0, 0, 1},
         {"CF_Ems_IsgStat2", 62, 2, 1, 0, 0, 2}
-    }},
-    {0x200, true, "EMS20", 6, "EMS", {
+    }}},
+    {0x200, {true, "EMS20", 6, "EMS", {
         {"FCO", 0, 16, 1, 0, 0, 65535},
         {"CF_Ems_PumpTPres", 16, 8, 1, 0, 0, 255},
         {"Split_Stat", 32, 1, 1, 0, 0, 1}
-    }},
-    {0x220, true, "ESP12", 8, "ESC", {
+    }}},
+    {0x220, {true, "ESP12", 8, "ESC", {
         {"LAT_ACCEL", 0, 11, 1, 0, 0, 2047},
         {"LAT_ACCEL_STAT", 11, 1, 1, 0, 0, 1},
         {"LAT_ACCEL_DIAG", 12, 1, 1, 0, 0, 1},
@@ -304,8 +309,8 @@ std::vector<CANMessage> CANMessages = {
         {"YAW_RATE_DIAG", 54, 1, 1, 0, 0, 1},
         {"ESP12_Checksum", 56, 4, 1, 0, 0, 15},
         {"ESP12_AliveCounter", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x251, true, "MDPS12", 8, "MDPS", {
+    }}},
+    {0x251, {true, "MDPS12", 8, "MDPS", {
         {"CR_Mdps_StrColTq", 0, 11, 1, 0, 0, 2048},
         {"CF_Mdps_Def", 11, 1, 1, 0, 0, 1},
         {"CF_Mdps_ToiUnavail", 12, 1, 1, 0, 0, 1},
@@ -317,8 +322,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Mdps_SErr", 37, 1, 1, 0, 0, 1},
         {"CR_Mdps_StrTq", 40, 12, 1, 0, 0, 4095},
         {"CR_Mdps_OutTq", 52, 12, 1, 0, 0, 4095}
-    }},
-    {0x260, true, "EMS16", 8, "EMS", {
+    }}},
+    {0x260, {true, "EMS16", 8, "EMS", {
         {"TQI_MIN", 0, 8, 1, 0, 0, 255},
         {"TQI", 8, 8, 1, 0, 0, 255},
         {"TQI_TARGET", 16, 8, 1, 0, 0, 255},
@@ -334,8 +339,8 @@ std::vector<CANMessage> CANMessages = {
         {"Checksum", 56, 4, 1, 0, 0, 15},
         {"AliveCounter", 60, 2, 1, 0, 0, 3},
         {"CF_Ems_AclAct", 62, 2, 1, 0, 0, 3}
-    }},
-    {0x271, false, "LPI11", 8, "LPI", {
+    }}},
+    {0x271, {true, "LPI11", 8, "LPI", {
         {"FUP_LPG_MMV", 0, 8, 1, 0, 0, 255},
         {"LV_FUEL_TYPE_BOX", 8, 1, 1, 0, 0, 1},
         {"LV_BFS_IN_PROGRESS", 9, 1, 1, 0, 0, 1},
@@ -349,8 +354,8 @@ std::vector<CANMessage> CANMessages = {
         {"LV_PRE_CDN_LEAK", 56, 1, 1, 0, 0, 1},
         {"LV_CONF_INJECTION_DELAY", 57, 1, 1, 0, 0, 1},
         {"LV_LPG_SW_DRIVER_REQ", 58, 1, 1, 0, 0, 1}
-    }},
-    {0x280, true, "EMS13", 8, "EMS", {
+    }}},
+    {0x280, {true, "EMS13", 8, "EMS", {
         {"LV_FUEL_TYPE_ECU", 0, 1, 1, 0, 0, 1},
         {"LV_BFS_CFIRM", 1, 1, 1, 0, 0, 1},
         {"LV_CRASH", 2, 1, 1, 0, 0, 1},
@@ -365,15 +370,15 @@ std::vector<CANMessage> CANMessages = {
         {"TIA", 48, 8, 1, 0, 0, 255},
         {"MAP m1", 56, 8, 1, 0, 0, 255},
         {"AMP m0", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x2b0, false, "SAS11", 5, "MDPS", {
+    }}},
+    {0x2b0, {true, "SAS11", 5, "MDPS", {
         {"SAS_Angle", 0, 16, 1, 1, -32768, 32767},
         {"SAS_Speed", 16, 8, 1, 0, 0, 254},
         {"SAS_Stat", 24, 8, 1, 0, 0, 255},
         {"MsgCount", 32, 4, 1, 0, 0, 15},
         {"CheckSum", 36, 4, 1, 0, 0, 15}
-    }},
-    {0x316, false, "EMS11", 8, "EMS", {
+    }}},
+    {0x316, {true, "EMS11", 8, "EMS", {
         {"SWI_IGK", 0, 1, 1, 0, 0, 1},
         {"F_N_ENG", 1, 1, 1, 0, 0, 1},
         {"ACK_TCS", 2, 1, 1, 0, 0, 1},
@@ -387,8 +392,8 @@ std::vector<CANMessage> CANMessages = {
         {"TQFR", 40, 8, 1, 0, 0, 255},
         {"VS", 48, 8, 1, 0, 0, 254},
         {"RATIO_TQI_BAS_MAX_STND", 56, 8, 1, 0, 0, 256}
-    }},
-    {0x329, false, "EMS12", 8, "EMS", {
+    }}},
+    {0x329, {true, "EMS12", 8, "EMS", {
         {"CONF_TCU m1", 0, 6, 1, 0, 0, 63},
         {"CAN_VERS m0", 0, 6, 1, 0, 0, 8},
         {"TQ_STND m3", 0, 6, 1, 0, 0, 63},
@@ -408,8 +413,8 @@ std::vector<CANMessage> CANMessages = {
         {"TPS", 40, 8, 1, 0, 0, 255},
         {"PV_AV_CAN", 48, 8, 1, 0, 0, 255},
         {"ENG_VOL", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x340, false, "LKAS11", 8, "LDWS_LKAS", {
+    }}},
+    {0x340, {true, "LKAS11", 8, "LDWS_LKAS", {
         {"CF_Lkas_LdwsActivemode", 0, 2, 1, 0, 0, 3},
         {"CF_Lkas_LdwsSysState", 2, 4, 1, 0, 0, 15},
         {"CF_Lkas_SysWarning", 6, 4, 1, 0, 0, 15},
@@ -432,32 +437,32 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Lkas_FcwOpt_USM", 56, 3, 1, 0, 0, 7},
         {"CF_Lkas_LdwsOpt_USM", 59, 3, 1, 0, 0, 7},
         {"CF_Lkas_Unknown2", 62, 2, 1, 0, 0, 1}
-    }},
-    {0x356, false, "M_356", 8, "XXX", {
+    }}},
+    {0x356, {true, "M_356", 8, "XXX", {
         {"PAINT1", 32, 1, 0, 0, 0, 1},
         {"PAINT2", 34, 2, 0, 0, 0, 1},
         {"PAINT3", 36, 2, 0, 0, 0, 3},
         {"PAINT4", 38, 1, 0, 0, 0, 1}
-    }},
-    {0x361, false, "ADAS_PRK_11", 8, "ADAS_PRK", {
+    }}},
+    {0x361, {true, "ADAS_PRK_11", 8, "ADAS_PRK", {
         {"CF_PCA_BrkReq", 24, 1, 1, 0, 0, 0},
         {"CF_PCA_DclTrgtVal", 28, 4, 1, 0, 0, 0},
         {"PCA_ALIVE_CNT", 40, 4, 1, 0, 0, 0},
         {"PCA_CHECK_SUM", 48, 8, 1, 0, 0, 0}
-    }},
-    {0x366, true, "EMS_366", 8, "EMS", {
+    }}},
+    {0x366, {true, "EMS_366", 8, "EMS", {
         {"TQI_1", 0, 8, 1, 0, 0, 255},
         {"N", 8, 16, 1, 0, 0, 65535},
         {"TQI_2", 24, 8, 1, 0, 0, 255},
         {"VS", 40, 8, 1, 0, 0, 255},
         {"SWI_IGK", 48, 1, 0, 0, 0, 1}
-    }},
-    {0x367, true, "LVR12", 8, "LVR", {
+    }}},
+    {0x367, {true, "LVR12", 8, "LVR", {
         {"CF_Lvr_CruiseSet", 0, 8, 1, 0, 0, 255},
         {"CF_Lvr_IsgState", 8, 2, 1, 0, 0, 3},
         {"CF_Lvr_Gear", 32, 4, 1, 0, 0, 15}
-    }},
-    {0x368, false, "LVR11", 8, "LVR", {
+    }}},
+    {0x368, {true, "LVR11", 8, "LVR", {
         {"CF_Lvr_GearInf", 0, 4, 1, 0, 0, 15},
         {"CF_Lvr_PRelStat", 4, 1, 1, 0, 0, 1},
         {"CF_Lvr_BkeAct", 5, 1, 1, 0, 0, 1},
@@ -470,8 +475,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Lvr_ShfErrInf", 28, 20, 1, 0, 0, 8191},
         {"CF_Lvr_AC", 48, 4, 1, 0, 0, 15},
         {"CF_Lvr_CS", 52, 4, 1, 0, 0, 15}
-    }},
-    {0x371, false, "E_EMS11", 8, "XXX", {
+    }}},
+    {0x371, {true, "E_EMS11", 8, "XXX", {
         {"Brake_Pedal_Pos", 0, 8, 1, 0, 0, 127},
         {"IG_Reactive_Stat", 8, 3, 1, 0, 0, 3},
         {"Gear_Change", 12, 1, 0, 0, 0, 31},
@@ -479,11 +484,11 @@ std::vector<CANMessage> CANMessages = {
         {"Cruise_Limit_Target", 23, 8, 1, 0, 0, 15},
         {"Accel_Pedal_Pos", 31, 8, 1, 0, 0, 254},
         {"CR_Vcu_AccPedDep_Pos", 56, 8, 1, 0, 0, 254}
-    }},
-    {0x372, false, "ELECT_GEAR", 8, "XXX", {
+    }}},
+    {0x372, {true, "ELECT_GEAR", 8, "XXX", {
         {"Elect_Gear_Shifter", 16, 4, 1, 0, 0, 7}
-    }},
-    {0x380, true, "DI_BOX13", 8, "DI_BOX", {
+    }}},
+    {0x380, {true, "DI_BOX13", 8, "DI_BOX", {
         {"CF_DiBox_HPreInjVConfStat", 0, 8, 1, 0, 0, 255},
         {"CF_DiBox_HPreInjVStat1", 8, 8, 1, 0, 0, 255},
         {"CF_DiBox_HPreInjVStat2", 16, 8, 1, 0, 0, 255},
@@ -496,8 +501,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_DiBox_IDErrSedMSV", 58, 1, 1, 0, 0, 1},
         {"CF_DiBox_IDErrFrtMSV", 59, 1, 1, 0, 0, 1},
         {"CF_DiBox_IniStatMSV", 60, 1, 1, 0, 0, 1}
-    }},
-    {0x381, false, "MDPS11", 8, "MDPS", {
+    }}},
+    {0x381, {true, "MDPS11", 8, "MDPS", {
         {"CF_Mdps_WLmp", 0, 2, 1, 0, 0, 3},
         {"CF_Mdps_Flex", 2, 3, 1, 0, 0, 3},
         {"CF_Mdps_FlexDisp", 5, 1, 1, 0, 0, 1},
@@ -512,8 +517,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Mdps_CurrMode", 59, 2, 1, 0, 0, 3},
         {"CF_Mdps_Type", 61, 2, 1, 0, 0, 2},
         {"CF_MDPS_VSM_FUNC", 56, 1, 0, 0, 0, 1}
-    }},
-    {0x383, false, "FATC11", 8, "DATC", {
+    }}},
+    {0x383, {true, "FATC11", 8, "DATC", {
         {"CR_Fatc_TqAcnOut", 0, 8, 1, 0, 0, 254},
         {"CF_Fatc_AcnRqSwi", 8, 1, 1, 0, 0, 1},
         {"CF_Fatc_AcnCltEnRq", 9, 1, 1, 0, 0, 1},
@@ -533,8 +538,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Fatc_DefSw", 45, 1, 1, 0, 0, 1},
         {"CF_Fatc_PtcRlyStat", 46, 1, 1, 0, 0, 1},
         {"CF_Fatc_ChkSum", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x384, true, "EMS17", 8, "EMS", {
+    }}},
+    {0x384, {true, "EMS17", 8, "EMS", {
         {"CF_Ems_PkpCurMSV", 0, 8, 1, 0, 0, 255},
         {"CF_Ems_HolCurMSV", 8, 8, 1, 0, 0, 255},
         {"CF_Ems_InjVBnkAct", 16, 8, 1, 0, 0, 255},
@@ -545,8 +550,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Ems_DiagReqHDEV", 38, 1, 1, 0, 0, 1},
         {"CR_Ems_DutyCycMSV", 40, 8, 1, 0, 0, 255},
         {"CR_Ems_BatVolRly", 48, 8, 1, 0, 0, 255}
-    }},
-    {0x386, true, "WHL_SPD11", 8, "ABS", {
+    }}},
+    {0x386, {true, "WHL_SPD11", 8, "ABS", {
         {"WHL_SPD_FL", 0, 14, 1, 0, 0, 16383},
         {"WHL_SPD_FR", 16, 14, 1, 0, 0, 16383},
         {"WHL_SPD_RL", 32, 14, 1, 0, 0, 16383},
@@ -555,8 +560,8 @@ std::vector<CANMessage> CANMessages = {
         {"WHL_SPD_AliveCounter_MSB", 30, 2, 1, 0, 0, 15},
         {"WHL_SPD_Checksum_LSB", 46, 2, 1, 0, 0, 15},
         {"WHL_SPD_Checksum_MSB", 62, 2, 1, 0, 0, 15}
-    }},
-    {0x387, true, "WHL_PUL11", 6, "ABS", {
+    }}},
+    {0x387, {true, "WHL_PUL11", 6, "ABS", {
         {"WHL_PUL_FL", 0, 8, 1, 0, 0, 255},
         {"WHL_PUL_FR", 8, 8, 1, 0, 0, 255},
         {"WHL_PUL_RL", 16, 8, 1, 0, 0, 255},
@@ -566,16 +571,16 @@ std::vector<CANMessage> CANMessages = {
         {"WHL_DIR_RL", 36, 2, 1, 0, 0, 3},
         {"WHL_DIR_RR", 38, 2, 1, 0, 0, 3},
         {"WHL_PUL_Chksum", 40, 8, 1, 0, 0, 255}
-    }},
-    {0x389, true, "SCC14", 8, "SCC", {
+    }}},
+    {0x389, {true, "SCC14", 8, "SCC", {
         {"ComfortBandUpper", 0, 6, 1, 0, 0, 63},
         {"ComfortBandLower", 6, 6, 1, 0, 0, 63},
         {"JerkUpperLimit", 12, 7, 1, 0, 0, 127},
         {"JerkLowerLimit", 19, 7, 1, 0, 0, 127},
         {"ACCMode", 32, 3, 1, 0, 0, 7},
         {"ObjGap", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x38a, true, "ABS11", 8, "ABS", {
+    }}},
+    {0x38a, {true, "ABS11", 8, "ABS", {
         {"ABS_DEF", 0, 1, 1, 0, 0, 1},
         {"EBD_DEF", 1, 1, 1, 0, 0, 1},
         {"ABS_ACT", 2, 1, 1, 0, 0, 1},
@@ -583,8 +588,8 @@ std::vector<CANMessage> CANMessages = {
         {"EBD_W_LAMP", 4, 1, 1, 0, 0, 1},
         {"ABS_DIAG", 5, 1, 1, 0, 0, 1},
         {"ESS_STAT", 6, 2, 1, 0, 0, 3}
-    }},
-    {0x38c, true, "RSPA11", 8, "RSPA", {
+    }}},
+    {0x38c, {true, "RSPA11", 8, "RSPA", {
         {"CF_RSPA_State", 0, 4, 1, 0, 0, 15},
         {"CF_RSPA_Act", 4, 2, 1, 0, 0, 3},
         {"CF_RSPA_DecCmd", 6, 2, 1, 0, 0, 3},
@@ -594,8 +599,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_RSPA_ACC_ACT", 50, 1, 1, 0, 0, 2},
         {"CF_RSPA_AliveCounter", 52, 4, 1, 0, 0, 15},
         {"CF_RSPA_CRC", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x38d, false, "FCA11", 8, "FCA", {
+    }}},
+    {0x38d, {true, "FCA11", 8, "FCA", {
         {"CF_VSM_Prefill", 0, 1, 1, 0, 0, 1},
         {"CF_VSM_HBACmd", 1, 2, 1, 0, 0, 3},
         {"CF_VSM_Warn", 3, 2, 1, 0, 0, 3},
@@ -612,20 +617,20 @@ std::vector<CANMessage> CANMessages = {
         {"FCA_TimetoCollision", 48, 8, 1, 0, 0, 254},
         {"CR_FCA_ChkSum", 56, 8, 1, 0, 0, 255},
         {"PAINT1_Status", 16, 2, 1, 0, 0, 1}
-    }},
-    {0x38e, false, "WHL_SPD12_FS", 5, "iBAU", {
+    }}},
+    {0x38e, {true, "WHL_SPD12_FS", 5, "iBAU", {
         {"CRC", 0, 8, 1, 0, 0, 0},
         {"WHL_SPD12_AliveCounter", 8, 4, 1, 0, 0, 15},
         {"WHL_SPD_FL", 12, 14, 1, 0, 0, 16383},
         {"WHL_SPD_FR", 26, 14, 1, 0, 0, 16383}
-    }},
-    {0x38f, false, "WHL_SPD13_FS", 5, "iBAU", {
+    }}},
+    {0x38f, {true, "WHL_SPD13_FS", 5, "iBAU", {
         {"CRC", 0, 8, 1, 0, 0, 0},
         {"WHL_SPD13_AliveCounter", 8, 4, 1, 0, 0, 15},
         {"WHL_SPD_RL", 12, 14, 1, 0, 0, 16383},
         {"WHL_SPD_RR", 26, 14, 1, 0, 0, 16383}
-    }},
-    {0x390, false, "SPAS11", 7, "SPAS", {
+    }}},
+    {0x390, {true, "SPAS11", 7, "SPAS", {
         {"CF_Spas_Stat", 0, 4, 1, 0, 0, 15},
         {"CF_Spas_TestMode", 4, 2, 1, 0, 0, 3},
         {"CR_Spas_StrAngCmd", 8, 16, 1, 1, -32768, 32767},
@@ -634,25 +639,25 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Spas_AliveCnt", 32, 8, 1, 0, 0, 255},
         {"CF_Spas_Chksum", 40, 8, 1, 0, 0, 255},
         {"CF_Spas_PasVol", 48, 3, 1, 0, 0, 7}
-    }},
-    {0x391, true, "BCM_PO_11", 8, "Vector__XXX", {
+    }}},
+    {0x391, {true, "BCM_PO_11", 8, "Vector__XXX", {
         {"BCM_Door_Dri_Status", 5, 1, 0, 0, 0, 1},
         {"BCM_Shift_R_MT_SW_Status", 39, 2, 0, 0, 0, 3},
         {"LFA_Pressed", 4, 1, 0, 0, 0, 1}
-    }},
-    {0x392, false, "S_MDPS11", 8, "XXX", {
+    }}},
+    {0x392, {true, "S_MDPS11", 8, "XXX", {
         {"CF_Mdps_Stat", 0, 4, 1, 0, 0, 15},
         {"CR_Mdps_DrvTq", 8, 12, 1, 0, 0, 15},
         {"CR_Mdps_StrAng", 24, 16, 1, 1, 0, 65535},
         {"CF_Mdps_AliveCnt", 47, 8, 0, 0, 0, 255},
         {"CF_Mdps_Chksum", 63, 8, 0, 0, 0, 255}
-    }},
-    {0x393, true, "TCS12", 4, "ESC", {
+    }}},
+    {0x393, {true, "TCS12", 4, "ESC", {
         {"SA_COUNT", 0, 16, 1, 0, 0, 65535},
         {"SA_Z_COUNT", 16, 15, 1, 0, 0, 32767},
         {"SA_Z_FLAG", 31, 1, 1, 0, 0, 1}
-    }},
-    {0x394, true, "TCS13", 8, "ESC", {
+    }}},
+    {0x394, {true, "TCS13", 8, "ESC", {
         {"aBasis", 0, 11, 1, 0, 0, 2047},
         {"BrakeLight", 11, 1, 1, 0, 0, 1},
         {"DCEnable", 12, 1, 1, 0, 0, 1},
@@ -678,17 +683,17 @@ std::vector<CANMessage> CANMessages = {
         {"CF_DriBkeStat", 60, 1, 1, 0, 0, 1},
         {"CF_VSM_ConfSwi", 61, 2, 1, 0, 0, 3},
         {"AEB_EQUIP", 63, 1, 1, 0, 0, 1}
-    }},
-    {0x3f9, true, "ECS12", 4, "ECS", {
+    }}},
+    {0x3f9, {true, "ECS12", 4, "ECS", {
         {"Height_FL", 0, 8, 1, 0, 0, 255},
         {"Height_FR", 8, 8, 1, 0, 0, 255},
         {"Height_RL", 16, 8, 1, 0, 0, 255},
         {"Height_RR", 24, 8, 1, 0, 0, 255}
-    }},
-    {0x400, true, "CLU_CFG11", 2, "CLU", {
+    }}},
+    {0x400, {true, "CLU_CFG11", 2, "CLU", {
         {"Vehicle_Type", 0, 16, 1, 0, 0, 65536}
-    }},
-    {0x410, true, "CGW_USM1", 8, "BCM", {
+    }}},
+    {0x410, {true, "CGW_USM1", 8, "BCM", {
         {"CF_Gway_ATTurnRValue", 0, 2, 1, 0, 0, 3},
         {"CF_Gway_PTGMRValue", 2, 2, 1, 0, 0, 3},
         {"CF_Gway_EscortHLRValue", 4, 2, 1, 0, 0, 3},
@@ -706,8 +711,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Gway_AutoLightRValue", 35, 3, 1, 0, 0, 7},
         {"CF_Gway_RearWiperRValue", 38, 2, 1, 0, 0, 3},
         {"CF_Gway_PasSpkrLvRValue", 40, 3, 1, 0, 0, 7}
-    }},
-    {0x412, false, "ICM_412h", 8, "ICM", {
+    }}},
+    {0x412, {true, "ICM_412h", 8, "ICM", {
         {"T_Outside_input", 0, 9, 0, 0, 0, 500},
         {"WarningSoundOutput_1Group", 5, 1, 0, 0, 0, 1},
         {"WarningSoundOutput_2Group", 6, 1, 0, 0, 0, 1},
@@ -724,8 +729,8 @@ std::vector<CANMessage> CANMessages = {
         {"PopupMessageOutput_6Level", 53, 1, 0, 0, 0, 1},
         {"PopupMessageOutput_7Level", 54, 1, 0, 0, 0, 1},
         {"PopupMessageOutput_8Level", 55, 1, 0, 0, 0, 1}
-    }},
-    {0x420, true, "SCC11", 8, "SCC", {
+    }}},
+    {0x420, {true, "SCC11", 8, "SCC", {
         {"MainMode_ACC", 0, 1, 1, 0, 0, 1},
         {"SCCInfoDisplay", 1, 3, 1, 0, 0, 7},
         {"AliveCounterACC", 4, 4, 1, 0, 0, 15},
@@ -741,8 +746,8 @@ std::vector<CANMessage> CANMessages = {
         {"ACC_ObjLatPos", 24, 9, 1, 0, 0, 511},
         {"ACC_ObjRelSpd", 44, 12, 1, 0, 0, 4095},
         {"ACC_ObjDist", 33, 11, 1, 0, 0, 2047}
-    }},
-    {0x421, true, "SCC12", 8, "SCC", {
+    }}},
+    {0x421, {true, "SCC12", 8, "SCC", {
         {"CF_VSM_Prefill", 0, 1, 1, 0, 0, 1},
         {"CF_VSM_DecCmdAct", 1, 1, 1, 0, 0, 1},
         {"CF_VSM_HBACmd", 2, 2, 1, 0, 0, 3},
@@ -764,8 +769,8 @@ std::vector<CANMessage> CANMessages = {
         {"CR_VSM_ChkSum", 60, 4, 1, 0, 0, 15},
         {"aReqValue", 37, 11, 1, 0, 0, 2047},
         {"aReqRaw", 24, 11, 1, 0, 0, 2047}
-    }},
-    {0x428, false, "_4WD11", 8, "_4WD", {
+    }}},
+    {0x428, {true, "_4WD11", 8, "_4WD", {
         {"_4WD_TYPE", 0, 2, 1, 0, 0, 3},
         {"_4WD_SUPPORT", 2, 2, 1, 0, 0, 3},
         {"_4WD_ERR", 8, 8, 1, 0, 0, 255},
@@ -778,22 +783,22 @@ std::vector<CANMessage> CANMessages = {
         {"AUTO_ACT", 43, 1, 1, 0, 0, 1},
         {"LOCK_ACT", 44, 1, 1, 0, 0, 1},
         {"_4WD_TQC_CUR", 48, 16, 1, 0, 0, 65535}
-    }},
-    {0x429, false, "_4WD12", 8, "_4WD", {
+    }}},
+    {0x429, {true, "_4WD12", 8, "_4WD", {
         {"Ster_Pos", 0, 16, 1, 0, 0, 1200},
         {"FRSS", 16, 8, 1, 0, 0, 254},
         {"FLSS", 24, 8, 1, 0, 0, 254},
         {"RRSS", 32, 8, 1, 0, 0, 254},
         {"RLSS", 40, 8, 1, 0, 0, 254},
         {"CLU_PRES", 48, 16, 1, 0, 0, 1600}
-    }},
-    {0x42a, false, "_4WD13", 6, "_4WD", {
+    }}},
+    {0x42a, {true, "_4WD13", 6, "_4WD", {
         {"_4WD_CURRENT", 0, 8, 1, 0, -128, 128},
         {"_4WD_POSITION", 8, 16, 1, 0, -11520, 11520},
         {"_4WD_CLU_THERM_STR", 24, 8, 1, 0, 0, 100},
         {"_4WD_STATUS", 32, 8, 1, 0, 0, 15}
-    }},
-    {0x436, true, "PAS11", 4, "BCM", {
+    }}},
+    {0x436, {true, "PAS11", 4, "BCM", {
         {"CF_Gway_PASDisplayFLH", 0, 3, 1, 0, 0, 7},
         {"CF_Gway_PASDisplayFRH", 3, 3, 1, 0, 0, 7},
         {"CF_Gway_PASRsound", 6, 2, 1, 0, 0, 3},
@@ -806,14 +811,14 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Gway_PASSystemOn", 24, 2, 1, 0, 0, 3},
         {"CF_Gway_PASOption", 26, 2, 1, 0, 0, 3},
         {"CF_Gway_PASDistance", 28, 1, 1, 0, 0, 1}
-    }},
-    {0x470, true, "P_STS", 8, "CGW", {
+    }}},
+    {0x470, {true, "P_STS", 8, "CGW", {
         {"HCU1_STS", 6, 2, 1, 0, 0, 3},
         {"HCU5_STS", 8, 2, 1, 0, 0, 3},
         {"Counter", 58, 4, 1, 0, 0, 15},
         {"Checksum", 62, 2, 1, 0, 0, 3}
-    }},
-    {0x47f, true, "ESP11", 6, "ESC", {
+    }}},
+    {0x47f, {true, "ESP11", 6, "ESC", {
         {"AVH_STAT", 0, 2, 1, 0, 0, 3},
         {"LDM_STAT", 2, 1, 1, 0, 0, 1},
         {"REQ_EPB_ACT", 3, 2, 1, 0, 0, 3},
@@ -825,12 +830,12 @@ std::vector<CANMessage> CANMessages = {
         {"_4WD_CLU_LIM", 32, 8, 1, 0, 0, 255},
         {"_4WD_OPEN", 40, 2, 1, 0, 0, 3},
         {"_4WD_LIM_MODE", 42, 1, 1, 0, 0, 1}
-    }},
-    {0x483, true, "FCA12", 8, "FCA", {
+    }}},
+    {0x483, {true, "FCA12", 8, "FCA", {
         {"FCA_USM", 0, 3, 1, 0, 0, 7},
         {"FCA_DrvSetState", 3, 3, 1, 0, 0, 7}
-    }},
-    {0x484, false, "HDA11_MFC", 8, "XXX", {
+    }}},
+    {0x484, {true, "HDA11_MFC", 8, "XXX", {
         {"Counter", 5, 4, 0, 0, 0, 15},
         {"NEW_SIGNAL_1", 1, 2, 0, 0, 0, 255},
         {"NEW_SIGNAL_2", 7, 2, 0, 0, 0, 3},
@@ -841,8 +846,8 @@ std::vector<CANMessage> CANMessages = {
         {"NEW_SIGNAL_7", 34, 14, 1, 0, 0, 16383},
         {"NEW_SIGNAL_8", 49, 2, 0, 0, 0, 1},
         {"NEW_SIGNAL_9", 50, 14, 1, 1, 4095, 20478}
-    }},
-    {0x485, true, "LFAHDA_MFC", 4, "XXX", {
+    }}},
+    {0x485, {true, "LFAHDA_MFC", 4, "XXX", {
         {"HDA_USM", 0, 2, 1, 0, 0, 3},
         {"HDA_Active", 2, 1, 1, 0, 0, 1},
         {"HDA_Icon_State", 3, 2, 1, 0, 0, 3},
@@ -853,15 +858,15 @@ std::vector<CANMessage> CANMessages = {
         {"LFA_Icon_State", 24, 2, 1, 0, 0, 3},
         {"LFA_USM", 27, 2, 1, 0, 0, 3},
         {"HDA_SysWarning", 29, 2, 1, 0, 0, 3}
-    }},
-    {0x48a, false, "BCA11", 8, "BCW", {
+    }}},
+    {0x48a, {true, "BCA11", 8, "BCW", {
         {"CF_BCA_State", 16, 3, 1, 0, 0, 7},
         {"CF_BCA_Warning", 19, 2, 1, 0, 0, 3},
         {"AliveCounter", 21, 4, 1, 0, 0, 15},
         {"RCCA_Brake_Command", 29, 1, 1, 0, 0, 1},
         {"Check_Sum", 56, 8, 1, 0, 0, 16}
-    }},
-    {0x490, false, "EPB11", 7, "EPB", {
+    }}},
+    {0x490, {true, "EPB11", 7, "EPB", {
         {"EPB_I_LAMP", 0, 4, 1, 0, 0, 15},
         {"EPB_F_LAMP", 4, 2, 1, 0, 0, 3},
         {"EPB_ALARM", 6, 2, 1, 0, 0, 3},
@@ -876,8 +881,8 @@ std::vector<CANMessage> CANMessages = {
         {"EPB_FAIL", 29, 3, 1, 0, 0, 7},
         {"EPB_FORCE", 32, 12, 1, 0, 0, 4000},
         {"EPB_DBF_DECEL", 48, 8, 1, 0, 0, 254}
-    }},
-    {0x492, false, "EMS19", 8, "EMS", {
+    }}},
+    {0x492, {true, "EMS19", 8, "EMS", {
         {"CF_Ems_BrkReq", 0, 1, 1, 0, 0, 1},
         {"CF_Ems_DnShftReq", 1, 4, 1, 0, 0, 14},
         {"CF_Ems_RepModChk", 5, 2, 1, 0, 0, 3},
@@ -891,17 +896,17 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Ems_OPSFail", 56, 1, 1, 0, 0, 1},
         {"CF_Ems_AliveCounterEMS9", 58, 2, 1, 0, 0, 3},
         {"CF_Ems_ChecksumEMS9", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x495, true, "YRS13", 8, "ACU", {
+    }}},
+    {0x495, {true, "YRS13", 8, "ACU", {
         {"YRS_SeralNo", 16, 48, 1, 0, 0, 281474976710655}
-    }},
-    {0x4a2, true, "FRT_RADAR11", 2, "FCA", {
+    }}},
+    {0x4a2, {true, "FRT_RADAR11", 2, "FCA", {
         {"CF_FCA_Equip_Front_Radar", 0, 3, 1, 0, 0, 7}
-    }},
-    {0x4a7, true, "MFC_4a7", 8, "XXX", {
+    }}},
+    {0x4a7, {true, "MFC_4a7", 8, "XXX", {
         {"PAINT1", 0, 1, 0, 0, 0, 1}
-    }},
-    {0x4c9, true, "XXX", 8, "XXX", {
+    }}},
+    {0x4c9, {true, "XXX", 8, "XXX", {
         {"XXX", 0, 8, 0, 0, 0, 255},
         {"XXX", 8, 8, 0, 0, 0, 255},
         {"XXX", 16, 8, 0, 0, 0, 255},
@@ -910,12 +915,12 @@ std::vector<CANMessage> CANMessages = {
         {"XXX", 40, 8, 0, 0, 0, 255},
         {"XXX", 48, 8, 0, 0, 0, 255},
         {"XXX", 56, 8, 0, 0, 0, 255}
-    }},
-    {0x4ec, true, "Sign_Detection", 8, "XXX", {
+    }}},
+    {0x4ec, {true, "Sign_Detection", 8, "XXX", {
         {"SpeedLim_Nav_Cam", 40, 8, 1, 0, 0, 255},
         {"SpeedLim_Nav_Cam2", 48, 8, 1, 0, 0, 255}
-    }},
-    {0x4f1, true, "CLU11", 4, "CLU", {
+    }}},
+    {0x4f1, {true, "CLU11", 4, "CLU", {
         {"CF_Clu_CruiseSwState", 0, 3, 1, 0, 0, 7},
         {"CF_Clu_CruiseSwMain", 3, 1, 1, 0, 0, 1},
         {"CF_Clu_SldMainSW", 4, 1, 1, 0, 0, 1},
@@ -928,8 +933,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Clu_CluInfo", 24, 1, 1, 0, 0, 1},
         {"CF_Clu_AmpInfo", 25, 1, 1, 0, 0, 1},
         {"CF_Clu_AliveCnt1", 28, 4, 1, 0, 0, 15}
-    }},
-    {0x4f4, true, "SPAS12", 8, "SPAS", {
+    }}},
+    {0x4f4, {true, "SPAS12", 8, "SPAS", {
         {"CF_Spas_HMI_Stat", 0, 8, 1, 0, 0, 255},
         {"CF_Spas_Disp", 8, 2, 1, 0, 0, 3},
         {"CF_Spas_FIL_Ind", 10, 3, 1, 0, 0, 7},
@@ -953,13 +958,13 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Spas_RLS_Alarm", 57, 2, 1, 0, 0, 3},
         {"CF_Spas_RCS_Alarm", 59, 2, 1, 0, 0, 3},
         {"CF_Spas_RRS_Alarm", 61, 2, 1, 0, 0, 3}
-    }},
-    {0x500, true, "ACU14", 1, "ACU", {
+    }}},
+    {0x500, {true, "ACU14", 1, "ACU", {
         {"CF_SWL_Ind", 0, 2, 1, 0, 0, 3},
         {"CF_TTL_Ind", 2, 2, 1, 0, 0, 3},
         {"CF_SBR_Ind", 4, 2, 1, 0, 0, 3}
-    }},
-    {0x501, true, "ECS11", 3, "ECS", {
+    }}},
+    {0x501, {true, "ECS11", 3, "ECS", {
         {"ECS_W_LAMP", 0, 1, 1, 0, 0, 1},
         {"SYS_NA", 1, 1, 1, 0, 0, 1},
         {"ECS_DEF", 2, 1, 1, 0, 0, 1},
@@ -974,8 +979,8 @@ std::vector<CANMessage> CANMessages = {
         {"REQ_Height", 14, 2, 1, 0, 0, 3},
         {"REQ_level", 16, 4, 1, 0, 0, 15},
         {"ACT_Height", 20, 4, 1, 0, 0, 15}
-    }},
-    {0x502, true, "TCU14", 4, "TCU", {
+    }}},
+    {0x502, {true, "TCU14", 4, "TCU", {
         {"CF_TCU_WarnMsg", 0, 3, 1, 0, 0, 7},
         {"CF_TCU_WarnImg", 3, 1, 1, 0, 0, 1},
         {"CF_TCU_WarnSnd", 4, 1, 1, 0, 0, 1},
@@ -983,8 +988,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Tcu_StRelStat", 12, 1, 1, 0, 0, 1},
         {"CF_Tcu_DriWarn1", 13, 3, 1, 0, 0, 7},
         {"CF_Tcu_DriWarn2", 16, 2, 1, 0, 0, 3}
-    }},
-    {0x507, false, "TCS15", 4, "ESC", {
+    }}},
+    {0x507, {true, "TCS15", 4, "ESC", {
         {"ABS_W_LAMP", 0, 1, 1, 0, 0, 1},
         {"TCS_OFF_LAMP", 1, 2, 1, 0, 0, 1},
         {"TCS_LAMP", 3, 2, 1, 0, 0, 3},
@@ -996,14 +1001,14 @@ std::vector<CANMessage> CANMessages = {
         {"EBD_W_LAMP", 26, 1, 1, 0, 0, 1},
         {"AVH_ALARM", 27, 2, 1, 0, 0, 3},
         {"AVH_LAMP", 29, 3, 1, 0, 0, 7}
-    }},
-    {0x50a, true, "SCC13", 8, "SCC", {
+    }}},
+    {0x50a, {true, "SCC13", 8, "SCC", {
         {"SCCDrvModeRValue", 0, 3, 1, 0, 0, 7},
         {"SCC_Equip", 3, 1, 1, 0, 0, 1},
         {"AebDrvSetStatus", 4, 3, 1, 0, 0, 7},
         {"Lead_Veh_Dep_Alert_USM", 13, 2, 0, 0, 0, 3}
-    }},
-    {0x50b, true, "XXX", 8, "XXX", {
+    }}},
+    {0x50b, {true, "XXX", 8, "XXX", {
         {"XXX", 0, 8, 0, 0, 0, 255},
         {"XXX", 8, 8, 0, 0, 0, 255},
         {"XXX", 16, 8, 0, 0, 0, 255},
@@ -1012,8 +1017,8 @@ std::vector<CANMessage> CANMessages = {
         {"XXX", 40, 8, 0, 0, 0, 255},
         {"XXX", 48, 8, 0, 0, 0, 255},
         {"XXX", 56, 8, 0, 0, 0, 255}
-    }},
-    {0x50c, false, "CLU13", 8, "CLU", {
+    }}},
+    {0x50c, {true, "CLU13", 8, "CLU", {
         {"CF_Clu_LowfuelWarn", 0, 2, 1, 0, 0, 3},
         {"CF_Clu_RefDetMod", 2, 1, 1, 0, 0, 1},
         {"CF_Clu_AvgFCU", 3, 2, 1, 0, 0, 3},
@@ -1031,8 +1036,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Clu_LdwsLkasSW", 56, 1, 1, 0, 0, 1},
         {"CF_Clu_AltLStatus", 59, 1, 1, 0, 0, 1},
         {"CF_Clu_AliveCnt2", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x50e, true, "XXX", 8, "XXX", {
+    }}},
+    {0x50e, {true, "XXX", 8, "XXX", {
         {"XXX", 0, 8, 0, 0, 0, 255},
         {"XXX", 8, 8, 0, 0, 0, 255},
         {"XXX", 16, 8, 0, 0, 0, 255},
@@ -1041,8 +1046,8 @@ std::vector<CANMessage> CANMessages = {
         {"XXX", 40, 8, 0, 0, 0, 255},
         {"XXX", 48, 8, 0, 0, 0, 255},
         {"XXX", 56, 8, 0, 0, 0, 255}
-    }},
-    {0x515, true, "CLU14", 8, "CLU", {
+    }}},
+    {0x515, {true, "CLU14", 8, "CLU", {
         {"CF_Clu_ADrUNValueSet", 0, 3, 1, 0, 0, 7},
         {"CF_Clu_ADrLNValueSet", 3, 3, 1, 0, 0, 7},
         {"CF_Clu_EscortHLNValueSet", 6, 2, 1, 0, 0, 3},
@@ -1069,27 +1074,27 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Clu_SccDrvModeNValueSet", 56, 3, 1, 0, 0, 7},
         {"CF_Clu_HAnBNValueSet", 59, 2, 1, 0, 0, 3},
         {"CF_Clu_HfreeTrunkTgNValueSet", 61, 3, 1, 0, 0, 7}
-    }},
-    {0x51b, true, "CLU16", 8, "CLU", {
+    }}},
+    {0x51b, {true, "CLU16", 8, "CLU", {
         {"CF_Clu_TirePressUnitNValueSet", 0, 3, 1, 0, 0, 7},
         {"CF_Clu_SlifNValueSet", 3, 2, 1, 0, 0, 3},
         {"CF_Clu_RearWiperNValueSet", 12, 2, 1, 0, 0, 3}
-    }},
-    {0x520, false, "CGW3", 8, "BCM", {
+    }}},
+    {0x520, {true, "CGW3", 8, "BCM", {
         {"CR_Photosensor_LH", 0, 8, 1, 0, 0, 256},
         {"CR_Photosensor_RH", 10, 8, 1, 0, 0, 256},
         {"CF_Hoodsw_memory", 22, 2, 1, 0, 0, 3},
         {"C_MirOutTempSns", 24, 8, 1, 0, 0, 201}
-    }},
-    {0x521, true, "GW_DDM_PE", 8, "BCM", {
+    }}},
+    {0x521, {true, "GW_DDM_PE", 8, "BCM", {
         {"C_DRVDoorStatus", 0, 2, 1, 0, 0, 3},
         {"C_ASTDoorStatus", 2, 2, 1, 0, 0, 3},
         {"C_RLDoorStatus", 4, 2, 1, 0, 0, 3},
         {"C_RRDoorStatus", 6, 2, 1, 0, 0, 3},
         {"C_TrunkStatus", 8, 2, 1, 0, 0, 3},
         {"C_OSMirrorStatus", 10, 2, 1, 0, 0, 3}
-    }},
-    {0x522, true, "GW_IPM_PE_1", 8, "BCM", {
+    }}},
+    {0x522, {true, "GW_IPM_PE_1", 8, "BCM", {
         {"C_AV_Tail", 0, 2, 1, 0, 0, 3},
         {"C_ParkingBrakeSW", 2, 2, 1, 0, 0, 3},
         {"C_RKECMD", 4, 4, 1, 0, 0, 15},
@@ -1100,8 +1105,8 @@ std::vector<CANMessage> CANMessages = {
         {"RearSW_RSELockOnOff", 28, 2, 1, 0, 0, 3},
         {"C_SMKTeleCrankingState", 32, 2, 1, 0, 0, 3},
         {"C_SMKTeleCrankingFailRes", 34, 2, 1, 0, 0, 3}
-    }},
-    {0x523, true, "GW_SWRC_PE", 8, "BCM", {
+    }}},
+    {0x523, {true, "GW_SWRC_PE", 8, "BCM", {
         {"C_ModeSW", 2, 2, 1, 0, 0, 3},
         {"C_MuteSW", 4, 2, 1, 0, 0, 3},
         {"C_SeekDnSW", 6, 2, 1, 0, 0, 3},
@@ -1114,8 +1119,8 @@ std::vector<CANMessage> CANMessages = {
         {"C_MTSSW", 20, 2, 1, 0, 0, 3},
         {"C_VolDnSW", 22, 2, 1, 0, 0, 3},
         {"C_VolUpSW", 24, 2, 1, 0, 0, 3}
-    }},
-    {0x524, true, "GW_HU_E_00", 8, "BCM", {
+    }}},
+    {0x524, {true, "GW_HU_E_00", 8, "BCM", {
         {"C_ADrLUNValueConf", 0, 2, 1, 0, 0, 3},
         {"C_TwUnNValueConf", 2, 2, 1, 0, 0, 3},
         {"C_AlarmNValueConf", 4, 2, 1, 0, 0, 3},
@@ -1124,8 +1129,8 @@ std::vector<CANMessage> CANMessages = {
         {"C_HLEscortNValueConf", 10, 2, 1, 0, 0, 3},
         {"C_WELNValueConf", 12, 2, 1, 0, 0, 3},
         {"C_TriTurnLNValueConf", 14, 2, 1, 0, 0, 3}
-    }},
-    {0x525, true, "GW_HU_E_01", 8, "BCM", {
+    }}},
+    {0x525, {true, "GW_HU_E_01", 8, "BCM", {
         {"C_ADrLRValue", 0, 3, 1, 0, 0, 7},
         {"C_ADrURValue", 4, 3, 1, 0, 0, 7},
         {"C_TwUnRValue", 8, 2, 1, 0, 0, 3},
@@ -1136,8 +1141,8 @@ std::vector<CANMessage> CANMessages = {
         {"C_HLEscortRValue", 18, 2, 1, 0, 0, 3},
         {"C_WELRValue", 20, 2, 1, 0, 0, 3},
         {"C_TriTurnLRValue", 22, 2, 1, 0, 0, 3}
-    }},
-    {0x526, true, "HU_GW_E_00", 8, "CLU", {
+    }}},
+    {0x526, {true, "HU_GW_E_00", 8, "CLU", {
         {"C_ADrLURValueReq", 0, 2, 1, 0, 0, 3},
         {"C_TwUnRValueReq", 2, 2, 1, 0, 0, 3},
         {"C_AlarmRValueReq", 4, 2, 1, 0, 0, 3},
@@ -1147,8 +1152,8 @@ std::vector<CANMessage> CANMessages = {
         {"C_TriTurnLRValueReq", 12, 2, 1, 0, 0, 3},
         {"C_SNVWarnRValueReq", 14, 2, 1, 0, 0, 3},
         {"C_LkasWarnRValueReq", 16, 2, 1, 0, 0, 3}
-    }},
-    {0x527, true, "HU_GW_E_01", 8, "CLU", {
+    }}},
+    {0x527, {true, "HU_GW_E_01", 8, "CLU", {
         {"C_ADrLNValueSet", 0, 3, 1, 0, 0, 7},
         {"C_ADrUNValueSet", 4, 3, 1, 0, 0, 7},
         {"C_TwUnNValueSet", 8, 2, 1, 0, 0, 3},
@@ -1161,8 +1166,8 @@ std::vector<CANMessage> CANMessages = {
         {"C_TriTurnLNValueSet", 22, 2, 1, 0, 0, 3},
         {"C_SNVWarnNValueSet", 24, 2, 1, 0, 0, 3},
         {"C_LkasWarnNValueSet", 26, 2, 1, 0, 0, 3}
-    }},
-    {0x52a, true, "CLU15", 8, "CLU", {
+    }}},
+    {0x52a, {true, "CLU15", 8, "CLU", {
         {"CF_Clu_VehicleSpeed", 0, 8, 1, 0, 0, 255},
         {"CF_Clu_Gear", 9, 4, 1, 0, 0, 15},
         {"CF_Clu_HudInfoSet", 13, 7, 1, 0, 0, 127},
@@ -1176,15 +1181,15 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Clu_LanguageInfo", 33, 5, 1, 0, 0, 31},
         {"CF_Clu_ClusterSound", 38, 1, 1, 1, 0, 1},
         {"CF_Clu_VehicleSpeed2", 48, 8, 1, 0, 0, 255}
-    }},
-    {0x53a, true, "TMU_GW_E_01", 8, "CLU", {
+    }}},
+    {0x53a, {true, "TMU_GW_E_01", 8, "CLU", {
         {"CF_Gway_TeleReqDrLock", 0, 2, 1, 0, 0, 3},
         {"CF_Gway_TeleReqDrUnlock", 2, 2, 1, 0, 0, 3},
         {"CF_Gway_TeleReqHazard", 4, 2, 1, 0, 0, 3},
         {"CF_Gway_TeleReqHorn", 6, 2, 1, 0, 0, 3},
         {"CF_Gway_TeleReqEngineOperate", 8, 2, 1, 0, 0, 3}
-    }},
-    {0x53e, true, "LKAS12", 6, "LDWS_LKAS", {
+    }}},
+    {0x53e, {true, "LKAS12", 6, "LDWS_LKAS", {
         {"CF_Lkas_TsrSlifOpt", 10, 2, 1, 0, 0, 3},
         {"CF_LkasTsrStatus", 12, 2, 1, 0, 0, 3},
         {"CF_Lkas_TsrSpeed_Display_Clu", 16, 8, 1, 0, 0, 255},
@@ -1192,8 +1197,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Lkas_TsrAddinfo_Display", 32, 2, 1, 0, 0, 3},
         {"CF_LkasDawStatus", 40, 3, 1, 0, 0, 7},
         {"CF_Lkas_Daw_USM", 37, 3, 1, 0, 0, 7}
-    }},
-    {0x541, true, "CGW1", 8, "BCM", {
+    }}},
+    {0x541, {true, "CGW1", 8, "BCM", {
         {"CF_Gway_IGNSw", 0, 3, 1, 0, 0, 7},
         {"CF_Gway_RKECmd", 3, 3, 1, 0, 0, 7},
         {"CF_Gway_DrvKeyLockSw", 6, 1, 1, 0, 0, 1},
@@ -1237,13 +1242,13 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Gway_Ign2", 59, 1, 1, 0, 0, 1},
         {"CF_Gway_ParkBrakeSw", 60, 2, 1, 0, 0, 3},
         {"CF_Gway_TurnSigRh", 62, 2, 1, 0, 0, 3}
-    }},
-    {0x544, true, "Navi_HU", 8, "XXX", {
+    }}},
+    {0x544, {true, "Navi_HU", 8, "XXX", {
         {"SpeedLim_Nav_Clu", 7, 8, 0, 0, 0, 255},
         {"SpeedLim_Nav_General", 29, 1, 0, 0, 0, 1},
         {"SpeedLim_Nav_Cam", 30, 1, 0, 0, 0, 1}
-    }},
-    {0x545, false, "EMS14", 8, "EMS", {
+    }}},
+    {0x545, {true, "EMS14", 8, "EMS", {
         {"IMMO_LAMP_STAT", 0, 1, 1, 0, 0, 1},
         {"L_MIL", 1, 1, 1, 0, 0, 1},
         {"IM_STAT", 2, 1, 1, 0, 0, 1},
@@ -1252,8 +1257,8 @@ std::vector<CANMessage> CANMessages = {
         {"VB", 24, 8, 1, 0, 0, 255},
         {"EMS_VS", 32, 12, 1, 0, 0, 4094},
         {"TEMP_FUEL", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x546, true, "DI_BOX12", 8, "DI_BOX", {
+    }}},
+    {0x546, {true, "DI_BOX12", 8, "DI_BOX", {
         {"CF_DiBox_FrtInjVDiagReg0", 0, 8, 1, 0, 0, 255},
         {"CF_DiBox_FrtInjVDiagReg1", 8, 8, 1, 0, 0, 255},
         {"CF_DiBox_FrtInjVDiagReg2", 16, 8, 1, 0, 0, 255},
@@ -1265,8 +1270,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_DiBox_FrtInjVChg", 57, 1, 1, 0, 0, 1},
         {"CF_DiBox_SedInjVErrSPI", 58, 1, 1, 0, 0, 1},
         {"CF_DiBox_FrtInjVErrSPI", 59, 1, 1, 0, 0, 1}
-    }},
-    {0x547, false, "EMS15", 8, "EMS", {
+    }}},
+    {0x547, {true, "EMS15", 8, "EMS", {
         {"ECGPOvrd", 0, 1, 1, 0, 0, 1},
         {"QECACC", 1, 1, 1, 0, 0, 1},
         {"ECFail", 2, 1, 1, 0, 0, 1},
@@ -1279,8 +1284,8 @@ std::vector<CANMessage> CANMessages = {
         {"INH_DC_OBD", 31, 1, 1, 0, 0, 1},
         {"CTR_IG_CYC_OBD", 32, 16, 1, 0, 0, 65535},
         {"CTR_CDN_OBD", 48, 16, 1, 0, 0, 65535}
-    }},
-    {0x549, false, "BAT11", 8, "EMS", {
+    }}},
+    {0x549, {true, "BAT11", 8, "EMS", {
         {"BAT_SNSR_I", 0, 16, 1, 0, 0, 65500},
         {"BAT_SOC", 16, 8, 1, 0, 0, 100},
         {"BAT_SNSR_V", 24, 14, 1, 0, 0, 12000},
@@ -1290,28 +1295,28 @@ std::vector<CANMessage> CANMessages = {
         {"BAT_SNSR_Invalid", 55, 1, 1, 0, 0, 1},
         {"BAT_SOF", 56, 7, 1, 0, 0, 120},
         {"BAT_SNSR_Error", 63, 1, 1, 0, 0, 1}
-    }},
-    {0x54b, true, "EV_PC6", 8, "CGW", {
+    }}},
+    {0x54b, {true, "EV_PC6", 8, "CGW", {
         {"CF_Vcu_SbwWarnMsg", 16, 3, 1, 0, 0, 7}
-    }},
-    {0x54c, false, "TCU_DCT14", 8, "TCU", {
+    }}},
+    {0x54c, {true, "TCU_DCT14", 8, "TCU", {
         {"Vehicle_Stop_Time", 0, 5, 1, 0, 0, 0},
         {"HILL_HOLD_WARNING", 5, 1, 1, 0, 0, 0}
-    }},
-    {0x550, true, "IAP11", 3, "IAP", {
+    }}},
+    {0x550, {true, "IAP11", 3, "IAP", {
         {"CF_Iap_EcoPmodSwi", 0, 1, 1, 0, 0, 1},
         {"CF_Iap_EcoPmodAct", 1, 1, 1, 0, 0, 1},
         {"CF_Iap_ReqWarn", 2, 2, 1, 0, 0, 3}
-    }},
-    {0x552, true, "SNV11", 4, "SNV", {
+    }}},
+    {0x552, {true, "SNV11", 4, "SNV", {
         {"CF_SNV_DisplayControl", 0, 2, 1, 0, 0, 3},
         {"CF_Snv_BeepWarning", 2, 2, 1, 0, 0, 3},
         {"CF_Snv_WarningMessage", 4, 3, 1, 0, 0, 7},
         {"CF_Snv_DetectionEnable", 7, 1, 1, 0, 0, 1},
         {"CF_Snv_PedestrianDetect", 8, 2, 1, 0, 0, 3},
         {"CF_Snv_IRLampControl", 10, 2, 1, 0, 0, 3}
-    }},
-    {0x553, true, "CGW2", 8, "BCM", {
+    }}},
+    {0x553, {true, "CGW2", 8, "BCM", {
         {"CF_Gway_GwayDiagState", 0, 1, 1, 0, 0, 3},
         {"CF_Gway_DDMDiagState", 1, 1, 1, 0, 0, 1},
         {"CF_Gway_SCMDiagState", 2, 1, 1, 0, 0, 1},
@@ -1353,8 +1358,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Gway_KeyoutLp", 56, 1, 1, 0, 0, 1},
         {"CF_Gway_SMKDispWarn", 57, 4, 1, 0, 0, 15},
         {"CF_Gway_WngBuz", 61, 3, 1, 0, 0, 7}
-    }},
-    {0x555, true, "FPCM11", 8, "FPCM", {
+    }}},
+    {0x555, {true, "FPCM11", 8, "FPCM", {
         {"CR_Fpcm_LPActPre", 0, 8, 1, 0, 0, 255},
         {"CF_Fpcm_LPPumpOverCur", 8, 1, 1, 0, 0, 1},
         {"CF_Fpcm_PreSnrHi", 9, 1, 1, 0, 0, 1},
@@ -1364,24 +1369,24 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Fpcm_LP_System_Error", 13, 1, 1, 0, 0, 1},
         {"CF_Fpcm_PreSnrSigErr", 14, 1, 1, 0, 0, 1},
         {"CF_Fpcm_LPCtrCirFlt", 15, 1, 1, 0, 0, 1}
-    }},
-    {0x556, true, "EngFrzFrm11", 8, "EMS", {
+    }}},
+    {0x556, {true, "EngFrzFrm11", 8, "EMS", {
         {"PID_04h", 0, 8, 1, 0, 0, 255},
         {"PID_05h", 8, 8, 1, 0, 0, 255},
         {"PID_0Ch", 16, 16, 1, 0, 0, 65535},
         {"PID_0Dh", 32, 8, 1, 0, 0, 255},
         {"PID_11h", 40, 8, 1, 0, 0, 255},
         {"PID_03h", 48, 16, 1, 0, 0, 65535}
-    }},
-    {0x557, true, "EngFrzFrm12", 8, "EMS", {
+    }}},
+    {0x557, {true, "EngFrzFrm12", 8, "EMS", {
         {"PID_06h", 0, 8, 1, 0, 0, 255},
         {"PID_07h", 8, 8, 1, 0, 0, 255},
         {"PID_08h", 16, 8, 1, 0, 0, 255},
         {"PID_09h", 24, 8, 1, 0, 0, 255},
         {"PID_0Bh", 32, 8, 1, 0, 0, 255},
         {"PID_23h", 40, 16, 1, 0, 0, 65535}
-    }},
-    {0x559, true, "CGW4", 8, "BCM", {
+    }}},
+    {0x559, {true, "CGW4", 8, "BCM", {
         {"CF_Gway_MemoryP1Cmd", 0, 1, 1, 0, 0, 1},
         {"CF_Gway_MemoryP2Cmd", 1, 1, 1, 0, 0, 1},
         {"CF_Gway_PBackP1Cmd", 2, 1, 1, 0, 0, 1},
@@ -1405,11 +1410,11 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Gway_RRSeatBeltInd", 44, 2, 1, 0, 0, 3},
         {"CF_Gway_RrWiperHighSw", 46, 1, 1, 0, 0, 1},
         {"CF_Gway_RrWiperLowSw", 47, 1, 1, 0, 0, 1}
-    }},
-    {0x55a, true, "HU_AVM_PE_00", 8, "CLU", {
+    }}},
+    {0x55a, {true, "HU_AVM_PE_00", 8, "CLU", {
         {"HU_AVM_Status", 0, 2, 1, 0, 0, 3}
-    }},
-    {0x55b, true, "AVM_HU_PE_00", 8, "AVM", {
+    }}},
+    {0x55b, {true, "AVM_HU_PE_00", 8, "AVM", {
         {"AVM_View", 0, 5, 1, 0, 0, 31},
         {"AVM_ParkingAssist_BtnSts", 5, 3, 1, 0, 0, 7},
         {"AVM_Display_Message", 8, 8, 1, 0, 0, 255},
@@ -1422,19 +1427,19 @@ std::vector<CANMessage> CANMessages = {
         {"AVM_HU_RearView_Option", 40, 4, 1, 0, 0, 15},
         {"AVM_HU_FrontView_Option", 44, 4, 1, 0, 0, 15},
         {"AVM_Version", 48, 16, 1, 0, 0, 65535}
-    }},
-    {0x562, false, "HUD11", 4, "HUD", {
+    }}},
+    {0x562, {true, "HUD11", 4, "HUD", {
         {"CF_Hud_HeightStaus", 0, 5, 1, 0, 0, 31},
         {"CF_Hud_PBackStatus", 6, 2, 1, 0, 0, 0},
         {"CF_Hud_Brightness", 8, 5, 1, 0, 0, 31}
-    }},
-    {0x563, true, "PGS_HU_PE_01", 8, "PGS", {
+    }}},
+    {0x563, {true, "PGS_HU_PE_01", 8, "PGS", {
         {"PGS_State", 0, 4, 1, 0, 0, 15},
         {"PGS_ParkGuideState", 8, 5, 1, 0, 0, 31},
         {"PGS_Option", 16, 5, 1, 0, 0, 31},
         {"PGS_Version", 32, 16, 1, 0, 0, 65535}
-    }},
-    {0x571, false, "OPI11", 5, "OPI", {
+    }}},
+    {0x571, {true, "OPI11", 5, "OPI", {
         {"CR_Opi_Spd_Rpm", 0, 8, 1, 0, 0, 175},
         {"CF_Opi_Over_Temp", 8, 1, 1, 0, 0, 1},
         {"CF_Opi_Over_Cur", 9, 1, 1, 0, 0, 1},
@@ -1444,14 +1449,14 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Opi_Motor_Dir", 15, 1, 1, 0, 0, 1},
         {"CF_Opi_Romver", 16, 8, 1, 0, 0, 255},
         {"CF_Opi_PWM_Rate", 24, 12, 1, 0, 0, 100}
-    }},
-    {0x573, true, "HU_AVM_E_01", 8, "CLU", {
+    }}},
+    {0x573, {true, "HU_AVM_E_01", 8, "CLU", {
         {"HU_PGSSelectedMenu", 0, 4, 1, 0, 0, 15},
         {"HU_PGSOption", 8, 5, 1, 0, 0, 31},
         {"HU_AVM_ParkingAssistMenu", 56, 4, 1, 0, 0, 15},
         {"HU_AVM_ParkingAssistSB", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x575, false, "HU_AVM_E_00", 8, "CLU", {
+    }}},
+    {0x575, {true, "HU_AVM_E_00", 8, "CLU", {
         {"HU_AVM_Cal_Cmd", 0, 4, 1, 0, 0, 15},
         {"HU_AVM_Cal_Method", 4, 2, 1, 0, 0, 3},
         {"HU_AVM_Save_Controlpoint", 6, 2, 1, 0, 0, 3},
@@ -1465,14 +1470,14 @@ std::vector<CANMessage> CANMessages = {
         {"HU_AVM_CrossLineMove_Cmd", 52, 4, 1, 0, 0, 15},
         {"HU_AVM_RearView_Option", 56, 4, 1, 0, 0, 15},
         {"HU_AVM_FrontView_Option", 60, 4, 1, 0, 0, 15}
-    }},
-    {0x57f, true, "HU_MON_PE_01", 8, "CLU", {
+    }}},
+    {0x57f, {true, "HU_MON_PE_01", 8, "CLU", {
         {"HU_Type", 0, 8, 1, 0, 0, 255}
-    }},
-    {0x583, true, "CUBIS11", 8, "CUBIS", {
+    }}},
+    {0x583, {true, "CUBIS11", 8, "CUBIS", {
         {"CF_Cubis_HUDisp", 0, 4, 1, 0, 0, 15}
-    }},
-    {0x584, false, "AAF11", 8, "AAF", {
+    }}},
+    {0x584, {true, "AAF11", 8, "AAF", {
         {"CF_Aaf_ActFlapStatus", 0, 2, 1, 0, 0, 3},
         {"CF_Aaf_ModeStatus", 2, 3, 1, 0, 0, 7},
         {"CF_Aaf_WrnLamp", 5, 1, 1, 0, 0, 1},
@@ -1482,11 +1487,11 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Aaf_OpenRqSysSol", 32, 8, 1, 0, 0, 255},
         {"CF_Aaf_SolFlapStatus", 40, 2, 1, 0, 0, 3},
         {"CF_Aaf_MilOnReq", 42, 1, 1, 0, 0, 1}
-    }},
-    {0x586, true, "EVP11", 3, "EVP", {
+    }}},
+    {0x586, {true, "EVP11", 3, "EVP", {
         {"CF_Evp_Stat", 0, 1, 1, 0, 0, 1}
-    }},
-    {0x587, false, "TMU11", 8, "IBOX", {
+    }}},
+    {0x587, {true, "TMU11", 8, "IBOX", {
         {"CF_Tmu_VehSld", 0, 1, 1, 0, 0, 1},
         {"CF_Tmu_VehImmo", 1, 1, 1, 0, 0, 1},
         {"CF_Tmu_ReqRepCnd", 2, 2, 1, 0, 0, 3},
@@ -1495,8 +1500,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Tmu_TempSet", 6, 16, 1, 0, 0, 20},
         {"CF_Tmu_DefrostCtr", 22, 1, 1, 0, 0, 1},
         {"CF_Tmu_AliveCnt1", 56, 4, 1, 0, 0, 15}
-    }},
-    {0x58b, true, "LCA11", 8, "LCA", {
+    }}},
+    {0x58b, {true, "LCA11", 8, "LCA", {
         {"CF_Lca_Stat", 0, 4, 1, 0, 0, 15},
         {"CF_Rcta_Stat", 4, 4, 1, 0, 0, 15},
         {"CF_Lca_IndLeft", 8, 2, 1, 0, 0, 3},
@@ -1515,16 +1520,16 @@ std::vector<CANMessage> CANMessages = {
         {"CF_RCTA_IndLeft", 56, 2, 1, 0, 0, 3},
         {"CF_RCTA_IndRight", 58, 2, 1, 0, 0, 3},
         {"CF_SndWarnForClu", 60, 1, 1, 0, 0, 1}
-    }},
-    {0x591, true, "AFLS11", 2, "AFLS", {
+    }}},
+    {0x591, {true, "AFLS11", 2, "AFLS", {
         {"AFLS_STAT", 1, 2, 1, 0, 0, 3},
         {"CF_Afls_TrfChgStat", 3, 1, 1, 0, 0, 1},
         {"CF_Afls_LedHLStat", 4, 2, 1, 0, 0, 3}
-    }},
-    {0x592, true, "LABEL11", 8, "XXX", {
+    }}},
+    {0x592, {true, "LABEL11", 8, "XXX", {
         {"CC_React", 34, 1, 1, 0, 0, 1}
-    }},
-    {0x593, false, "TPMS11", 6, "BCM", {
+    }}},
+    {0x593, {true, "TPMS11", 6, "BCM", {
         {"TPMS_W_LAMP", 0, 2, 1, 0, 0, 3},
         {"TREAD_W_LAMP", 2, 2, 1, 0, 0, 3},
         {"POS_FL_W_LAMP", 4, 1, 1, 0, 0, 1},
@@ -1537,8 +1542,8 @@ std::vector<CANMessage> CANMessages = {
         {"PRESSURE_FR", 24, 8, 1, 0, 0, 255},
         {"PRESSURE_RL", 32, 8, 1, 0, 0, 255},
         {"PRESSURE_RR", 40, 8, 1, 0, 0, 255}
-    }},
-    {0x595, true, "XXX", 8, "XXX", {
+    }}},
+    {0x595, {true, "XXX", 8, "XXX", {
         {"XXX", 0, 8, 0, 0, 0, 255},
         {"XXX", 8, 8, 0, 0, 0, 255},
         {"XXX", 16, 8, 0, 0, 0, 255},
@@ -1547,23 +1552,23 @@ std::vector<CANMessage> CANMessages = {
         {"XXX", 40, 8, 0, 0, 0, 255},
         {"XXX", 48, 8, 0, 0, 0, 255},
         {"XXX", 56, 8, 0, 0, 0, 255}
-    }},
-    {0x596, false, "EV_PC2", 8, "CGW", {
+    }}},
+    {0x596, {true, "EV_PC2", 8, "CGW", {
         {"CR_Ldc_ActVol_LS_V", 32, 8, 1, 0, 0, 0}
-    }},
-    {0x59a, false, "PSB11", 2, "PSB", {
+    }}},
+    {0x59a, {true, "PSB11", 2, "PSB", {
         {"PSB_LH_FAIL", 0, 2, 1, 0, 0, 3},
         {"PSB_LH_TGL", 2, 1, 1, 0, 0, 1},
         {"PSB_LH_ACT", 3, 4, 1, 0, 0, 4},
         {"PSB_RH_FAIL", 8, 2, 1, 0, 0, 3},
         {"PSB_RH_TGL", 10, 1, 1, 0, 0, 1},
         {"PSB_RH_ACT", 11, 4, 1, 0, 0, 4}
-    }},
-    {0x59d, true, "AHLS11", 8, "AHLS", {
+    }}},
+    {0x59d, {true, "AHLS11", 8, "AHLS", {
         {"CF_Ahls_WarnLamp", 0, 2, 1, 0, 0, 3},
         {"CF_Ahls_WarnMsg", 2, 2, 1, 0, 0, 3}
-    }},
-    {0x5a0, true, "ACU11", 8, "ACU", {
+    }}},
+    {0x5a0, {true, "ACU11", 8, "ACU", {
         {"CF_Ods_SNRcv", 1, 1, 1, 0, 0, 1},
         {"CF_Ods_IDRcv", 2, 1, 1, 0, 0, 1},
         {"CF_Ods_RZReq", 4, 1, 1, 0, 0, 1},
@@ -1578,14 +1583,14 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Acu_ExtOfSab", 36, 2, 1, 0, 0, 3},
         {"CF_Acu_Dtc", 40, 16, 1, 0, 0, 65535},
         {"CF_Acu_NumOfFlt", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x5a1, false, "ACU12", 8, "ACU", {
+    }}},
+    {0x5a1, {true, "ACU12", 8, "ACU", {
         {"CR_Acu_SN", 0, 64, 1, 0, 0, 0}
-    }},
-    {0x5b0, false, "CLU12", 4, "CLU", {
+    }}},
+    {0x5b0, {true, "CLU12", 4, "CLU", {
         {"CF_Clu_Odometer", 0, 24, 1, 0, 0, 16777214}
-    }},
-    {0x5be, true, "XXX", 8, "XXX", {
+    }}},
+    {0x5be, {true, "XXX", 8, "XXX", {
         {"XXX", 0, 8, 0, 0, 0, 255},
         {"XXX", 8, 8, 0, 0, 0, 255},
         {"XXX", 16, 8, 0, 0, 0, 255},
@@ -1594,8 +1599,8 @@ std::vector<CANMessage> CANMessages = {
         {"XXX", 40, 8, 0, 0, 0, 255},
         {"XXX", 48, 8, 0, 0, 0, 255},
         {"XXX", 56, 8, 0, 0, 0, 255}
-    }},
-    {0x5c0, true, "GW_Warning_PE", 8, "BCM", {
+    }}},
+    {0x5c0, {true, "GW_Warning_PE", 8, "BCM", {
         {"Audio_VolumeDown", 38, 2, 1, 0, 0, 3},
         {"Pas_Spkr_Flh_Alarm", 48, 2, 1, 0, 0, 3},
         {"Pas_Spkr_Fcnt_Alarm", 50, 2, 1, 0, 0, 3},
@@ -1603,8 +1608,8 @@ std::vector<CANMessage> CANMessages = {
         {"Pas_Spkr_Rlh_Alarm", 56, 2, 1, 0, 0, 3},
         {"Pas_Spkr_Rcnt_Alarm", 58, 2, 1, 0, 0, 3},
         {"Pas_Spkr_Rrh_Alarm", 60, 2, 1, 0, 0, 3}
-    }},
-    {0x5c1, true, "XXX", 8, "XXX", {
+    }}},
+    {0x5c1, {true, "XXX", 8, "XXX", {
         {"XXX", 0, 8, 0, 0, 0, 255},
         {"XXX", 8, 8, 0, 0, 0, 255},
         {"XXX", 16, 8, 0, 0, 0, 255},
@@ -1613,8 +1618,8 @@ std::vector<CANMessage> CANMessages = {
         {"XXX", 40, 8, 0, 0, 0, 255},
         {"XXX", 48, 8, 0, 0, 0, 255},
         {"XXX", 56, 8, 0, 0, 0, 255}
-    }},
-    {0x5c7, false, "EMS21", 8, "EMS", {
+    }}},
+    {0x5c7, {true, "EMS21", 8, "EMS", {
         {"SCR_LEVEL_WARN_LAMP", 0, 1, 1, 0, 0, 1},
         {"SCR_LEVEL_WARN", 1, 3, 1, 0, 0, 4},
         {"SCR_SYS_ERROR_WARN", 4, 3, 1, 0, 0, 7},
@@ -1623,21 +1628,21 @@ std::vector<CANMessage> CANMessages = {
         {"SCR_UREA_LEVEL", 16, 8, 1, 0, 0, 200},
         {"SCR_NO_REMAINING_RESTARTS", 24, 8, 1, 0, 0, 255},
         {"SCR_REMAINING_DISTANCE", 32, 16, 1, 0, 0, 25000}
-    }},
-    {0x5d2, true, "HU_DATC_E_02", 8, "CLU", {
+    }}},
+    {0x5d2, {true, "HU_DATC_E_02", 8, "CLU", {
         {"HU_DATC_RearOnOffSet", 6, 2, 1, 0, 0, 3},
         {"HU_DATC_ADSOnOffSet", 8, 2, 1, 0, 0, 3}
-    }},
-    {0x5d3, true, "HU_DATC_PE_00", 8, "CLU", {
+    }}},
+    {0x5d3, {true, "HU_DATC_PE_00", 8, "CLU", {
         {"HU_VRActivity", 0, 2, 1, 0, 0, 3},
         {"HU_PhoneActivity", 2, 2, 1, 0, 0, 3},
         {"BlowerNoiseControl", 4, 2, 1, 0, 0, 3}
-    }},
-    {0x5d4, true, "TMU_GW_PE_01", 8, "CLU", {
+    }}},
+    {0x5d4, {true, "TMU_GW_PE_01", 8, "CLU", {
         {"TMU_IVRActivity", 0, 2, 1, 0, 0, 3},
         {"TMU_PhoneActivity", 2, 2, 1, 0, 0, 3}
-    }},
-    {0x5e3, true, "XXX", 8, "XXX", {
+    }}},
+    {0x5e3, {true, "XXX", 8, "XXX", {
         {"XXX", 0, 8, 0, 0, 0, 255},
         {"XXX", 8, 8, 0, 0, 0, 255},
         {"XXX", 16, 8, 0, 0, 0, 255},
@@ -1646,8 +1651,8 @@ std::vector<CANMessage> CANMessages = {
         {"XXX", 40, 8, 0, 0, 0, 255},
         {"XXX", 48, 8, 0, 0, 0, 255},
         {"XXX", 56, 8, 0, 0, 0, 255}
-    }},
-    {0x5fa, false, "ODS11", 8, "ODS", {
+    }}},
+    {0x5fa, {true, "ODS11", 8, "ODS", {
         {"CF_Ods_PrcCmd", 1, 1, 1, 0, 0, 1},
         {"CF_Ods_BtsFail", 3, 1, 1, 0, 0, 1},
         {"CF_Ods_AcuRcvSN", 4, 1, 1, 0, 0, 1},
@@ -1658,8 +1663,8 @@ std::vector<CANMessage> CANMessages = {
         {"CF_Ods_OccStat", 16, 1, 1, 0, 0, 1},
         {"CR_Wcs_ErrStat", 32, 8, 1, 0, 0, 63},
         {"CR_Wcs_ClassStat", 40, 8, 1, 0, 0, 4}
-    }},
-    {0x5fb, true, "ODS12", 8, "ODS", {
+    }}},
+    {0x5fb, {true, "ODS12", 8, "ODS", {
         {"CR_Ods_SerNum0", 0, 8, 1, 0, 0, 255},
         {"CR_Ods_SerNum1", 8, 8, 1, 0, 0, 255},
         {"CR_Ods_SerNum2", 16, 8, 1, 0, 0, 255},
@@ -1668,19 +1673,20 @@ std::vector<CANMessage> CANMessages = {
         {"CR_Ods_SerNum5", 40, 8, 1, 0, 0, 255},
         {"CR_Ods_SerNum6", 48, 8, 1, 0, 0, 255},
         {"CR_Ods_SerNum7", 56, 8, 1, 0, 0, 255}
-    }},
-    {0x5fc, true, "ODS13", 5, "ODS", {
+    }}},
+    {0x5fc, {true, "ODS13", 5, "ODS", {
         {"CR_Ods_ID", 0, 8, 1, 0, 0, 255},
         {"CR_Ods_Chksum_H", 8, 8, 1, 0, 0, 255},
         {"CR_Ods_Chksum_L", 16, 8, 1, 0, 0, 255},
         {"CR_Ods_RomID_H", 24, 8, 1, 0, 0, 255},
         {"CR_Ods_RomID_L", 32, 8, 1, 0, 0, 255}
-    }},
-    {0x5ff, false, "EV_PC10", 8, "CGW", {
+    }}},
+    {0x5ff, {true, "EV_PC10", 8, "CGW", {
         {"CF_Vcu_EpbRequest", 37, 1, 1, 0, 0, 0}
-    }},
-    {0x7c0, true, "CAL_SAS11", 2, "ESC", {
+    }}},
+    {0x7c0, {true, "CAL_SAS11", 2, "ESC", {
         {"CCW", 0, 4, 1, 0, 0, 15},
         {"SAS_CID", 4, 11, 1, 0, 0, 2047}
-    }}
+    }}}
 };
+
