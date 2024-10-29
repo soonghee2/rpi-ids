@@ -4,17 +4,9 @@
 uint32_t last_can_id = 0; 
 int consecutive_count = 0;
 uint32_t last_can_data[8] ={0,};
-bool dbc_available = false;
-
 bool check_periodic_range(double time_diff, double periodic){
     return (periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2);
 }
-
-bool check_similarity_with_previous_packet(){
-	//no -> stats.event_count=0;
-    return true;
-}
-
 
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
     if(stats.prev_timediff == 0.0){
@@ -131,8 +123,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // printf("time_diff: %.6f\n", time_diff);
 
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
-        // 1.1 이전 패킷과 상관관계가 있는가?
-        if(dbc_available == true){
             // 1.2 시계 오차가 있는가?
             if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
@@ -143,18 +133,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 		printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
 		return malicious_packet;
             }
-        }else{
-            // 1.2 시계 오차가 있는가?
-            if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
-                // 정상 패킷
-                memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
-                return normal_packet;
-            } else {
-                // Masquerade 공격
-		printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
-		return malicious_packet;
-            }
-        }
     }
 
     // 2.1 최하위 CAN ID인가?
@@ -183,8 +161,10 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
 
     if(stats.event_count >= 0 || stats.prev_timediff != 0){
+        memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         return normal_packet;
     }
+    memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
     return normal_packet;
 }
 

@@ -486,7 +486,7 @@ std::unordered_map<int, CANMessage> message = {
         {"CR_Vcu_AccPedDep_Pos", 56, 8, 1, 0, 0, 254}
     }}},
     {0x372, {true, "ELECT_GEAR", 8, "XXX", {
-        {"Elect_Gear_Shifter", 16, 4, 1, 0, 0, 7}
+        {"Elect_Gear_Shifter", 16, 4, 1, 0, 0, 15}
     }}},
     {0x380, {true, "DI_BOX13", 8, "DI_BOX", {
         {"CF_DiBox_HPreInjVConfStat", 0, 8, 1, 0, 0, 255},
@@ -561,7 +561,7 @@ std::unordered_map<int, CANMessage> message = {
         {"WHL_SPD_Checksum_LSB", 46, 2, 1, 0, 0, 15},
         {"WHL_SPD_Checksum_MSB", 62, 2, 1, 0, 0, 15}
     }}},
-    {0x387, {true, "WHL_PUL11", 6, "ABS", {
+    {0x387, {true, "WHL_PUL11", 8, "ABS", {
         {"WHL_PUL_FL", 0, 8, 1, 0, 0, 255},
         {"WHL_PUL_FR", 8, 8, 1, 0, 0, 255},
         {"WHL_PUL_RL", 16, 8, 1, 0, 0, 255},
@@ -903,7 +903,7 @@ std::unordered_map<int, CANMessage> message = {
     {0x4a2, {true, "FRT_RADAR11", 2, "FCA", {
         {"CF_FCA_Equip_Front_Radar", 0, 3, 1, 0, 0, 7}
     }}},
-    {0x4a7, {true, "MFC_4a7", 8, "XXX", {
+    {0x4a7, {true, "MFC_4a7", 2, "XXX", {
         {"PAINT1", 0, 1, 0, 0, 0, 1}
     }}},
     {0x4c9, {true, "XXX", 8, "XXX", {
