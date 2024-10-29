@@ -106,7 +106,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool normal_packet = false;
     
     CANStats& stats = can_stats[dequeuedMsg->can_id];
-    if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+    if(dbc_check && !validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
 	    printf("Fuzzing or Relay : Not match with DBC %03x\n", dequeuedMsg->can_id);
 	    return malicious_packet;
     }

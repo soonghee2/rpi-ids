@@ -1,6 +1,8 @@
 #ifndef DBCPARSED_H
 #define DBCPARSED_H
 
+#define SET_DBC_CHECK
+
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -24,5 +26,6 @@ struct CANMessage {
 };
 
 extern std::unordered_map<int, CANMessage> message;
+
 
 #endif // DBC_COMPARE_H

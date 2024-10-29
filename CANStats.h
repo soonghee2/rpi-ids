@@ -33,6 +33,7 @@ typedef struct qCANMsg {
 } EnqueuedCANMsg;
 
 extern uint32_t MIN_CAN_ID;
+extern bool dbc_check;
 extern std::unordered_map<uint32_t, CANStats> can_stats;
 #endif
 
