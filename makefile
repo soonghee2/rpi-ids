@@ -27,7 +27,7 @@ try_build:
 
 # Rule for building the main target using the first set of source files
 $(TARGET)_primary: $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -lpthread
 
 # Fallback rule: only triggered if the first set of sources fails to build
 fallback: clean_fallback $(OBJS2)
