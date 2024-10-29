@@ -15,7 +15,6 @@ bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
     }
 
     if(check_periodic_range((current_timediff + stats.prev_timediff) / 2, stats.periodic)){
-        // printf("current_timediff: %.6f prev_timediff: %.6f periodic: %.6f\n", current_timediff, stats.prev_timediff, stats.periodic);
         stats.prev_timediff = 0;
         return true;
     }
@@ -120,8 +119,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // 주기 패킷일 경우
     // 1. 정상 주기 범위 내에 있는가? 또는 i-1 패킷과의 평균값이 정상 주기 범위 내에 있는가?
     double time_diff = dequeuedMsg->timestamp - stats.last_timestamp;
-    // printf("time_diff: %.6f\n", time_diff);
-
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
             // 1.2 시계 오차가 있는가?
             if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
@@ -171,4 +168,3 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 uint8_t DoS_payload[8];    // 전역 변수 정의
 int suspected_count = 0;   // 전역 변수 정의
 uint32_t DoS_can_id = 0;   // 전역 변수 정의
-

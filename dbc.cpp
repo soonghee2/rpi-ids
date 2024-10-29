@@ -53,10 +53,8 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
           if (old_value == new_value) {
               total_same_percent += signal.length * 100;
           }else{
-              //double diff = (fabs((double)old_value - (double)new_value) / std::max((double)old_value, (double)new_value)) * 100;
               double diff = (fabs((double)old_value - (double)new_value) / (std::pow(2,total_length)-1) * 100);
               total_same_percent += signal.length * (100 - diff);
-              //printf("%ld %ld %.1f\n", old_value, new_value, 100.0 - diff);
           }
       }
       if ((total_same_percent / total_length) >= percent) { //수용치

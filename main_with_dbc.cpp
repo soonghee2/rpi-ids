@@ -22,8 +22,6 @@ std::condition_variable queueCondVar;
 bool done = false;
 double start_time=0;
 struct timeval tv;
-//std::vector<std::pair<int, int>> pairs;
-//std::vector<std::pair<int, int>> id_payload;
 int under_attack = 0;
 int sum=0;
 
@@ -120,48 +118,16 @@ void process_can_msg(const char *log_filename){
 	    }
 	    else if (filtering_process(&dequeuedMsg)){
 		stats.event_count = -1;
-		/*
-		bool found = false;
-                for (auto& pair : pairs) {
-                    if (static_cast<uint32_t>(pair.first) == dequeuedMsg.can_id) { // attack on
-                        pair.second += 1;
-                        break;
-                    }
-                }
-                if (!found) { // 일치하는 값이 없으면 새로 추가
-                    pairs.emplace_back(dequeuedMsg.can_id, 1);
-                }
-                */
-                stats.prev_timediff = 0;
-                fprintf(logfile_whole, " 1\n");
+        stats.prev_timediff = 0;
+        fprintf(logfile_whole, " 1\n");
                 
 		printf("Malicious packet! count: %d\n", mal_count++);
-            }
-            else {
-            /*
-                for (auto& pair : pairs) {
-                    if (static_cast<uint32_t>(pair.first) == dequeuedMsg.can_id) { // attack ended
-                        pair.second = 0; // 두 번째 값 0
-                        break;
-                    }
-                }
-                */
+            }else{
 		fprintf(logfile_whole, " 0\n");
             }
-            /*
-            for (auto& pair : pairs) {
-                sum += pair.second;
-            }
-            if (sum>5){
-                under_attack=1;
-            }else{
-                under_attack=0;
-            }
-            */
             stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
-	    //printf("%f\n",stats.prev_timediff);
             lock.lock();
 	    fflush(logfile_whole);
         }
@@ -189,7 +155,6 @@ int main() {
     EnqueuedCANMsg can_msg;  // 수신된 CAN 메시지를 저장할 구조체
     std::cout << "Enter the name of the log file (e.g., ../dataset/whole_replay.log): ";
     std::cin.getline(log_filename, sizeof(log_filename));
-    //std::cout<<"input dbc file name(continue except dbc file, input -1): ";
 
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Socket creation error");

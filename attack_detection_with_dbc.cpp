@@ -106,12 +106,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool normal_packet = false;
     
     CANStats& stats = can_stats[dequeuedMsg->can_id];
-    /*
-    if(under_attack == 1){
-    
-    }
-    */
-    //유효하지 CAN ID인 경우
     if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
 	    printf("Fuzzing or Relay : Not match with DBC %03x\n", dequeuedMsg->can_id);
 	    return malicious_packet;
@@ -140,7 +134,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // printf("time_diff: %.6f\n", time_diff);
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         // 1.1 이전 패킷과 상관관계가 있는가?
-            //printf("period\n");
             // 1.2 시계 오차가 있는가?
             if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
                 // 정상 패킷
@@ -190,4 +183,3 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 uint8_t DoS_payload[8];    // 전역 변수 정의
 int suspected_count = 0;   // 전역 변수 정의
 uint32_t DoS_can_id = 0;   // 전역 변수 정의
-
