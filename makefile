@@ -1,51 +1,35 @@
-# Define the compilers and flags
 CXX = g++
-CXXFLAGS = -Wall -O2 -lpthread
+CXXFLAGS = -Wall -O2 -pthread
 
-# First attempt source files and object files
-SRCS = main_with_dbc.cpp periodic.cpp CANStats.cpp cQueue.cpp attack_detection_with_dbc.cpp check_clock_error.cpp dbc.cpp dbcparsed.cpp
+# dbc_parser.cpp와 dbc_based_ruleset.cpp 파일이 모두 존재할 때만 포함
+ifneq ($(wildcard dbcparsed_dbc.cpp dbc_based_ruleset.cpp),)
+	CXXFLAGS += -DSET_DBC_CHECK
+    SRCS = dbcparsed_dbc.cpp dbc_based_ruleset.cpp
+endif
+
+# 기본 소스 파일과 오브젝트 파일
+SRCS += main.cpp cQueue.cpp periodic.cpp CANStats.cpp all_attack_detection.cpp check_clock_error.cpp
+
 OBJS = $(SRCS:.cpp=.o)
 
-# Fallback source files and object files
-SRCS2 = main_without_dbc.cpp periodic.cpp CANStats.cpp cQueue.cpp attack_detection_without_dbc.cpp check_clock_error.cpp
-OBJS2 = $(SRCS2:.cpp=.o)
-
-# Target executable
+# 실행 파일 이름
 TARGET = ids
 
-# Primary rule: try to compile with SRCS
-all: try_build clean_objects
+# 주 규칙
+all: $(TARGET)_primary clean_objects
 
-# First attempt: build target using the first set of source files
-try_build:
-	@if $(MAKE) $(TARGET)_primary; then \
-		echo "Primary build succeeded"; \
-	else \
-		echo "Primary build failed, trying fallback"; \
-		$(MAKE) fallback; \
-	fi
-
-# Rule for building the main target using the first set of source files
+# 메인 타겟 빌드 규칙
 $(TARGET)_primary: $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -lpthread
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
 
-# Fallback rule: only triggered if the first set of sources fails to build
-fallback: clean_fallback $(OBJS2)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS2)
-
-# Clean up object files before fallback
-clean_fallback:
+# 성공적인 빌드 후 오브젝트 파일 정리
+clean_objects:
 	rm -f $(OBJS)
 
-# Clean up object files after a successful build
-clean_objects:
-	rm -f $(OBJS) $(OBJS2)
-
-# Rule to compile individual object files from .cpp
+# .cpp 파일에서 개별 오브젝트 파일을 컴파일하는 규칙
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Clean up the entire build (including the executable)
+# 전체 빌드 정리 (실행 파일 포함)
 clean:
-	rm -f $(OBJS) $(OBJS2)
-
+	rm -f $(OBJS) $(TARGET)

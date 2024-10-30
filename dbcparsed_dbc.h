@@ -1,7 +1,7 @@
 #ifndef DBCPARSED_H
 #define DBCPARSED_H
 
-#define SET_DBC_CHECK
+
 
 #include <unordered_map>
 #include <string>

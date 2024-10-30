@@ -1,4 +1,4 @@
-#include "dbc.h"
+#include "dbc_based_ruleset.h"
 
 uint64_t extractBits(uint64_t data, int start, int length) {
     int adjustedStart = 64 - start - length;
@@ -17,7 +17,7 @@ uint64_t toLittleEndian(uint64_t data, int byteSize) {
 }
 
 bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool& is_initial_data, int percent) {   
-    extern std::unordered_map<int, CANMessage> message;
+    
     double total_same_percent=0;
     int total_length=0;
 
@@ -67,8 +67,6 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
 }
 
 bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
-
-    extern std::unordered_map<int, CANMessage> message;
 
     uint64_t payload_combined = 0;
     

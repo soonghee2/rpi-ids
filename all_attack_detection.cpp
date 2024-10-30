@@ -1,15 +1,18 @@
-#include "attack_detection_with_dbc.h"
-#include "CANStats.h"
+#include "all_attack_detection.h"
+
+#ifdef SET_DBC_CHECK
+#include "dbc_based_ruleset.h"
+#endif
 
 extern int under_attack;
 uint32_t last_can_id = 0; 
 int consecutive_count = 0;
 uint32_t last_can_data[8] ={0,};
 
+
 bool check_periodic_range(double time_diff, double periodic){
     return (periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2);
 }
-
 
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
     if(stats.prev_timediff == 0.0){
@@ -106,17 +109,24 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool normal_packet = false;
     
     CANStats& stats = can_stats[dequeuedMsg->can_id];
-    if(dbc_check && !validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
-	    printf("Fuzzing or Relay : Not match with DBC %03x\n", dequeuedMsg->can_id);
+
+    
+    #ifdef SET_DBC_CHECK
+    if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+	    printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
 	    return malicious_packet;
     }
+
+    int percent = 83; 
+    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, percent)) {
+        // Fuzzing or Replay 공격
+        printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
+        return malicious_packet;
+    }
+    #endif
+
     // 비주기 패킷일 경우
-    if (!stats.is_periodic||stats.count<=1) {
-        if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, 83)) {
-                // Fuzzing or Replay 공격
-	        printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
-                return malicious_packet;
-            }
+    if (!stats.is_periodic || stats.count<=1) {
 	    if (check_low_can_id(dequeuedMsg->can_id)) {
 	            //printf("not period\n");
 		    if((check_DoS(*dequeuedMsg))){
@@ -154,11 +164,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
             return malicious_packet;
 	    }
     }
-    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, 83)) {
-                // Fuzzing or Replay 공격
-	        printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
-                return malicious_packet;
-            }
+
     // 2.2 On-Event 패킷인가?
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id, dequeuedMsg->data)) {
         // 정상 패킷

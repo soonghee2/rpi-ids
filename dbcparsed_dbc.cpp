@@ -1,9 +1,8 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
-#include "dbcparsed.h"
+#include "dbcparsed_dbc.h"
 
-extern std::unordered_map<int, CANMessage> message;
 
 std::unordered_map<int, CANMessage> message = {
     {0x10, {true, "ACU13", 8, "ACU", {
