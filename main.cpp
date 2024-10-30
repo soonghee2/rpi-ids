@@ -27,7 +27,7 @@ double start_time=0;
 struct timeval tv;
 int under_attack = 0;
 int sum=0;
-
+int susp[2303] = {0,};
 // CAN 메시지 수신 처리 함수
 void onCanMessageReceived(int canId);
 
@@ -43,7 +43,7 @@ void onCanMessageReceived(int canId) {
 
 // 타이머 확인 함수 정의
 void timerCheckThread() {
-    const std::chrono::seconds timeout(2);
+    const std::chrono::seconds timeout(5);
     while (true) {
         {
             std::lock_guard<std::mutex> lock(timerMutex);  // 뮤텍스 잠금
@@ -51,14 +51,14 @@ void timerCheckThread() {
             for (const auto& pair : canIdTimers) {
                 int canId = pair.first;
                 auto lastReceivedTime = pair.second;
-
                 if (currentTime - lastReceivedTime > timeout) {
-                    std::cout << "CAN ID " << canId << " suspension_attack_detected" << std::endl;
+                    susp[canId] = 1;
+                    //std::cout << "CAN ID " << canId << " suspension_attack_detected" << std::endl;
                 }
             }
         }
         // 타이머 확인 주기 설정 (예: 1초마다 확인)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 
@@ -147,19 +147,23 @@ void process_can_msg(const char *log_filename){
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
 		if(check){
 		}
-	    }
-	    else if(check){
+	    }else if(susp[dequeuedMsg.can_id]){
+	    susp[dequeuedMsg.can_id] = 0;
+            stats.event_count = -1;
+            stats.prev_timediff = 0;
+            printf("Suspended packet! count: %d\n", mal_count++);
+            fprintf(logfile_whole, " 1\n");
+        }else if(check){
 	        fprintf(logfile_whole, " 0\n");
 		MIN_CAN_ID = get_lowest_can_id();
 		check = false;
 	    }
 	    else if (filtering_process(&dequeuedMsg)){
-		stats.event_count = -1;
+		        stats.event_count = -1;
                 stats.prev_timediff = 0;
                 fprintf(logfile_whole, " 1\n");
-                
-		printf("Malicious packet! count: %d\n", mal_count++);
-            }else{
+		        printf("Malicious packet! count: %d\n", mal_count++);
+        }else{
                 onCanMessageReceived(dequeuedMsg.can_id);
 		fprintf(logfile_whole, " 0\n");
             }
@@ -230,4 +234,3 @@ int main() {
     close(s);
     return 0;
 }
-

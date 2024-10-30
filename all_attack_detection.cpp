@@ -103,7 +103,6 @@ bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_i
 	return false;
 }
 
-
 bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool malicious_packet = true;
     bool normal_packet = false;
