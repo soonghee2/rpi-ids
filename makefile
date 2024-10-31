@@ -1,37 +1,35 @@
-# 컴파일러 설정
 CXX = g++
+CXXFLAGS = -Wall -O2 -pthread
 
-# 컴파일러 옵션
-CXXFLAGS = -Wall -g $(shell pkg-config --cflags jsoncpp) -pthread
+# dbc_parser.cpp와 dbc_based_ruleset.cpp 파일이 모두 존재할 때만 포함
+ifneq ($(wildcard dbcparsed_dbc.cpp dbc_based_ruleset.cpp),)
+	CXXFLAGS += -DSET_DBC_CHECK
+    SRCS = dbcparsed_dbc.cpp dbc_based_ruleset.cpp
+endif
 
-# 소스 파일 및 헤더 파일
-
-SRCS = main.cpp periodic.cpp CANStats.cpp cQueue.cpp all_attack_detection.cpp check_clock_error.cpp dbc.cpp
+# 기본 소스 파일과 오브젝트 파일
+SRCS += main.cpp cQueue.cpp periodic.cpp CANStats.cpp all_attack_detection.cpp check_clock_error.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
 # 실행 파일 이름
 TARGET = ids
 
-# 기본 빌드 명령
-all: $(TARGET) clean_objs
+# 주 규칙
+all: $(TARGET)_primary clean_objects
 
-# 실행 파일 생성
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(shell pkg-config --libs jsoncpp)
+# 메인 타겟 빌드 규칙
+$(TARGET)_primary: $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
 
-# 개별 소스 파일 컴파일
+# 성공적인 빌드 후 오브젝트 파일 정리
+clean_objects:
+	rm -f $(OBJS)
+
+# .cpp 파일에서 개별 오브젝트 파일을 컴파일하는 규칙
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# 빌드 후 오브젝트 파일 삭제
-clean_objs:
-	rm -f $(OBJS)
-
-# 전체 파일 삭제
+# 전체 빌드 정리 (실행 파일 포함)
 clean:
 	rm -f $(OBJS) $(TARGET)
-

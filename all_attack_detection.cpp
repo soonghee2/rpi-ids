@@ -1,19 +1,20 @@
 #include "all_attack_detection.h"
-#include "CANStats.h"
 
+#ifdef SET_DBC_CHECK
+#include "dbc_based_ruleset.h"
+#endif
+
+//연용산 헤더파일 
+#include <chrono>
+extern int under_attack;
 uint32_t last_can_id = 0; 
 int consecutive_count = 0;
 uint32_t last_can_data[8] ={0,};
 
+
 bool check_periodic_range(double time_diff, double periodic){
-    return (periodic * 0.7 <= time_diff && time_diff <= periodic * 1.3);
+    return (periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2);
 }
-
-bool check_similarity_with_previous_packet(){
-	//no -> stats.event_count=0;
-    return true;
-}
-
 
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
     if(stats.prev_timediff == 0.0 && (current_timediff > stats.periodic * 1.2 && current_timediff <= stats.periodic * 2)){
@@ -107,6 +108,7 @@ bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_i
 	return false;
 }
 
+
 bool check_replay(CANStats& stats, uint8_t data[]){
     if(memcmp(stats.suspected_payload, data, sizeof(*data)) == 0){
         stats.suspected_count++;
@@ -126,20 +128,31 @@ bool check_replay(CANStats& stats, uint8_t data[]){
 bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool malicious_packet = true;
     bool normal_packet = false;
-
+    
     CANStats& stats = can_stats[dequeuedMsg->can_id];
 
-    //유효하지 CAN ID인 경우
-    if(!dbc.isNull() && !validation_check(dbc, dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
-	    printf("Fuzzing or Relay : NO DBC ID %03x", dequeuedMsg->can_id);
+    
+    #ifdef SET_DBC_CHECK
+    if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
+	    printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
 	    return malicious_packet;
-    } 
+    }
+
+    int percent = 30; 
+    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, percent)) {
+        // Fuzzing or Replay 공격
+        printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
+        return malicious_packet;
+    }
+    #endif
 
     // 비주기 패킷일 경우
     if (!stats.is_periodic || stats.count<=1) {
 	    if (check_low_can_id(dequeuedMsg->can_id)) {
+	            //printf("not period\n");
 		    if((check_DoS(*dequeuedMsg))){
-			 printf("%03x DDoS Attack\n", dequeuedMsg->can_id);
+			 printf("%03x DoS Attack\n", dequeuedMsg->can_id);
+			 printf("Time taken: %f seconds\n", elapsed.count());
 	    		 return malicious_packet;
 		    }
 	    }
@@ -147,33 +160,25 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         // 비주기 패킷은 정상 패킷으로 처리
         return normal_packet;
     }
-
     // 주기 패킷일 경우
     // 1. 정상 주기 범위 내에 있는가? 또는 i-1 패킷과의 평균값이 정상 주기 범위 내에 있는가?
     double time_diff = dequeuedMsg->timestamp - stats.last_timestamp;
     // printf("time_diff: %.6f\n", time_diff);
-
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         // 1.1 이전 패킷과 상관관계가 있는가?
-        if (check_similarity_with_previous_packet(dbc, dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data)) {
-            // 1.2 시계 오차가 있는가?
-            if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
-                // 정상 패킷
-                memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
-                stats.last_normal_timestamp = dequeuedMsg->timestamp;
-                return normal_packet;
-            } else {
-                // Masquerade 공격
-                printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
-                return malicious_packet;
-            }
+        // 1.2 시계 오차가 있는가?
+        if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
+            // 정상 패킷
+            memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
+            stats.last_normal_timestamp = dequeuedMsg->timestamp;
+            return normal_packet;
         } else {
-            // Fuzzing or Replay 공격
-	        printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
+            // Masquerade 공격
+            printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
             return malicious_packet;
         }
-    }
-
+    } 
+    
     // 2.1 최하위 CAN ID인가?
     if (check_low_can_id(dequeuedMsg->can_id)) {
         // 오차가 5ms 이내로 동일한 패킷이 5번 이상 들어오는가?
@@ -198,7 +203,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         printf("Event ID: %03x\n",dequeuedMsg->can_id);
         return normal_packet;
     }
-
 
     if (!check_periodic_range(dequeuedMsg->timestamp - stats.last_normal_timestamp, stats.periodic)){
         if (check_replay(stats, dequeuedMsg->data)){

@@ -49,8 +49,7 @@ void calc_periodic(uint32_t can_id, double timestamp) {
 
             } else { 
                 stats.is_periodic = false;
-                // printf("1st analysis 0x%x's periodic: stddev:%.6f, cv: %.6f,false \n", can_id, stddev, cv);
-                
+                // printf("1st analysis 0x%x's periodic: stddev:%.6f, cv: %.6f,false \n", can_id, stddev, cv); 
             }
         } else if (stats.count==SECOND_PERIODIC_SAMPLE_THRESHOLD){
             double stddev = get_standard_deviation(can_id);
@@ -62,7 +61,6 @@ void calc_periodic(uint32_t can_id, double timestamp) {
             } else { 
                 stats.is_periodic = false;
                 // printf("2nd analysis 0x%x's periodic: stddev:%.6f, cv: %.6f,false \n", can_id, stddev, cv);
-                
             }
         }    
     } 

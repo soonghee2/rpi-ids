@@ -1,5 +1,7 @@
 #include <iostream>
 #include <thread>
+#include <vector>
+#include <utility>
 #include <queue>
 #include <mutex>
 #include <condition_variable>
@@ -15,11 +17,50 @@
 #define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
 
+std::map<int, std::chrono::steady_clock::time_point> canIdTimers;
+std::mutex timerMutex;
+
 std::mutex queueMutex;
 std::condition_variable queueCondVar;
 bool done = false;
 double start_time=0;
 struct timeval tv;
+int under_attack = 0;
+int sum=0;
+int susp[2303] = {0,};
+// CAN 메시지 수신 처리 함수
+void onCanMessageReceived(int canId);
+
+// 타이머 확인 함수 (무한 루프를 사용하여 주기적으로 확인)
+void timerCheckThread();
+
+// CAN 메시지 수신 처리 함수 정의
+void onCanMessageReceived(int canId) {
+    auto currentTime = std::chrono::steady_clock::now();
+    std::lock_guard<std::mutex> lock(timerMutex);  // 뮤텍스 잠금
+    canIdTimers[canId] = currentTime;
+}
+
+// 타이머 확인 함수 정의
+void timerCheckThread() {
+    std::chrono::seconds timeout(5);
+    while (true) {
+        {
+            std::lock_guard<std::mutex> lock(timerMutex);  // 뮤텍스 잠금
+            auto currentTime = std::chrono::steady_clock::now();
+            for (const auto& pair : canIdTimers) {
+                int canId = pair.first;
+                auto lastReceivedTime = pair.second;
+                CANStats& stats = can_stats[canId];
+                timeout = std::chrono::seconds(static_cast<int>(stats.periodic * 10)+3);
+                if (currentTime - lastReceivedTime > timeout) {
+                    susp[canId] = 1;
+                }
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
+}
 
 Queue_t canMsgQueue; //CAN 데이터를 담을 큐
 
@@ -81,7 +122,7 @@ int receive_can_frame(int s, EnqueuedCANMsg* msg) {
     return 0;
 }
 
-// 큐에서 메시지를 꺼내고 처리하는 함수 
+// 큐에서 메시지를 꺼내고 처리하는 함수
 void process_can_msg(const char *log_filename){
     int mal_count = 0;
     FILE *logfile_whole = fopen(log_filename, "w");
@@ -92,35 +133,39 @@ void process_can_msg(const char *log_filename){
         while ((!q_isEmpty(&canMsgQueue))){
             EnqueuedCANMsg dequeuedMsg;
             q_pop(&canMsgQueue, &dequeuedMsg);
-            
-	    lock.unlock();
-	    
-	    fprintf(logfile_whole, "can0 %03X#", dequeuedMsg.can_id);
-	    for (int i = 0; i < dequeuedMsg.DLC; i++) {
+
+            lock.unlock();
+
+            fprintf(logfile_whole, "can0 %03X#", dequeuedMsg.can_id);
+            for (int i = 0; i < dequeuedMsg.DLC; i++) {
                 fprintf(logfile_whole, "%02X", dequeuedMsg.data[i]);
             }
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
+          
             if(dequeuedMsg.timestamp - start_time <= 40){
-                fprintf(logfile_whole, " 0\n");
-                calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-            }
-            else if(check){
-                fprintf(logfile_whole, " 0\n");
+                      fprintf(logfile_whole, " 0\n");
+                      calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+	          } else if(susp[dequeuedMsg.can_id]){
+                susp[dequeuedMsg.can_id] = 0;
+                stats.event_count = -1;
+                stats.prev_timediff = 0;
+                printf("Suspended packet! count: %d\n", mal_count++);
+                fprintf(logfile_whole, " 1\n");
+            } else if(check){
+	              fprintf(logfile_whole, " 0\n");
                 MIN_CAN_ID = get_lowest_can_id();
                 check = false;
             }
-            else if (filtering_process(&dequeuedMsg)){
-                stats.event_count = -1;
-          
+	          else if (filtering_process(&dequeuedMsg)){
+		            stats.event_count = -1;
                 stats.prev_timediff = 0;
                 fprintf(logfile_whole, " 1\n");
-		        printf("Malicious packet! count: %d\n", mal_count++);
+		            printf("Malicious packet! count: %d\n", mal_count++);
+            } else{
+                onCanMessageReceived(dequeuedMsg.can_id);
+		            fprintf(logfile_whole, " 0\n");
             }
-            else {
-		        fprintf(logfile_whole, " 0\n");
-            }
-
             stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
@@ -128,7 +173,6 @@ void process_can_msg(const char *log_filename){
 	        fflush(logfile_whole);
         }
     }
-
 }
 
 // 저장된 CAN 메시지 출력 (디버그용)
@@ -152,21 +196,13 @@ int main() {
     std::cout << "Enter the name of the log file (e.g., ../dataset/whole_replay.log): ";
     std::cin.getline(log_filename, sizeof(log_filename));
 
-    std::string filename;
-    std::cout<<"input dbc file name(continue except dbc file, input -1): ";
-    std::getline(std::cin, filename);
-    if(filename != "-1") {
-	    read_dbc(filename);
-    }
-
-    // 소켓 생성
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Socket creation error");
         return 1;
     }
 
     // 인터페이스 이름을 설정 (vcan0 사용)
-    strcpy(ifr.ifr_name, "vcan0");
+    strcpy(ifr.ifr_name, "can0");
     if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
         perror("IOCTL error");
         return 1;
@@ -179,11 +215,13 @@ int main() {
         perror("Bind error");
         return 1;
     }
+    
+    // 타이머 확인을 위한 스레드 생성 및 분리
+    std::thread timerThread(timerCheckThread);
+    timerThread.detach();  // 타이머 확인 스레드를 메인 스레드와 분리하여 백그라운드에서 실행
 
     q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
-    
-    printf("Starting Periodic Calculation 10 seconds\n");
-    
+        
     std::thread producerThread(receive_can_frame, s, &can_msg);
     std::thread consumerThread(process_can_msg, log_filename);
     
