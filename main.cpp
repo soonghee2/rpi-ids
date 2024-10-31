@@ -203,7 +203,7 @@ int main() {
     }
 
     // 인터페이스 이름을 설정 (vcan0 사용)
-    strcpy(ifr.ifr_name, "vcan0");
+    strcpy(ifr.ifr_name, "can0");
     if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
         perror("IOCTL error");
         return 1;
