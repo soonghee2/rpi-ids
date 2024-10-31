@@ -43,8 +43,7 @@ void onCanMessageReceived(int canId) {
 
 // 타이머 확인 함수 정의
 void timerCheckThread() {
-    CANStats& stats = can_stats[dequeuedMsg.can_id];
-    const std::chrono::seconds timeout(5);
+    std::chrono::seconds timeout(5);
     while (true) {
         {
             std::lock_guard<std::mutex> lock(timerMutex);  // 뮤텍스 잠금
@@ -52,13 +51,14 @@ void timerCheckThread() {
             for (const auto& pair : canIdTimers) {
                 int canId = pair.first;
                 auto lastReceivedTime = pair.second;
+                CANStats& stats = can_stats[canId];
+                timeout = std::chrono::seconds(static_cast<int>(stats.periodic * 10)+3);
                 if (currentTime - lastReceivedTime > timeout) {
                     susp[canId] = 1;
-                    //std::cout << "CAN ID " << canId << " suspension_attack_detected" << std::endl;
                 }
             }
         }
-        std::this_thread::sleep_for(std::chrono::seconds(stats.periodic * 10));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 
