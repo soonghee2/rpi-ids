@@ -43,6 +43,7 @@ void onCanMessageReceived(int canId) {
 
 // 타이머 확인 함수 정의
 void timerCheckThread() {
+    CANStats& stats = can_stats[dequeuedMsg.can_id];
     const std::chrono::seconds timeout(5);
     while (true) {
         {
@@ -57,8 +58,7 @@ void timerCheckThread() {
                 }
             }
         }
-        // 타이머 확인 주기 설정 (예: 1초마다 확인)
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(stats.periodic * 10));
     }
 }
 
