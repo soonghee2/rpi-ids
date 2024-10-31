@@ -152,7 +152,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 	            //printf("not period\n");
 		    if((check_DoS(*dequeuedMsg))){
 			 printf("%03x DoS Attack\n", dequeuedMsg->can_id);
-			 printf("Time taken: %f seconds\n", elapsed.count());
 	    		 return malicious_packet;
 		    }
 	    }
