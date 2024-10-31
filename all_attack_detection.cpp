@@ -106,7 +106,6 @@ bool check_over_double_periodic(double timestamp, CANStats& stats,uint32_t can_i
 }
 
 bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
-    auto start_time = std::chrono::high_resolution_clock::now();
     bool malicious_packet = true;
     bool normal_packet = false;
     
@@ -116,7 +115,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     #ifdef SET_DBC_CHECK
     if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
 	    printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
-	    printf("Time taken: %f seconds\n", elapsed.count());
 	    return malicious_packet;
     }
 
@@ -124,7 +122,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, percent)) {
         // Fuzzing or Replay 공격
         printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
-	printf("Time taken: %f seconds\n", elapsed.count());
         return malicious_packet;
     }
     #endif
