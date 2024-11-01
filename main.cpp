@@ -144,29 +144,29 @@ void process_can_msg(const char *log_filename){
             CANStats& stats = can_stats[dequeuedMsg.can_id];
           
             if(dequeuedMsg.timestamp - start_time <= 40){
-                      fprintf(logfile_whole, " 0\n");
-                      calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-	          } else if(susp[dequeuedMsg.can_id]){
+                fprintf(logfile_whole, " 0\n");
+                calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+            } else if(susp[dequeuedMsg.can_id]){
                 susp[dequeuedMsg.can_id] = 0;
                 stats.event_count = -1;
                 stats.prev_timediff = 0;
                 printf("Suspended packet! count: %d\n", mal_count++);
                 fprintf(logfile_whole, " 1\n");
             } else if(check){
-	              fprintf(logfile_whole, " 0\n");
+                fprintf(logfile_whole, " 0\n");
                 MIN_CAN_ID = get_lowest_can_id();
                 check = false;
             }
 	          else if (filtering_process(&dequeuedMsg)){
-		            stats.event_count = -1;
+                stats.event_count = -1;
                 stats.prev_timediff = 0;
                 fprintf(logfile_whole, " 1\n");
-		            printf("Malicious packet! count: %d\n", mal_count++);
+                printf("Malicious packet! count: %d\n", mal_count++);
             } else{
                 onCanMessageReceived(dequeuedMsg.can_id);
-		            fprintf(logfile_whole, " 0\n");
+                fprintf(logfile_whole, " 0\n");
             }
-            stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
+            // stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
             lock.lock();
