@@ -9,8 +9,8 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     //DBC 검증 체크 
     #ifdef SET_DBC_CHECK
     if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
-            printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
-            return malicious_packet;
+        printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
+        return malicious_packet;
     }
     int percent = 30;
     if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, percent)) {
@@ -21,12 +21,12 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     // 비주기 패킷일 경우
     if (!stats.is_periodic || stats.count<=1) {
-            if (check_low_can_id(dequeuedMsg->can_id)) {
-                    if((check_DoS(*dequeuedMsg))){
-                         printf("%03x DoS Attack\n", dequeuedMsg->can_id);
-                         return malicious_packet;
-                    }
+        if (check_low_can_id(dequeuedMsg->can_id)) {
+            if((check_DoS(*dequeuedMsg))){
+                printf("%03x DoS Attack\n", dequeuedMsg->can_id);
+                return malicious_packet;
             }
+        }
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         return normal_packet;
     }
@@ -35,6 +35,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
             memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
+            stats.suspected_count--;
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
             return normal_packet;
         } else {
@@ -59,17 +60,17 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id, dequeuedMsg->data)) {
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         printf("Event ID: %03x\n",dequeuedMsg->can_id);
+        stats.suspected_count--;
         return normal_packet;
     }
 
     //Replay 공격 체크 
     if (!check_periodic_range(dequeuedMsg->timestamp - stats.last_normal_timestamp, stats.periodic)){
-        if (check_replay(stats, dequeuedMsg->data)){
+        if (stats.prev_timediff == 0 && check_replay(stats, dequeuedMsg->data)){
             printf("%03x Replay\n", dequeuedMsg->can_id);
             return malicious_packet;
         }
     }
 
-    stats.last_normal_timestamp = dequeuedMsg->timestamp;
     return normal_packet;
 }

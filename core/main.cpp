@@ -115,7 +115,7 @@ void process_can_msg(const char *log_filename){
 
             lock.unlock();
 
-            fprintf(logfile_whole, "can0 %03X#", dequeuedMsg.can_id);
+            fprintf(logfile_whole, "%.6f can0 %03X#", dequeuedMsg.timestamp, dequeuedMsg.can_id);
             for (int i = 0; i < dequeuedMsg.DLC; i++) {
                 fprintf(logfile_whole, "%02X", dequeuedMsg.data[i]);
             }
@@ -123,9 +123,9 @@ void process_can_msg(const char *log_filename){
             CANStats& stats = can_stats[dequeuedMsg.can_id];
           
             if(dequeuedMsg.timestamp - start_time <= 40){
-                      fprintf(logfile_whole, " 0\n");
-                      calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
-	          } else if(susp[dequeuedMsg.can_id]){
+                fprintf(logfile_whole, " 0\n");
+                calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+            } else if(susp[dequeuedMsg.can_id]){
                 susp[dequeuedMsg.can_id] = 0;
                 stats.event_count = -1;
                 stats.prev_timediff = 0;
@@ -137,15 +137,15 @@ void process_can_msg(const char *log_filename){
                 check = false;
             }
 	          else if (filtering_process(&dequeuedMsg)){
-		            stats.event_count = -1;
+                stats.event_count = -1;
                 stats.prev_timediff = 0;
                 fprintf(logfile_whole, " 1\n");
-		            printf("Malicious packet! count: %d\n", mal_count++);
+                printf("Malicious packet! count: %d\n", mal_count++);
             } else{
                 onCanMessageReceived(dequeuedMsg.can_id);
-		            fprintf(logfile_whole, " 0\n");
+                fprintf(logfile_whole, " 0\n");
             }
-            stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
+
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
             lock.lock();
@@ -161,7 +161,7 @@ void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
     printf("DLC: %d\n", dequeuedMsg->DLC);
     printf("Data: ");
     for (int i = 0; i < dequeuedMsg->DLC; i++) {
-            printf("%02X ", dequeuedMsg->data[i]);
+        printf("%02X ", dequeuedMsg->data[i]);
     }
     printf("\n");
 }

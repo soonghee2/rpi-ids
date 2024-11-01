@@ -8,18 +8,18 @@
 
 struct CANSignal {
     std::string name;
-    int start_bit;
-    int length;
-    int byte_order;
-    int is_signed;
-    int LowMinValue;
-    double LowMaxValue;
+    int start_bit = 0;
+    int length = 0;
+    int byte_order = 0;
+    int is_signed = 0;
+    int LowMinValue = 0;
+    double LowMaxValue = 0;
 };
 
 struct CANMessage {
-    bool Skipable;
+    bool Skipable = false;
     std::string name;
-    int dlc;
+    int dlc = 0;
     std::string source;
     std::vector<CANSignal> signals;
 };

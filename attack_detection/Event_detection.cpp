@@ -1,7 +1,7 @@
 #include "Event_detection.h"
 
 bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id, uint8_t data[]){
-        double event_time_diff = 0;
+    double event_time_diff = 0;
     double time_diff = timestamp - stats.last_normal_timestamp;
 
     if(stats.event_count == -1){

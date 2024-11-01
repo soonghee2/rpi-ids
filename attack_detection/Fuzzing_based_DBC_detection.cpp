@@ -33,36 +33,36 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
         is_initial_data = false;
         return true;
     }
-        for (const auto& signal : message[can_id].signals) {
-          total_length += signal.length;
-          uint64_t old_value, new_value;
-          if (signal.byte_order == 1 && signal.length > 8) {
-              int first = signal.start_bit / 8;
-              int end = ((signal.start_bit + signal.length) / 8);
-              int bit_length = (end - first) * 8;
-              new_value = extractBits(payload_combined, first * 8, bit_length);
-              old_value = extractBits(valid_payload_combined, first * 8, bit_length);
-              new_value = toLittleEndian(new_value, (end - first));
-              old_value = toLittleEndian(old_value, (end - first));
-              new_value = extractBits(new_value, ((end - first) * 8) - signal.length - (signal.start_bit % 8), signal.length);
-              old_value = extractBits(old_value, ((end - first) * 8) - signal.length - (signal.start_bit % 8), signal.length);
-          }else{
-              new_value = extractBits(payload_combined, signal.start_bit, signal.length);
-              old_value = extractBits(valid_payload_combined, signal.start_bit, signal.length);
-          }
-          if (old_value == new_value) {
-              total_same_percent += signal.length * 100;
-          }else{
-              //double diff = (fabs((double)old_value - (double)new_value) / (std::pow(2,total_length)-1) * 100);
-              double diff = (fabs((double)old_value - (double)new_value) / (std::max((double)old_value, (double)new_value) * 100));
-              total_same_percent += signal.length * (100 - diff);
-          }
-      }
-      if ((total_same_percent / total_length) >= percent) { //수용치
-          return true;
-      } else {
-          return false;
-      }
+    for (const auto& signal : message[can_id].signals) {
+        total_length += signal.length;
+        uint64_t old_value, new_value;
+        if (signal.byte_order == 1 && signal.length > 8) {
+            int first = signal.start_bit / 8;
+            int end = ((signal.start_bit + signal.length) / 8);
+            int bit_length = (end - first) * 8;
+            new_value = extractBits(payload_combined, first * 8, bit_length);
+            old_value = extractBits(valid_payload_combined, first * 8, bit_length);
+            new_value = toLittleEndian(new_value, (end - first));
+            old_value = toLittleEndian(old_value, (end - first));
+            new_value = extractBits(new_value, ((end - first) * 8) - signal.length - (signal.start_bit % 8), signal.length);
+            old_value = extractBits(old_value, ((end - first) * 8) - signal.length - (signal.start_bit % 8), signal.length);
+        } else{
+            new_value = extractBits(payload_combined, signal.start_bit, signal.length);
+            old_value = extractBits(valid_payload_combined, signal.start_bit, signal.length);
+        }
+        if (old_value == new_value) {
+            total_same_percent += signal.length * 100;
+        }else{
+            //double diff = (fabs((double)old_value - (double)new_value) / (std::pow(2,total_length)-1) * 100);
+            double diff = (fabs((double)old_value - (double)new_value) / (std::max((double)old_value, (double)new_value) * 100));
+            total_same_percent += signal.length * (100 - diff);
+        }
+    }
+    if ((total_same_percent / total_length) >= percent) { //수용치
+        return true;
+    } else {
+        return false;
+    }
 }
   return false;
 }
@@ -80,28 +80,28 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
         if (DLC == message[can_id].dlc){
             if (!message[can_id].Skipable) {
                 for (const auto& signal : message[can_id].signals) {
-                        int start_bit = signal.start_bit;
-                        int length = signal.length;
-                        int first = start_bit / 8;
-                        int end = ((start_bit + length) / 8);
-                        uint64_t binary_value = 0;
-                        if (signal.byte_order == 1 && (end - first) > 1) {
-                            binary_value = extractBits(payload_combined, first * 8, (end - first) * 8);
-                            binary_value = toLittleEndian(binary_value, (end - first));
-                            binary_value = extractBits(binary_value, ((end - first) * 8) - length - (start_bit % 8), length);
-                        } else {
-                            binary_value = extractBits(payload_combined, start_bit, length);
-                        }
-                        if ((uint64_t)signal.LowMinValue <= binary_value && binary_value <= (uint64_t)signal.LowMaxValue) {
-                            return true;
-                        } else {
-                            return false;
-                        }
+                    int start_bit = signal.start_bit;
+                    int length = signal.length;
+                    int first = start_bit / 8;
+                    int end = ((start_bit + length) / 8);
+                    uint64_t binary_value = 0;
+                    if (signal.byte_order == 1 && (end - first) > 1) {
+                        binary_value = extractBits(payload_combined, first * 8, (end - first) * 8);
+                        binary_value = toLittleEndian(binary_value, (end - first));
+                        binary_value = extractBits(binary_value, ((end - first) * 8) - length - (start_bit % 8), length);
+                    } else {
+                        binary_value = extractBits(payload_combined, start_bit, length);
                     }
-                } else {
-	            return true;
+                    if ((uint64_t)signal.LowMinValue <= binary_value && binary_value <= (uint64_t)signal.LowMaxValue) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
+            } else {
+                return true;
             }
+        }
     }
     return false;
 }
