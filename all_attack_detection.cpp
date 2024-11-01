@@ -1,5 +1,9 @@
 #include "all_attack_detection.h"
 #include "CANStats.h"
+#ifdef SET_DBC_CHECK
+#include "dbc_based_ruleset.h"
+#endif
+
 
 uint32_t last_can_id = 0; 
 int consecutive_count = 0;
