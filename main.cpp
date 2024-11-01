@@ -28,11 +28,6 @@ struct timeval tv;
 int under_attack = 0;
 int sum=0;
 int susp[2303] = {0,};
-// CAN 메시지 수신 처리 함수
-void onCanMessageReceived(int canId);
-
-// 타이머 확인 함수 (무한 루프를 사용하여 주기적으로 확인)
-void timerCheckThread();
 
 // CAN 메시지 수신 처리 함수 정의
 void onCanMessageReceived(int canId) {

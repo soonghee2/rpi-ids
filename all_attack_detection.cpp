@@ -4,13 +4,64 @@
 #include "dbc_based_ruleset.h"
 #endif
 
-//연용산 헤더파일 
-#include <chrono>
 extern int under_attack;
 uint32_t last_can_id = 0; 
 int consecutive_count = 0;
 uint32_t last_can_data[8] ={0,};
 
+std::unordered_map<uint32_t, ClockSkewDetector> clockSkewDetectors;
+
+// ClockSkewDetector 생성자, 복사 생성자 정의
+ClockSkewDetector::ClockSkewDetector(double threshold)
+    : m_detect_cnt(0), accumulatedOffset(0),
+      upperLimit(0), lowerLimit(0), meanError(0), last_meanError(0), stdError(1.0), threshold(threshold) {}
+ClockSkewDetector::ClockSkewDetector(const ClockSkewDetector& other)
+    : m_detect_cnt(0),  accumulatedOffset(other.accumulatedOffset),
+      upperLimit(other.upperLimit), lowerLimit(other.lowerLimit), meanError(other.meanError), last_meanError(0),
+      stdError(other.stdError), threshold(other.threshold) {}
+
+bool ClockSkewDetector::checkClockError(uint32_t can_id, double timestamp) {
+    CANStats& stats = can_stats[can_id];
+
+    if (stats.count < MIN_DATA_CNT) {
+        return false;
+    }
+
+    double time_diff = timestamp - stats.last_timestamp;
+    double error = time_diff - stats.periodic;
+
+    accumulatedOffset += (error);
+
+    return detectAnomaly(error, can_id); 
+}
+
+bool ClockSkewDetector::detectAnomaly(double error, uint32_t can_id) {
+    double scaledError = error * ERROR_SCALING_FACTOR;
+
+    meanError = FORGETTING_FACTOR * meanError + (1 - FORGETTING_FACTOR) * scaledError;
+    stdError = std::sqrt(FORGETTING_FACTOR * stdError * stdError + (1 - FORGETTING_FACTOR) * (scaledError - meanError) * (scaledError - meanError));
+   
+    if (std::abs(last_meanError - meanError) > 1.5) { m_detect_cnt++; } else{ m_detect_cnt=0;}
+
+    if (m_detect_cnt > 5) {
+        m_detect_cnt = 0;  
+        return true;       
+    }
+
+    last_meanError = meanError;
+
+    return false; 
+}
+
+bool check_clock_error(uint32_t can_id, double timestamp) {
+    if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
+        clockSkewDetectors[can_id] = ClockSkewDetector(CUSUM_THRESHOLD);
+    }
+    CANStats& stats = can_stats[can_id];
+    stats.count++;
+
+    return clockSkewDetectors[can_id].checkClockError(can_id, timestamp);
+}
 
 bool check_periodic_range(double time_diff, double periodic){
     return (periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2);
@@ -23,7 +74,6 @@ bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
     }
 
     if(check_periodic_range((current_timediff + stats.prev_timediff) / 2, stats.periodic)){
-        // printf("current_timediff: %.6f prev_timediff: %.6f periodic: %.6f\n", current_timediff, stats.prev_timediff, stats.periodic);
         stats.prev_timediff = 0;
         return true;
     }
@@ -33,7 +83,6 @@ bool check_previous_packet_of_avg(double current_timediff, CANStats& stats){
 }
 
 bool check_low_can_id(uint32_t can_id){
-	//only check lowest can id
     return (can_id <= MIN_CAN_ID);
 }
 
@@ -149,14 +198,12 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // 비주기 패킷일 경우
     if (!stats.is_periodic || stats.count<=1) {
 	    if (check_low_can_id(dequeuedMsg->can_id)) {
-	            //printf("not period\n");
 		    if((check_DoS(*dequeuedMsg))){
 			 printf("%03x DoS Attack\n", dequeuedMsg->can_id);
 	    		 return malicious_packet;
 		    }
 	    }
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
-        // 비주기 패킷은 정상 패킷으로 처리
         return normal_packet;
     }
     // 주기 패킷일 경우

@@ -8,7 +8,7 @@ ifneq ($(wildcard dbcparsed_dbc.cpp dbc_based_ruleset.cpp),)
 endif
 
 # 기본 소스 파일과 오브젝트 파일
-SRCS += main.cpp cQueue.cpp periodic.cpp CANStats.cpp all_attack_detection.cpp check_clock_error.cpp
+SRCS += main.cpp cQueue.cpp periodic.cpp CANStats.cpp all_attack_detection.cpp 
 
 OBJS = $(SRCS:.cpp=.o)
 
