@@ -3,6 +3,7 @@
 
 #include "CANStats.h"
 #include <cstdint>
+#include <cmath>
 #include <unordered_map>
 
 const double FORGETTING_FACTOR = 0.95;  // RLS 및 CUSUM에 사용되는 가중치

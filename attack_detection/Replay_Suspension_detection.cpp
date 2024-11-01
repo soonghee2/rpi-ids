@@ -1,5 +1,4 @@
 #include "Replay_Suspension_detection.h"
-#include <cstring>
 
 bool check_replay(CANStats& stats, uint8_t data[]){
     if(memcmp(stats.suspected_payload, data, sizeof(*data)) == 0){

@@ -2,8 +2,11 @@
 #define CQUEUE_H
 
 #include <inttypes.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstdint>
+#include <cstring>
+#include <cstdlib>
+
 
 #define QUEUE_INITIALIZED 0x5AA5
 #define q_init_def(q, sz) q_init(q, sz, 20, FIFO, false)

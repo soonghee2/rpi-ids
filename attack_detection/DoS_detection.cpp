@@ -1,5 +1,4 @@
 #include "DoS_detection.h"
-#include <cstring>
 
 uint8_t DoS_payload[8];
 uint32_t DoS_can_id = 0;

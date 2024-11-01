@@ -3,6 +3,7 @@
 
 #include "CANStats.h"
 #include <cstdint>
+#include <cstring>
 
 #define DoS_TIME_THRESHOLD_MS 0.005
 #define DoS_DETECT_THRESHOLD 5

@@ -1,6 +1,3 @@
-#include <string.h>
-#include <stdlib.h>
-
 #include "cQueue.h"
 
 static inline void inc_idx(uint16_t* const pIdx, const uint16_t end, const uint16_t start)

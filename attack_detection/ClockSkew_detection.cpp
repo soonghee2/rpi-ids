@@ -1,5 +1,4 @@
 #include "ClockSkew_detection.h"
-#include <cmath>
 
 std::unordered_map<uint32_t, ClockSkewDetector> clockSkewDetectors;
 

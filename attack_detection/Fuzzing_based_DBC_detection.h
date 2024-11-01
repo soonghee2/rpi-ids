@@ -1,6 +1,9 @@
 #ifndef FUZZING_BASED_DBC_DETECTION_H
 #define FUZZING_BASED_DBC_DETECTION_H
 
+#include "CANStats.h"
+#include "dbcparsed_dbc.h"
+
 #include <unordered_set>
 #include <iostream>
 #include <iomanip>
@@ -10,8 +13,6 @@
 #include <vector>
 #include <cmath>
 #include <bitset>
-#include "CANStats.h"
-#include "dbcparsed_dbc.h"
 
 // 함수 선언 (정의는 Fuzzing_based_DBC_detection.cpp 파일에서 한 번만)
 uint64_t extractBits(uint64_t data, int start, int length);

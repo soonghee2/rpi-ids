@@ -1,5 +1,4 @@
 #include "Event_detection.h"
-#include <cstring>
 
 bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id, uint8_t data[]){
         double event_time_diff = 0;

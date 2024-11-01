@@ -1,21 +1,5 @@
-#include <iostream>
-#include <thread>
-#include <vector>
-#include <utility>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <iostream>
-#include <thread>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
 #include "header.h"
-#include "periodic.h"
-#include "AttackFilter.h"
 
-#define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
-#define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
 
 std::map<int, std::chrono::steady_clock::time_point> canIdTimers;
 std::mutex timerMutex;
@@ -148,7 +132,7 @@ void process_can_msg(const char *log_filename){
                 printf("Suspended packet! count: %d\n", mal_count++);
                 fprintf(logfile_whole, " 1\n");
             } else if(check){
-	              fprintf(logfile_whole, " 0\n");
+	            fprintf(logfile_whole, " 0\n");
                 MIN_CAN_ID = get_lowest_can_id();
                 check = false;
             }

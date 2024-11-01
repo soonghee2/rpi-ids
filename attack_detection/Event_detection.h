@@ -5,6 +5,7 @@
 #include "Normal_detection.h"
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 
 #define EVENT_PERIOD 0.03
 
