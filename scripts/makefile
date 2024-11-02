@@ -7,7 +7,7 @@ TARGET_DIR = ../scripts
 SRCS = ../core/main.cpp ../protocol/cQueue.cpp ../protocol/periodic.cpp ../core/CANStats.cpp
 
 # DBC 체크가 필요한 경우 컴파일 플래그와 소스 파일 추가
-ifeq ($(wildcard ../protocol/dbcparsed_dbc.cpp), $(wildcard ../attack_detection/Fuzzing_based_DBC_detection.cpp),)
+ifeq ($(wildcard ../protocol/dbcparsed_dbc.cpp)$(wildcard ../attack_detection/Fuzzing_based_DBC_detection.cpp),../protocol/dbcparsed_dbc.cpp../attack_detection/Fuzzing_based_DBC_detection.cpp)
     CXXFLAGS += -DSET_DBC_CHECK
     SRCS += ../protocol/dbcparsed_dbc.cpp ../attack_detection/Fuzzing_based_DBC_detection.cpp
 endif
