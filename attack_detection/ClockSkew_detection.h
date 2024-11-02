@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cmath>
 #include <unordered_map>
+#include <cstdio>
 
 const double FORGETTING_FACTOR = 0.95;  // RLS 및 CUSUM에 사용되는 가중치
 const double CUSUM_THRESHOLD = 5.0;       // CUSUM 임계값

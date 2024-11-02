@@ -37,7 +37,8 @@ bool ClockSkewDetector::detectAnomaly(double error, uint32_t can_id) {
 
     if (m_detect_cnt > 5) {
         m_detect_cnt = 0;  // Reset the detection count after detection
-        return true;       // Return true if anomaly is detected
+        printf("[Masquerade] [%03x] [High] 연속 5번 이상 1.5 이상의 범위 밖으로 벗어났습니다. 지난 패킷의 meanError은 %f으로 정상 %03x의 %f보다 %f만큼 더 오차가 발생했습니다.", can_id, last_meanError, can_id, meanError, last_meanError-meanError);
+	return true;       // Return true if anomaly is detected
     }
 
     last_meanError = meanError;
