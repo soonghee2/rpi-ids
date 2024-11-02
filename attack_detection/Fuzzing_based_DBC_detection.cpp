@@ -31,6 +31,8 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
     if(message.find(can_id) != message.end()) {
     if(is_initial_data){
         is_initial_data = false;
+	printf("[?] [%03x] [Medium] is_initial_data가 false이여서.. 이게 뭔지몰라서 설명을 못적겠음",dequeuedMsg->can_id);
+ 
         return true;
     }
     for (const auto& signal : message[can_id].signals) {
@@ -59,6 +61,7 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
         }
     }
     if ((total_same_percent / total_length) >= percent) { //수용치
+	printf("[?] [%03x] [Medium] 이전 패킷간의 유사성이 %d%만큼 낮습니다.",dequeuedMsg->can_id,totoal_same_percent/total_length);
         return true;
     } else {
         return false;
@@ -93,12 +96,14 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
                         binary_value = extractBits(payload_combined, start_bit, length);
                     }
                     if ((uint64_t)signal.LowMinValue <= binary_value && binary_value <= (uint64_t)signal.LowMaxValue) {
+			printf("[?] [%03x] [High] DBC파일의 정의역에 존재하지 않은 페이로드가 아닙니다. Fuzzing 혹은 DoS 공격입니다.\n");
                         return true;
                     } else {
                         return false;
                     }
                 }
             } else {
+		printf("[?] [%03x] [High] DBC파일의 정의된 ID가 아닙니다. Fuzzing 혹은 DoS 공격입니다.");
                 return true;
             }
         }
