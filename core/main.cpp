@@ -165,14 +165,15 @@ void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
     printf("\n");
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     int s;
-    char log_filename[100];
+    //char log_filename[100];
+    char *log_filename=argv[1];
     struct sockaddr_can addr;
     struct ifreq ifr;
     EnqueuedCANMsg can_msg;  // 수신된 CAN 메시지를 저장할 구조체
-    std::cout << "Enter the name of the log file (e.g., ../dataset/whole_replay.log): ";
-    std::cin.getline(log_filename, sizeof(log_filename));
+    //std::cout << "Enter the name of the log file (e.g., ../dataset/whole_replay.log): ";
+    //std::cin.getline(log_filename, sizeof(log_filename));
 
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Socket creation error");
