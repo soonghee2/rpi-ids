@@ -35,7 +35,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
             memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
-            stats.suspected_count--;
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
             return normal_packet;
         } else {
@@ -60,7 +59,6 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id, dequeuedMsg->data)) {
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         printf("Event ID: %03x\n",dequeuedMsg->can_id);
-        stats.suspected_count--;
         return normal_packet;
     }
 
