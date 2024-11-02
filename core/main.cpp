@@ -1,21 +1,5 @@
-#include <iostream>
-#include <thread>
-#include <vector>
-#include <utility>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <iostream>
-#include <thread>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
 #include "header.h"
-#include "periodic.h"
-#include "all_attack_detection.h"
 
-#define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
-#define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
 
 std::map<int, std::chrono::steady_clock::time_point> canIdTimers;
 std::mutex timerMutex;
@@ -28,11 +12,6 @@ struct timeval tv;
 int under_attack = 0;
 int sum=0;
 int susp[2303] = {0,};
-// CAN 메시지 수신 처리 함수
-void onCanMessageReceived(int canId);
-
-// 타이머 확인 함수 (무한 루프를 사용하여 주기적으로 확인)
-void timerCheckThread();
 
 // CAN 메시지 수신 처리 함수 정의
 void onCanMessageReceived(int canId) {
@@ -136,7 +115,7 @@ void process_can_msg(const char *log_filename){
 
             lock.unlock();
 
-            fprintf(logfile_whole, "can0 %03X#", dequeuedMsg.can_id);
+            fprintf(logfile_whole, "%.6f can0 %03X#", dequeuedMsg.timestamp, dequeuedMsg.can_id);
             for (int i = 0; i < dequeuedMsg.DLC; i++) {
                 fprintf(logfile_whole, "%02X", dequeuedMsg.data[i]);
             }
@@ -153,7 +132,7 @@ void process_can_msg(const char *log_filename){
                 printf("Suspended packet! count: %d\n", mal_count++);
                 fprintf(logfile_whole, " 1\n");
             } else if(check){
-                fprintf(logfile_whole, " 0\n");
+	        fprintf(logfile_whole, " 0\n");
                 MIN_CAN_ID = get_lowest_can_id();
                 check = false;
             }
@@ -166,7 +145,6 @@ void process_can_msg(const char *log_filename){
                 onCanMessageReceived(dequeuedMsg.can_id);
                 fprintf(logfile_whole, " 0\n");
             }
-            // stats.prev_timediff = dequeuedMsg.timestamp - stats.last_timestamp;
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
             lock.lock();
@@ -182,7 +160,7 @@ void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
     printf("DLC: %d\n", dequeuedMsg->DLC);
     printf("Data: ");
     for (int i = 0; i < dequeuedMsg->DLC; i++) {
-            printf("%02X ", dequeuedMsg->data[i]);
+        printf("%02X ", dequeuedMsg->data[i]);
     }
     printf("\n");
 }
@@ -202,7 +180,7 @@ int main() {
     }
 
     // 인터페이스 이름을 설정 (vcan0 사용)
-    strcpy(ifr.ifr_name, "can0");
+    strcpy(ifr.ifr_name, "vcan0");
     if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
         perror("IOCTL error");
         return 1;

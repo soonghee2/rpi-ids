@@ -16,7 +16,7 @@ struct CANStats {
 
     int event_count = 0;
     double last_event_timstamp = 0;
-    uint8_t event_payload[8];
+    uint8_t event_payload[8] = {0};
     double last_normal_timestamp = 0;
 
     int suspected_count = 0;
@@ -27,10 +27,10 @@ struct CANStats {
 };
 
 typedef struct qCANMsg {
-    double timestamp;      // 타임스탬프 (초 단위)
-    uint32_t can_id;     // CAN ID 
-    int DLC;               // 데이터 길이 코드 (Data Length Code)
-    uint8_t data[8];       // CAN 데이터 (최대 8바이트)
+    double timestamp = 0;    // 타임스탬프 (초 단위)
+    uint32_t can_id = 0;     // CAN ID 
+    int DLC = 0;             // 데이터 길이 코드 (Data Length Code)
+    uint8_t data[8] = {0};   // CAN 데이터 (최대 8바이트)
 } EnqueuedCANMsg;
 
 extern uint32_t MIN_CAN_ID;

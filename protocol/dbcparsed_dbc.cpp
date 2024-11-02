@@ -1,7 +1,5 @@
-#include <unordered_map>
-#include <string>
-#include <vector>
 #include "dbcparsed_dbc.h"
+
 std::unordered_map<int, CANMessage> message = {
     {0x24, {true, "Brake", 8, "Vector__XXX", {
         {"Counter", 23, 16, 0, 0, 0, 65535},
