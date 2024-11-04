@@ -122,7 +122,7 @@ void process_can_msg(const char *log_filename){
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
           
-            if(dequeuedMsg.timestamp - start_time <= 40||stats.count < 201){
+            if(dequeuedMsg.timestamp - start_time <= 40&&stats.count < 201){
                 fprintf(logfile_whole, " 0\n");
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
             } else if(susp[dequeuedMsg.can_id]){
