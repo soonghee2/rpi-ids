@@ -32,7 +32,7 @@ void timerCheckThread() {
                 auto lastReceivedTime = pair.second;
                 CANStats& stats = can_stats[canId];
                 timeout = std::chrono::seconds(static_cast<int>(stats.periodic * 10)+3);
-                if (currentTime - lastReceivedTime > timeout) {
+                if (currentTime - lastReceivedTime > timeout && stats.is_periodic) {
                     susp[canId] = 1;
                 }
             }
