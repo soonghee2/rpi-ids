@@ -60,7 +60,7 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
         }
     }
     if ((total_same_percent / total_length) >= percent) { //수용치
-	    printf("[?] [%03x] [Medium] 이전 패킷간의 유사성이 %d%만큼 낮습니다.", can_id, total_same_percent/total_length);
+	    printf("[?] [%03x] [Medium] 이전 패킷간의 유사성이 %.6f %% 만큼 낮습니다.", can_id, total_same_percent/total_length);
         return true;
     } else {
         return false;
@@ -95,14 +95,14 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
                         binary_value = extractBits(payload_combined, start_bit, length);
                     }
                     if ((uint64_t)signal.LowMinValue <= binary_value && binary_value <= (uint64_t)signal.LowMaxValue) {
-			            printf("[?] [%03x] [High] DBC파일의 정의역에 존재하지 않은 페이로드가 아닙니다. Fuzzing 혹은 DoS 공격입니다.\n");
+			            printf("[?] [%03x] [High] DBC파일의 정의역에 존재하지 않은 페이로드가 아닙니다. Fuzzing 혹은 DoS 공격입니다.\n", can_id);
                         return true;
                     } else {
                         return false;
                     }
                 }
             } else {
-                printf("[?] [%03x] [High] DBC파일의 정의된 ID가 아닙니다. Fuzzing 혹은 DoS 공격입니다.");
+                printf("[?] [%03x] [High] DBC파일의 정의된 ID가 아닙니다. Fuzzing 혹은 DoS 공격입니다.", can_id);
                 return true;
             }
         }
