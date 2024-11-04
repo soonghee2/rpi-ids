@@ -1,7 +1,7 @@
 #include "Normal_detection.h"
 
 bool check_periodic_range(double time_diff, double periodic) {
-    return (periodic * 0.8 <= time_diff && time_diff <= periodic * 1.2);
+    return (periodic * 0.7 <= time_diff && time_diff <= periodic * 1.3);
 }
 
 bool check_previous_packet_of_avg(double current_timediff, CANStats& stats) {

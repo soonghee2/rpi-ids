@@ -36,6 +36,8 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
             memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
+            if(stats.suspected_count > 5)
+                stats.suspected_count--;
             return normal_packet;
         } else {
             //printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
@@ -64,11 +66,12 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     //Replay 공격 체크 
     if (!check_periodic_range(dequeuedMsg->timestamp - stats.last_normal_timestamp, stats.periodic)){
-        if (stats.prev_timediff == 0 && check_replay(stats, dequeuedMsg->data,dequeuedMsg->can_id)){
+        if (stats.prev_timediff == 0 && check_replay(stats, dequeuedMsg->data, dequeuedMsg->can_id)){
             //printf("%03x Replay\n", dequeuedMsg->can_id);
             return malicious_packet;
         }
     }
 
+    stats.last_normal_timestamp = dequeuedMsg->timestamp;
     return normal_packet;
 }
