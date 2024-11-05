@@ -13,7 +13,7 @@ bool check_DoS(const EnqueuedCANMsg& dequeuedMsg);
 
 extern uint8_t DoS_payload[8];
 extern uint32_t DoS_can_id;
-extern float DoS_last_time;
+extern double DoS_last_time;
 
 #endif // DOS_DETECTION_H
 

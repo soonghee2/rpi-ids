@@ -2,7 +2,7 @@
 
 uint8_t DoS_payload[8];
 uint32_t DoS_can_id = 0;
-float DoS_last_time = 0;  
+double DoS_last_time = 0;  
 
 bool check_DoS(const EnqueuedCANMsg& dequeuedMsg) {
     CANStats& stats = can_stats[dequeuedMsg.can_id];
@@ -10,14 +10,14 @@ bool check_DoS(const EnqueuedCANMsg& dequeuedMsg) {
 
     if (time_diff < DoS_TIME_THRESHOLD_MS) {
         if (memcmp(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data)) == 0) {
-            stats.suspected_count++;
+            stats.dos_count++;
         } else {
-            stats.suspected_count = 1;
+            stats.dos_count = 1;
         }
-        if (stats.suspected_count == DoS_DETECT_THRESHOLD) {
+        if (stats.dos_count == DoS_DETECT_THRESHOLD) {
             DoS_can_id = dequeuedMsg.can_id;
             memcpy(DoS_payload, dequeuedMsg.data, sizeof(DoS_payload));
-	    printf("[DoS Attack] [%03x] [High] 5번 이상 %d개 패킷이 5ms이내 로 빠르게 동일한 페이로드로 수신되었습니다.\n", dequeuedMsg.can_id, stats.suspected_count);
+	        printf("[DoS Attack] [%03x] [High] 5번 이상 %d개 패킷이 5ms이내 로 빠르게 동일한 페이로드로 수신되었습니다.\n", dequeuedMsg.can_id, stats.dos_count);
             return true;
         }
     }

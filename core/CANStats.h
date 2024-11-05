@@ -19,7 +19,8 @@ struct CANStats {
     uint8_t event_payload[8] = {0};
     double last_normal_timestamp = 0;
 
-    int suspected_count = 0;
+    int dos_count = 0;
+    int replay_count = 0;
     uint8_t suspected_payload[8] = {0};
 
     uint8_t valid_last_data[8] = {0};

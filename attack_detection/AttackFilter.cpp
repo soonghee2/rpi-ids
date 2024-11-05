@@ -36,8 +36,8 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
             memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
-            if(stats.suspected_count > 5)
-                stats.suspected_count--;
+            if(stats.replay_count > 5)
+                stats.replay_count--;
             return normal_packet;
         } else {
             //printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
