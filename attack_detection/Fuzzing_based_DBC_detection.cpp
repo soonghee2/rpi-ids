@@ -33,6 +33,7 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
             is_initial_data = false;
             return true;
         }
+        if (!message[can_id].signals.empty()){
         for (const auto& signal : message[can_id].signals) {
             total_length += signal.length;
             uint64_t old_value, new_value;
@@ -46,7 +47,7 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
                 old_value = toLittleEndian(old_value, (end - first));
                 new_value = extractBits(new_value, ((end - first) * 8) - signal.length - (signal.start_bit % 8), signal.length);
                 old_value = extractBits(old_value, ((end - first) * 8) - signal.length - (signal.start_bit % 8), signal.length);
-            } else{
+            }else{
                 new_value = extractBits(payload_combined, signal.start_bit, signal.length);
                 old_value = extractBits(valid_payload_combined, signal.start_bit, signal.length);
             }
@@ -59,11 +60,14 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
             }
         }
         if ((total_same_percent / total_length) >= percent) { //수용치
+            return true;
+        } else {
             printf("[?] [%03x] [Medium] 이전 패킷간의 유사성이 %.6f%%만큼 낮습니다.\n", can_id, total_same_percent/total_length);
             return false;
-        } else {
-            return true;
         }
+    }else{
+        return true;
+    }
     }
     printf("[?] [%03x] [High] DBC파일의 정의된 ID가 아닙니다. Fuzzing 혹은 DoS 공격입니다.", can_id);
     return false;
@@ -81,6 +85,7 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
     if (message.find(can_id) != message.end()) {
         if (DLC == message[can_id].dlc){
             if (!message[can_id].Skipable) {
+                if (!message[can_id].signals.empty()){
                 for (const auto& signal : message[can_id].signals) {
                     int start_bit = signal.start_bit;
                     int length = signal.length;
@@ -101,7 +106,10 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
                         return false;
                     }
                 }
-            } else {
+            }else{
+                return true;
+            }
+            }else{
                 return true;
             }
         } else {
