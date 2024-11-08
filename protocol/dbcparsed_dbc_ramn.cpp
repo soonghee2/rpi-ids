@@ -48,7 +48,10 @@ std::unordered_map<int, CANMessage> message = {
         {"CheckEngine", 1, 1, 0, 1, 0, 1},
         {"Battery", 0, 1, 0, 1, 0, 1}
     }}},
-    {0x1A, {true, "XXX", 8, "XXX", {
+    {0x1a, {true, "XXX", 8, "XXX", {
+        {"Counter", 16, 16, 0, 0, 0, 65535}
+    }}},    
+    {0x26, {true, "XXX", 8, "XXX", {
         {"Counter", 16, 16, 0, 0, 0, 65535}
     }}},
     {0x2f, {true, "XXX", 8, "XXX", {
