@@ -50,9 +50,6 @@ std::unordered_map<int, CANMessage> message = {
     }}},
     {0x1a, {true, "XXX", 8, "XXX", {
         {"Counter", 16, 16, 0, 0, 0, 65535}
-    }}},    
-    {0x26, {true, "XXX", 8, "XXX", {
-        {"Counter", 16, 16, 0, 0, 0, 65535}
     }}},
     {0x2f, {true, "XXX", 8, "XXX", {
         {"Counter", 16, 16, 0, 0, 0, 65535}
