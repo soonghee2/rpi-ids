@@ -1,5 +1,6 @@
 #include "header.h"
 
+#define INTERFACE_NAME "vcan0"
 
 std::map<int, std::chrono::steady_clock::time_point> canIdTimers;
 std::mutex timerMutex;
@@ -181,7 +182,7 @@ int main(int argc, char *argv[]) {
     }
 
     // 인터페이스 이름을 설정 (vcan0 사용)
-    strcpy(ifr.ifr_name, "vcan0");
+    strcpy(ifr.ifr_name, "INTERFACE_NAME");
     if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
         perror("IOCTL error");
         return 1;
