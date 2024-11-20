@@ -12,10 +12,12 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         //printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
         return malicious_packet;
     }
-    int percent = 30;
-    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, percent)) {
+    
+    if(stats.similarity_count.first > 199){
+    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, stats.similarity_count.second-5)) {
         //printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
         return malicious_packet;
+    }
     }
     #endif
 

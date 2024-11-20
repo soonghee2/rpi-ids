@@ -19,6 +19,7 @@ uint64_t extractBits(uint64_t data, int start, int length);
 uint64_t toLittleEndian(uint64_t data, int byteSize);
 bool validation_check(uint32_t can_id, uint8_t* data, int DLC);
 bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool& is_initial_data, int percent);
+void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool& is_initial_data, std::pair<int, int>& similarity_count);
 
 #endif // FUZZING_BASED_DBC_DETECTION_H
 
