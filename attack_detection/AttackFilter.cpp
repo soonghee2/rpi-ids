@@ -46,7 +46,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
 
     // 최하위 CAN ID인가?
-    if (check_low_can_id(dequeuedMsg->can_id) && check_DoS(*dequeuedMsg)) {
+    if(check_DoS(*dequeuedMsg)) {
         //printf("%03x Dos Attack\n", dequeuedMsg->can_id);
         return malicious_packet;
     }
@@ -65,8 +65,8 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
 
     //Replay 공격 체크 
-    if (!check_periodic_range(dequeuedMsg->timestamp - stats.last_normal_timestamp, stats.periodic)){
-        if (stats.prev_timediff == 0 && check_replay(stats, dequeuedMsg->data, dequeuedMsg->can_id)){
+    if (stats.prev_timediff == 0 && !check_periodic_range(dequeuedMsg->timestamp - stats.last_normal_timestamp, stats.periodic)){
+        if (stats.dos_count <= 1 && check_replay(stats, dequeuedMsg->data, dequeuedMsg->can_id)){
             //printf("%03x Replay\n", dequeuedMsg->can_id);
             return malicious_packet;
         }

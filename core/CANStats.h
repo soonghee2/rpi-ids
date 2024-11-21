@@ -20,8 +20,9 @@ struct CANStats {
     double last_normal_timestamp = 0;
 
     int dos_count = 0;
+    uint8_t dos_payload[8] = {0};
     int replay_count = 0;
-    uint8_t suspected_payload[8] = {0};
+    uint8_t replay_payload[8] = {0};
 
     uint8_t valid_last_data[8] = {0};
     bool is_initial_data = true;
