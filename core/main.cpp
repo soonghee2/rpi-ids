@@ -128,7 +128,7 @@ void process_can_msg(const char *log_filename){
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                 
                 #ifdef SET_DBC_CHECK
-                calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.is_initial_data, stats.similarity_count);
+                calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
                 #endif
             
             } else if(susp[dequeuedMsg.can_id]){

@@ -16,7 +16,7 @@ uint64_t toLittleEndian(uint64_t data, int byteSize) {
     return result;
 }
 
-bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool& is_initial_data, int percent) {   
+bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], int percent, int& count) {   
     
     double total_same_percent=0;
     int total_length=0;
@@ -29,8 +29,8 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
     }
     
     if(message.find(can_id) != message.end()) {
-        if(is_initial_data){
-            is_initial_data = false;
+        if(count = 0){
+            count++;
             return true;
         }
         if (!message[can_id].signals.empty()){
@@ -122,7 +122,7 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
 }
 
 
-void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], bool& is_initial_data, std::pair<int, int>& similarity_count) {
+void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], int& similarity_percent, int count) {
     
     double total_same_percent=0;
     int total_length=0;
@@ -135,8 +135,7 @@ void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_pa
     }
     
     if(message.find(can_id) != message.end()) {
-        if(is_initial_data){
-            is_initial_data = false;
+        if(count = 0){
             return;
         }
         if (!message[can_id].signals.empty()){
@@ -166,8 +165,7 @@ void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_pa
             }
         }
         
-        similarity_count.first = ((similarity_count.first*similarity_count.second) + (total_same_percent / total_length))/(similarity_count.second+1);
-        similarity_count.second += 1;
+        similarity_percent = ((similarity_percent*count) + (total_same_percent / total_length))/(count+1);
     }else{
         return;
     }

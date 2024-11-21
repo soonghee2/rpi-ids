@@ -24,9 +24,8 @@ struct CANStats {
     uint8_t suspected_payload[8] = {0};
 
     uint8_t valid_last_data[8] = {0};
-    bool is_initial_data = true;
     
-    std::pair<int, int> similarity_count{0, 0};
+    int similarity_percent = 0;
 };
 
 typedef struct qCANMsg {
