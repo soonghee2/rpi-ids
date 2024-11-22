@@ -35,7 +35,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // 주기 패킷일 경우
     double time_diff = dequeuedMsg->timestamp - stats.last_timestamp;
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
-        if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
+        if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp, stats)) {
             memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
             if(stats.replay_count > 5)
