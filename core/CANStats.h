@@ -25,6 +25,9 @@ struct CANStats {
 
     uint8_t valid_last_data[8] = {0};
     bool is_initial_data = true;
+
+    int resetcount = 0;
+    double reset_timestamp = 0;
 };
 
 typedef struct qCANMsg {
