@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
     }
 
     // 인터페이스 이름을 설정 (vcan0 사용)
-    strcpy(ifr.ifr_name, "INTERFACE_NAME");
+    strcpy(ifr.ifr_name, INTERFACE_NAME);
     if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
         perror("IOCTL error");
         return 1;

@@ -29,7 +29,7 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
     }
     
     if(message.find(can_id) != message.end()) {
-        if(count = 0){
+        if(count == 0){
             count++;
             return true;
         }
@@ -135,7 +135,7 @@ void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_pa
     }
     
     if(message.find(can_id) != message.end()) {
-        if(count = 0){
+        if(count == 0){
             return;
         }
         if (!message[can_id].signals.empty()){
