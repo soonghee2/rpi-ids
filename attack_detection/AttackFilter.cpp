@@ -5,6 +5,11 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool normal_packet = false;
 
     CANStats& stats = can_stats[dequeuedMsg->can_id];
+    
+    if(isMalicousUDS(stats,dequeuedMsg->data, dequeuedMsg->can_id)){
+	    printf("Here\n");
+	    return malicious_packet;
+    }
 
     //DBC 검증 체크 
     #ifdef SET_DBC_CHECK
@@ -12,10 +17,12 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         //printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
         return malicious_packet;
     }
-    int percent = 30;
-    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.is_initial_data, percent)) {
+    
+    if(stats.count > 199){
+    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.similarity_percent-5, stats.count)) {
         //printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
         return malicious_packet;
+    }
     }
     #endif
 

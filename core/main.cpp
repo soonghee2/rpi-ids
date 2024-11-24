@@ -125,6 +125,11 @@ void process_can_msg(const char *log_filename){
             if(dequeuedMsg.timestamp - start_time <= 40&&stats.count < 201){
                 fprintf(logfile_whole, " 0\n");
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
+                
+                #ifdef SET_DBC_CHECK
+                calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
+                #endif
+            
             } else if(susp[dequeuedMsg.can_id]){
                 susp[dequeuedMsg.can_id] = 0;
                 stats.event_count = -1;
@@ -146,8 +151,9 @@ void process_can_msg(const char *log_filename){
             }
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
-            lock.lock();
 	        fflush(logfile_whole);
+
+            lock.lock();
         }
     }
 }

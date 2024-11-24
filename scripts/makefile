@@ -18,6 +18,7 @@ SRCS += ../attack_detection/ClockSkew_detection.cpp \
         ../attack_detection/Event_detection.cpp \
         ../attack_detection/Normal_detection.cpp \
         ../attack_detection/Replay_Suspension_detection.cpp \
+	../attack_detection/Malicous_uds_detection.cpp \
         ../attack_detection/AttackFilter.cpp
 
 OBJS = $(SRCS:.cpp=.o)
