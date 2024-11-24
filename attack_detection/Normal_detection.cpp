@@ -18,8 +18,3 @@ bool check_previous_packet_of_avg(double current_timediff, CANStats& stats) {
     stats.prev_timediff = 0;  
     return false;
 }
-
-bool check_low_can_id(uint32_t can_id) {
-    return can_id <= MIN_CAN_ID;
-}
-

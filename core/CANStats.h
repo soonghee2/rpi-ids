@@ -13,6 +13,7 @@ struct CANStats {
     double prev_timediff = 0;
     bool is_periodic=false;
     int count = 0;
+    int normal_count = 0;
 
     int event_count = 0;
     double last_event_timstamp = 0;
@@ -35,7 +36,7 @@ typedef struct qCANMsg {
     uint8_t data[8] = {0};   // CAN 데이터 (최대 8바이트)
 } EnqueuedCANMsg;
 
-extern uint32_t MIN_CAN_ID;
+extern int is_Attack;
 extern std::unordered_map<uint32_t, CANStats> can_stats;
 #endif
 

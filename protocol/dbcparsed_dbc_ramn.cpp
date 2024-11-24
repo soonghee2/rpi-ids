@@ -32,7 +32,7 @@ std::unordered_map<int, CANMessage> message = {
         {"Counter", 16, 16, 0, 0, 0, 65535},
         {"Left", 7, 1, 0, 1, 0, 1},
         {"Right", 0, 1, 0, 1, 0, 1}
-    }}},s
+    }}},
     {0x1b8, {true, "EngineKey", 8, "Vector__XXX", {
         {"Counter", 16, 16, 0, 0, 0, 65535},
         {"Status", 6, 2, 0, 0, 0, 3}
@@ -71,5 +71,8 @@ std::unordered_map<int, CANMessage> message = {
     }}},
     {0x1d3, {true, "XXX", 8, "XXX", {
         {"Counter", 16, 16, 0, 0, 0, 65535}
+    }}},
+    {0x7ea, {true, "XXX", 3, "XXX", {
+        {"Counter", 6, 6, 0, 0, 0, 64}
     }}}
 };

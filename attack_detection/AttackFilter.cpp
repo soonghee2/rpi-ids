@@ -21,11 +21,9 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     // 비주기 패킷일 경우
     if (!stats.is_periodic || stats.count<=1) {
-        if (check_low_can_id(dequeuedMsg->can_id)) {
-            if((check_DoS(*dequeuedMsg))){
-                //printf("%03x DoS Attack\n", dequeuedMsg->can_id);
-                return malicious_packet;
-            }
+        if((check_DoS(*dequeuedMsg))){
+            //printf("%03x DoS Attack\n", dequeuedMsg->can_id);
+            return malicious_packet;
         }
         memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
         return normal_packet;
@@ -36,8 +34,12 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp)) {
             memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
-            if(stats.replay_count > 5)
-                stats.replay_count--;
+            stats.normal_count++;
+            if(stats.normal_count >= 5){
+                // memset(stats.replay_payload, 0, sizeof(stats.replay_payload));
+                stats.replay_count = 0;
+                is_Attack = 0;
+            }
             return normal_packet;
         } else {
             //printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
@@ -45,9 +47,12 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         }
     }
 
+    stats.normal_count = 0;
+
     // 최하위 CAN ID인가?
-    if(check_DoS(*dequeuedMsg)) {
+    if((is_Attack == 0 || is_Attack == 1) && check_DoS(*dequeuedMsg)) {
         //printf("%03x Dos Attack\n", dequeuedMsg->can_id);
+        stats.replay_count = 0;
         return malicious_packet;
     }
 
@@ -66,8 +71,9 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     //Replay 공격 체크 
     if (stats.prev_timediff == 0 && !check_periodic_range(dequeuedMsg->timestamp - stats.last_normal_timestamp, stats.periodic)){
-        if (stats.dos_count <= 1 && check_replay(stats, dequeuedMsg->data, dequeuedMsg->can_id)){
+        if ((is_Attack == 0 || is_Attack == 2) && check_replay(stats, dequeuedMsg->data, dequeuedMsg->can_id)){
             //printf("%03x Replay\n", dequeuedMsg->can_id);
+            stats.dos_count = 0;
             return malicious_packet;
         }
     }
