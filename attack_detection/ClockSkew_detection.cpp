@@ -38,7 +38,6 @@ void updateCumClockSkew(ClockSkewDetector& detector, double error, int can_id) {
     if (detector.m_detect_cnt < window) {
         detector.cum_clock_skew[detector.m_detect_cnt] = error;  // 배열에 값 추가
     } else {
-        // std::rotate(std::begin(detector.cum_clock_skew), std::begin(detector.cum_clock_skew) + 1, std::end(detector.cum_clock_skew));
         for (int i = 0; i < window - 1; ++i) {
             detector.cum_clock_skew[i] = detector.cum_clock_skew[i + 1];  // 현재 위치에 다음 요소 복사
         }
@@ -61,14 +60,12 @@ void calculateAndUpdateLimits(ClockSkewDetector& detector) {
         return;
     }
 
-    double diff_average = average - detector.prev_average;
+    // double diff_average = average - detector.prev_average;
     detector.prev_average = average;
     // printf("avg:%lf, diff_avg: %lf\n", average, diff_average);
 
     detector.upperLimit = std::max(detector.upperLimit, detector.prev_average);
     detector.lowerLimit = std::min(detector.lowerLimit, detector.prev_average);
-//     detector.upperLimit = std::max(detector.upperLimit, diff_average);
-//     detector.lowerLimit = std::min(detector.lowerLimit, diff_average);
 }
 
 // 탐지를 수행하고 결과 반환
@@ -84,7 +81,7 @@ bool detectAnomaly(ClockSkewDetector& detector, double error, int can_id) {
     
     // 탐지 조건 확인
     detector.prev_average = average;
-    printf("공격 탐지\n");
+    // printf("공격 탐지\n");
     return detector.prev_average < detector.lowerLimit || detector.prev_average > detector.upperLimit;
 }
 
@@ -101,10 +98,6 @@ bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats) {
     if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
         clockSkewDetectors[can_id] = ClockSkewDetector(can_id);
     }
-    // if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
-    //     clockSkewDetectors.emplace(can_id, can_id);
-    // }
-    // cum_clock_skew 배열에 에러값 저장
     ClockSkewDetector& detector = clockSkewDetectors[can_id];
     detector.m_detect_cnt++;
     // 배열이 다 차지 않았다면 error 채우기만 수행
@@ -112,23 +105,23 @@ bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats) {
         updateCumClockSkew(detector, error, can_id);
         calculateAndUpdateLimits(detector);  // 초기화 단계 완료 시 평균값 계산
             // 로그 파일 기록(디버그용)
-        if (detector.m_detect_cnt > window){
-            logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
-        }
+        // if (detector.m_detect_cnt > window){
+        //     logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
+        // }
         return false;
     }
     if (detector.m_detect_cnt==MIN_DATA_CNT){
-                std::ofstream log_file("/home/song/YESICAN/canlogs/temp/masq_test.log", std::ios_base::app);
-        if (log_file.is_open()) {
-            log_file << std::fixed << std::setprecision(6)
-                    //  << detector.m_detect_cnt << " "
-                    << "final_Limit: "<<detector.can_id << " " << detector.lowerLimit << " "<< detector.upperLimit<<"\n";
-            log_file.close();
-        } else {
-            std::cerr << "Failed to open log file: " << "/home/song/YESICAN/canlogs/temp/masq_test.log" << std::endl;
-        }
+        // std::ofstream log_file("/home/song/YESICAN/canlogs/temp/masq_test.log", std::ios_base::app);
+        // if (log_file.is_open()) {
+        //     log_file << std::fixed << std::setprecision(6)
+        //             //  << detector.m_detect_cnt << " "
+        //             << "final_Limit: "<<detector.can_id << " " << detector.lowerLimit << " "<< detector.upperLimit<<"\n";
+        //     log_file.close();
+        // } else {
+        //     std::cerr << "Failed to open log file: " << "/home/song/YESICAN/canlogs/temp/masq_test.log" << std::endl;
+        // }
     }
-    logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
+    //logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
     bool result=detectAnomaly(detector, error, can_id);  
     if (result){
         detector.m_detect_cnt+=1;
