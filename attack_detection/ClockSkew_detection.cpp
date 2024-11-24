@@ -1,10 +1,15 @@
 #include "ClockSkew_detection.h"
 
 std::unordered_map<uint32_t, ClockSkewDetector> clockSkewDetectors;
-
 // 기본 생성자 구현
 ClockSkewDetector::ClockSkewDetector()
-    : m_detect_cnt(-1), upperLimit(0), lowerLimit(0), diff_average(0) {
+    : can_id(0), m_detect_cnt(-1), upperLimit(0), lowerLimit(0), diff_average(0) {
+    std::fill(std::begin(cum_clock_skew), std::end(cum_clock_skew), 0.0);
+}
+
+// 기본 생성자 구현
+ClockSkewDetector::ClockSkewDetector(uint32_t can_id)
+    : can_id(can_id),m_detect_cnt(-1), upperLimit(0), lowerLimit(0), diff_average(0) {
     std::fill(std::begin(cum_clock_skew), std::end(cum_clock_skew), 0.0);
 }
 
@@ -39,12 +44,6 @@ void updateCumClockSkew(ClockSkewDetector& detector, double error, int can_id) {
         }
         detector.cum_clock_skew[window - 1] = error;  // 가장 최근 값 저장
     }
-
-    printf("\nupdateCumClockSkew_%X(%d)\t", can_id, detector.m_detect_cnt);
-    for (int i=0; i<window; i++){
-            printf("%lf", detector.cum_clock_skew[i]);
-    }
-    printf("\n");
 }
 
 // 평균값과 차이 계산, upperLimit 및 lowerLimit 업데이트
@@ -58,17 +57,18 @@ void calculateAndUpdateLimits(ClockSkewDetector& detector) {
     double average = sum / window;
     if (detector.m_detect_cnt == window - 1){
         detector.prev_average = average;
-        printf("avg:%lf\n", average);
-
+        // printf("avg:%lf\n", average);
         return;
     }
 
     double diff_average = average - detector.prev_average;
     detector.prev_average = average;
-    printf("avg:%lf, diff_avg: %lf\n", average, diff_average);
+    // printf("avg:%lf, diff_avg: %lf\n", average, diff_average);
 
-    detector.upperLimit = std::max(detector.upperLimit, diff_average);
-    detector.lowerLimit = std::min(detector.lowerLimit, diff_average);
+    detector.upperLimit = std::max(detector.upperLimit, detector.prev_average);
+    detector.lowerLimit = std::min(detector.lowerLimit, detector.prev_average);
+//     detector.upperLimit = std::max(detector.upperLimit, diff_average);
+//     detector.lowerLimit = std::min(detector.lowerLimit, diff_average);
 }
 
 // 탐지를 수행하고 결과 반환
@@ -84,7 +84,8 @@ bool detectAnomaly(ClockSkewDetector& detector, double error, int can_id) {
     
     // 탐지 조건 확인
     detector.prev_average = average;
-    return diff_average < detector.lowerLimit || diff_average > detector.upperLimit;
+    printf("공격 탐지\n");
+    return detector.prev_average < detector.lowerLimit || detector.prev_average > detector.upperLimit;
 }
 
 bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats) {
@@ -98,8 +99,11 @@ bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats) {
 
         // ClockSkewDetector가 없으면 새로 생성
     if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
-        clockSkewDetectors[can_id] = ClockSkewDetector();
+        clockSkewDetectors[can_id] = ClockSkewDetector(can_id);
     }
+    // if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
+    //     clockSkewDetectors.emplace(can_id, can_id);
+    // }
     // cum_clock_skew 배열에 에러값 저장
     ClockSkewDetector& detector = clockSkewDetectors[can_id];
     detector.m_detect_cnt++;
@@ -109,11 +113,30 @@ bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats) {
         calculateAndUpdateLimits(detector);  // 초기화 단계 완료 시 평균값 계산
             // 로그 파일 기록(디버그용)
         if (detector.m_detect_cnt > window){
-            logClockSkewData(detector, can_id, time_diff, error, "../masq_test.log");
+            logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
         }
         return false;
     }
-    logClockSkewData(detector, can_id, time_diff, error, "../masq_test.log");
+    if (detector.m_detect_cnt==MIN_DATA_CNT){
+                std::ofstream log_file("/home/song/YESICAN/canlogs/temp/masq_test.log", std::ios_base::app);
+        if (log_file.is_open()) {
+            log_file << std::fixed << std::setprecision(6)
+                    //  << detector.m_detect_cnt << " "
+                    << "final_Limit: "<<detector.can_id << " " << detector.lowerLimit << " "<< detector.upperLimit<<"\n";
+            log_file.close();
+        } else {
+            std::cerr << "Failed to open log file: " << "/home/song/YESICAN/canlogs/temp/masq_test.log" << std::endl;
+        }
+    }
+    logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
     bool result=detectAnomaly(detector, error, can_id);  
-    return result;
+    if (result){
+        detector.m_detect_cnt+=1;
+        if (detector.m_detect_cnt>MIN_DETECT_LIMIT){
+            return true;
+        }else{  return false;}
+    } else{
+        detector.m_detect_cnt=0;
+    }
+    return false;
 }
