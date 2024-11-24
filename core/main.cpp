@@ -153,8 +153,9 @@ void process_can_msg(const char *log_filename){
             }
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
-            lock.lock();
 	        fflush(logfile_whole);
+
+            lock.lock();
         }
     }
 }

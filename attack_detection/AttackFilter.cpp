@@ -5,6 +5,11 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     bool normal_packet = false;
 
     CANStats& stats = can_stats[dequeuedMsg->can_id];
+    
+    if(isMalicousUDS(stats,dequeuedMsg->data, dequeuedMsg->can_id)){
+	    printf("Here\n");
+	    return malicious_packet;
+    }
 
     //DBC 검증 체크 
     #ifdef SET_DBC_CHECK

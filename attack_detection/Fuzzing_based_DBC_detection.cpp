@@ -121,7 +121,6 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
     return false;
 }
 
-
 void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], int& similarity_percent, int count) {
     
     double total_same_percent=0;
@@ -174,3 +173,4 @@ void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_pa
     printf("[?] [%03x] [High] DBC파일에 정의된 ID가 아닙니다. Fuzzing 혹은 DoS 공격입니다.\n", can_id);
     return;
 }
+
