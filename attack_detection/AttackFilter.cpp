@@ -19,7 +19,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
     
     if(stats.count > 199){
-    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.similarity_percent-5, stats.count)) {
+    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.similarity_percent-10, stats.count)) {
         //printf("%03x DBC Fuzzing or Replay\n", dequeuedMsg->can_id);
         return malicious_packet;
     }
