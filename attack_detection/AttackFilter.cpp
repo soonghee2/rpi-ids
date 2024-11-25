@@ -84,7 +84,7 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
             return malicious_packet;
         }
     }
-
+    memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
     stats.last_normal_timestamp = dequeuedMsg->timestamp;
     return normal_packet;
 }
