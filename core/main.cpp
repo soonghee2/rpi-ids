@@ -1,6 +1,5 @@
 #include "header.h"
 
-
 std::map<int, std::chrono::steady_clock::time_point> canIdTimers;
 std::mutex timerMutex;
 
@@ -138,6 +137,9 @@ void process_can_msg(const char *log_filename){
                 fprintf(logfile_whole, " 1\n");
             } else if(check){
 	            fprintf(logfile_whole, " 0\n");
+	        #ifdef SET_DBC_CHECK
+                calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
+                #endif
                 check = false;
             }
 	          else if (filtering_process(&dequeuedMsg)){
@@ -147,6 +149,9 @@ void process_can_msg(const char *log_filename){
                 printf("Malicious packet! count: %d\n", mal_count++);
             } else{
                 onCanMessageReceived(dequeuedMsg.can_id);
+                #ifdef SET_DBC_CHECK
+                calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
+                #endif
                 fprintf(logfile_whole, " 0\n");
             }
             stats.last_timestamp = dequeuedMsg.timestamp;

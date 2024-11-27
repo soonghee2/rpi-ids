@@ -35,24 +35,29 @@ bool check_similarity_with_previous_packet(uint32_t can_id, uint8_t data[8], int
         if (!message[can_id].signals.empty()){
             total_length += signal.length;
             uint64_t old_value, new_value;
-            if (signal.byte_order && signal.length > 8) {
+            /*
+            if (signal.byte_order == 1 && signal.length > 8) {
                 int first = signal.start_bit / 8;
-                int end = ((signal.start_bit + signal.length) / 8) + 1;
+                int end = ((signal.start_bit + signal.length) / 8);
                 int bit_length = (end - first) * 8;
                 new_value = extractBits(payload_combined, first * 8, bit_length, DLC);
                 old_value = extractBits(valid_payload_combined, first * 8, bit_length, DLC);
                 new_value = toLittleEndian(new_value, (end - first));
                 old_value = toLittleEndian(old_value, (end - first));
-                new_value = extractBits(new_value, bit_length - signal.length - (signal.start_bit % 8), signal.length, bit_length/8);
-                old_value = extractBits(old_value, bit_length - signal.length - (signal.start_bit % 8), signal.length, bit_length/8);
+                new_value = extractBits(new_value, ((end - first) * 8) - signal.length - (signal.start_bit % 8), signal.length, bit_length/8);
+                old_value = extractBits(old_value, ((end - first) * 8) - signal.length - (signal.start_bit % 8), signal.length, bit_length/8);
             }else{
                 new_value = extractBits(payload_combined, signal.start_bit, signal.length, DLC);
                 old_value = extractBits(valid_payload_combined, signal.start_bit, signal.length, DLC);
             }
+            */
+            new_value = extractBits(payload_combined, signal.start_bit, signal.length, DLC);
+            old_value = extractBits(valid_payload_combined, signal.start_bit, signal.length, DLC);
+            //printf("%ld %ld\n",new_value,old_value);
             if((int)old_value == (int)new_value){
                 total_same_percent += signal.length * 100;
             }else{
-                double diff = (fabs((double)old_value - (double)new_value) / (std::pow(2,total_length)-1) * 100);
+                double diff = std::min(std::pow(2,total_length) - fabs((double)old_value - (double)new_value),fabs((double)old_value - (double)new_value)) / std::pow(2,total_length) * 100;
                 //double diff = (fabs((double)old_value - (double)new_value) / (std::max((double)old_value, (double)new_value))) * 100;
                 total_same_percent += signal.length * (100 - diff);
             }
@@ -124,8 +129,8 @@ bool validation_check(uint32_t can_id, uint8_t* data, int DLC) {
     return false;
 }
 
-void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], int& similarity_percent, int count) {
-    
+void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_payload[8], float& similarity_percent, int count) {
+    //printf("%03x : %f -> ",can_id, similarity_percent);
     double total_same_percent=0;
     int total_length=0;
 
@@ -144,6 +149,7 @@ void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_pa
         for (const auto& signal : message[can_id].signals) {
             total_length += signal.length;
             uint64_t old_value, new_value;
+            /*
             if (signal.byte_order == 1 && signal.length > 8) {
                 int first = signal.start_bit / 8;
                 int end = ((signal.start_bit + signal.length) / 8);
@@ -158,16 +164,20 @@ void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_pa
                 new_value = extractBits(payload_combined, signal.start_bit, signal.length, DLC);
                 old_value = extractBits(valid_payload_combined, signal.start_bit, signal.length, DLC);
             }
+            */
+            new_value = extractBits(payload_combined, signal.start_bit, signal.length, DLC);
+            old_value = extractBits(valid_payload_combined, signal.start_bit, signal.length, DLC);
             if (old_value == new_value) {
                 total_same_percent += signal.length * 100;
             }else{
-                double diff = (fabs((double)old_value - (double)new_value) / (std::pow(2,total_length)-1) * 100);
+                double diff = std::min(std::pow(2,total_length) - fabs((double)old_value - (double)new_value),fabs((double)old_value - (double)new_value)) / std::pow(2,total_length) * 100;
                 //double diff = (fabs((double)old_value - (double)new_value) / std::max((double)old_value, (double)new_value)) * 100;
                 total_same_percent += signal.length * (100 - diff);
             }
         }
         
-        similarity_percent = ((similarity_percent*count) + (total_same_percent / total_length))/(count+1);
+        similarity_percent = ((similarity_percent*count) + (total_same_percent / total_length)*count/4)/(count*5/4);
+        //printf("%f\n",similarity_percent);
     }else{
         return;
     }
@@ -176,3 +186,4 @@ void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_pa
     printf("[?] [%03x] [High] DBC파일에 정의된 ID가 아닙니다. Fuzzing 혹은 DoS 공격입니다.\n", can_id);
     return;
 }
+
