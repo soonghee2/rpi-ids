@@ -20,9 +20,18 @@ bool filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     
     if(stats.count > 200){
     //printf("percent : %d\n", stats.similarity_percent);
-    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, stats.similarity_percent - 10, stats.count)) {
-        printf("%f\n", stats.similarity_percent);
+    if(stats.is_periodic){
+    //if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, 100 - ((100 - stats.similarity_percent) * 5), stats.count)) {
+    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data,stats.similarity_percent-13, stats.count)) {
+        printf("periodic %f\n", stats.similarity_percent);
         return malicious_packet;
+    }
+    }else{
+    //if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, 100 - ((100 - stats.similarity_percent) * 10), stats.count)) {
+    if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data,stats.similarity_percent-10, stats.count)) {
+        printf("non periodic %f\n", stats.similarity_percent);
+        return malicious_packet;
+    }
     }
     }
     #endif
