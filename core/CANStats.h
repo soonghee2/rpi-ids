@@ -30,7 +30,7 @@ struct CANStats {
     int resetcount = 0;
     double reset_timestamp = 0;
     
-    int similarity_percent = 0;
+    float similarity_percent = 50;
 
 };
 
