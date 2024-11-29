@@ -176,7 +176,7 @@ void calc_similarity(uint32_t can_id, uint8_t data[8], int DLC, uint8_t valid_pa
             }
         }
         
-        similarity_percent = ((similarity_percent*count) + (total_same_percent / total_length)*count/4)/(count*5/4);
+        similarity_percent = ((similarity_percent*count)+(total_same_percent/total_length))/(count+1);
         //printf("%f\n",similarity_percent);
     }else{
         return;
