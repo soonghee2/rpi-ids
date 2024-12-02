@@ -1,4 +1,4 @@
-#include "Malicous_uds_detection.h"
+#include "Malicious_uds_detection.h"
 
 const std::vector<uint8_t> VALID_UDS_REQUESTS = {0x10, 0x11, 0x22, 0x2E, 0x2F, 0x31, 0x34, 0x37};
 const std::uint16_t VALID_CAN_ID_MIN = 0x700;
@@ -15,14 +15,14 @@ bool isValidUDS(uint8_t data[],  uint32_t can_id){
         //dlc?
         //printf("%02x%02x%02x\n", data[0],data[1],data[2]);
         if(std::find(VALID_UDS_REQUESTS.begin(), VALID_UDS_REQUESTS.end(), data[1]) != VALID_UDS_REQUESTS.end()) {
-                //printf("Malicous UDS %03x \n", can_id);
+                //printf("Malicious UDS %03x \n", can_id);
                 return true;
         }
 
         return false;
 }
 
-bool isMalicousUDS(CANStats& stats, uint8_t data[], uint32_t can_id){
+bool isMaliciousUDS(CANStats& stats, uint8_t data[], uint32_t can_id){
         if(isValidUDS(data, can_id)){
                 if(data[1] == RESET_SERVICE_CODE){
                         if(stats.resetcount ==0){

@@ -6,7 +6,7 @@
 #include "Event_detection.h"
 #include "Replay_Suspension_detection.h"
 #include "Fuzzing_based_DBC_detection.h"
-#include "Malicous_uds_detection.h"
+#include "Malicious_uds_detection.h"
 
 #endif // ATTACK_DETECTION_H
 

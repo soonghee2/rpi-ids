@@ -122,7 +122,16 @@ bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats) {
         // }
     }
     //logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
+
+
     bool result=detectAnomaly(detector, error, can_id);  
+
+    stats.clock_skew = detector.prev_average;
+    stats.clock_skew_upperlimit = detector.upperLimit;
+    stats.clock_skew_lowerlimit = detector.lowerLimit;
+    
+
+
     if (result){
         detector.m_detect_cnt+=1;
         if (detector.m_detect_cnt>MIN_DETECT_LIMIT){

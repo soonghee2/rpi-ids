@@ -32,6 +32,10 @@ struct CANStats {
     
     float similarity_percent = 50;
 
+    float clock_skew = 0;
+    float clock_skew_lowerlimit = 0;
+    float clock_skew_upperlimit = 0;
+
 };
 
 typedef struct qCANMsg {

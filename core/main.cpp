@@ -134,25 +134,45 @@ void process_can_msg(const char *log_filename){
                 stats.event_count = -1;
                 stats.prev_timediff = 0;
                 printf("Suspended packet! count: %d\n", mal_count++);
-                fprintf(logfile_whole, " 1\n");
+                fprintf(logfile_whole, " 4\n");
             } else if(check){
 	            fprintf(logfile_whole, " 0\n");
-	        #ifdef SET_DBC_CHECK
+	            #ifdef SET_DBC_CHECK
                 calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
                 #endif
                 check = false;
-            }
-	          else if (filtering_process(&dequeuedMsg)){
-                stats.event_count = -1;
-                stats.prev_timediff = 0;
-                fprintf(logfile_whole, " 1\n");
-                printf("Malicious packet! count: %d\n", mal_count++);
-            } else{
-                onCanMessageReceived(dequeuedMsg.can_id);
-                #ifdef SET_DBC_CHECK
-                calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
-                #endif
-                fprintf(logfile_whole, " 0\n");
+            } else {
+                int filtering_result = filtering_process(&dequeuedMsg);
+                
+                if (filtering_result == 0){
+                    onCanMessageReceived(dequeuedMsg.can_id);
+                    #ifdef SET_DBC_CHECK
+                    calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
+                    #endif
+                    fprintf(logfile_whole, " 0\n");
+                } else {
+                    stats.event_count = -1;
+                    stats.prev_timediff = 0;
+                    switch (filtering_result){
+                        case 1:
+                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp);
+                            break;
+                        case 2:
+                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf similarity: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.similarity_percent);
+                            break;
+                        case 3:
+                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp);
+                            break;                        
+                        case 4:
+                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf reset_count: %d\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.resetcount);
+                            break;
+                        case 5:
+                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf clock_skew: %.6lf clock_skew_lowerlimit: %.6lf clock_skew_upperlimit: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.clock_skew, stats.clock_skew_lowerlimit, stats.clock_skew_upperlimit);
+                            break;
+                    }
+                    
+                    printf("Malicious packet! count: %d\n", mal_count++);
+                }
             }
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
