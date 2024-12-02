@@ -23,12 +23,12 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     #ifdef SET_DBC_CHECK
     if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
         //printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
-        if(is_Attack == 1 && dequeuedMsg->can_id == last_can_id && memcmp(dequeuedMsg->data, last_paylaod, sizeof(dequeuedMsg->data))){
+        if(is_Attack == 1 && dequeuedMsg->can_id == last_can_id && memcmp(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data))){
             return dos_packet;
         } else return fuzzing_packet;
 
-        last_can_id = dequeuedMsg->can_id
-        memcpy(dequeuedMsg->data, last_paylaod, sizeof(dequeuedMsg->data))
+        last_can_id = dequeuedMsg->can_id;
+        memcpy(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data));
         is_Attack = 1;
         return dos_packet;
     }
