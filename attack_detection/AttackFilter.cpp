@@ -53,7 +53,7 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     // 비주기 패킷일 경우
     if (!stats.is_periodic || stats.count<=1) {
-        if(dequeuedMsg->can_id == 0x000 && (check_DoS(*dequeuedMsg, false)) || (check_DoS(*dequeuedMsg, true))){
+        if((dequeuedMsg->can_id == 0x000 && check_DoS(*dequeuedMsg, false)) || (check_DoS(*dequeuedMsg, true))){
             //printf("%03x DoS Attack\n", dequeuedMsg->can_id);
             return dos_packet;
         } else {
