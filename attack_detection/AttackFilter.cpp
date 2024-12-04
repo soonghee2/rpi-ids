@@ -53,10 +53,12 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     // 비주기 패킷일 경우
     if (!stats.is_periodic || stats.count<=1) {
-        // if((check_DoS(*dequeuedMsg))){
-        //     //printf("%03x DoS Attack\n", dequeuedMsg->can_id);
-        //     return dos_packet;
-        // }
+        if(dequeuedMsg->can_id == 0x000 && (check_DoS(*dequeuedMsg, false)) || (check_DoS(*dequeuedMsg, true))){
+            //printf("%03x DoS Attack\n", dequeuedMsg->can_id);
+            return dos_packet;
+        } else {
+
+        }
         //std::copy(std::begin(dequeuedMsg->data), std::end(dequeuedMsg->data), std::begin(stats.valid_last_data));
         for (size_t i = 0; i < sizeof(stats.valid_last_data) / sizeof(stats.valid_last_data[0]); ++i) {
             stats.valid_last_data[i] = dequeuedMsg->data[i];
@@ -71,7 +73,7 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
             stats.normal_count++;
             if(stats.normal_count >= 5){
-                // memset(stats.replay_payload, 0, sizeof(stats.replay_payload));
+                // memset(stats., 0, sizeof(stats.replay_payload));
                 stats.replay_count = 0;
                 is_Attack = 0;
             }
@@ -89,7 +91,7 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     stats.normal_count = 0;
 
     // 최하위 CAN ID인가?
-    if((is_Attack == 0 || is_Attack == 1) && check_DoS(*dequeuedMsg)) {
+    if((is_Attack == 0 || is_Attack == 1) && check_DoS(*dequeuedMsg, false)) {
         //printf("%03x Dos Attack\n", dequeuedMsg->can_id);
         stats.replay_count = 0;
         return dos_packet;
