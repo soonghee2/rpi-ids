@@ -5,37 +5,36 @@
 #include "ui.h"
 #include <cstdint>
 #include <cmath>
+#include <fstream>
+#include <iomanip> // setprecision을 사용하기 위해 추가
+#include <iostream>
+#include <numeric> // std::accumulate 사용
 #include <unordered_map>
-#include <cstdio>
+#include <algorithm>
 
-const double FORGETTING_FACTOR = 0.95;  // RLS 및 CUSUM에 사용되는 가중치
-const double CUSUM_THRESHOLD = 5.0;       // CUSUM 임계값
-const int MIN_DATA_CNT = 100;              // 최소 수데이터 
-const double ERROR_SCALING_FACTOR = 1000.0; // 작은 오차 값을 확대하기 위한 스케일링
+#define window 100
+const int MIN_DATA_CNT = 10000;              // 최소 수데이터 
+const double accept_percentage=0.2;
+const int MIN_DETECT_LIMIT=100;
+
 
 class ClockSkewDetector {
 public:
-    explicit ClockSkewDetector(double threshold = CUSUM_THRESHOLD);  // 생성자
-    ClockSkewDetector(const ClockSkewDetector& other);                // 복사 생성자
-
-    bool checkClockError(uint32_t can_id, double timestamp); 
-
-private:
+    ClockSkewDetector();                 // 기본 생성자
+    explicit ClockSkewDetector(uint32_t can_id);  // 매개변수가 있는 생성자
+    // ClockSkewDetector(uint32_t can_id);  // 기본 생성자 추가
+    uint32_t can_id;
     int m_detect_cnt;
-    double accumulatedOffset; // 누적된 클럭 오프셋
-    double upperLimit;        // CUSUM 상한 제어 값
-    double lowerLimit;        // CUSUM 하한 제어 값
-    double meanError;         // CUSUM용 평균 오류
-    double last_meanError;      //직전 meanError
-    double stdError;          // CUSUM용 표준 편차
-    double threshold;         // CUSUM 임계값
-
-    bool detectAnomaly(double error, uint32_t can_id);  // CUSUM을 사용한 이상 탐지
+    double upperLimit;        // CUSUM 기울기 상한 제어 값
+    double lowerLimit;        // CUSUM 기울기 하한 제어 값
+    double prev_average;
+    double cum_clock_skew[window];
+    double diff_average;
+    double detection_cnt;
 };
-
 
 extern std::unordered_map<uint32_t, ClockSkewDetector> clockSkewDetectors;
 
-bool check_clock_error(uint32_t can_id, double timestamp);
+bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats);
 
 #endif // CHECK_CLOCK_ERROR_H

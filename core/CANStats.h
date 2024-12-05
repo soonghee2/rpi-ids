@@ -30,7 +30,11 @@ struct CANStats {
     int resetcount = 0;
     double reset_timestamp = 0;
     
-    int similarity_percent = 0;
+    float similarity_percent = 50;
+
+    float clock_skew = 0;
+    float clock_skew_lowerlimit = 0;
+    float clock_skew_upperlimit = 0;
 
     int mal_count = 0;
 

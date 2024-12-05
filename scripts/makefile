@@ -18,10 +18,9 @@ SRCS += ../attack_detection/ClockSkew_detection.cpp \
         ../attack_detection/Event_detection.cpp \
         ../attack_detection/Normal_detection.cpp \
         ../attack_detection/Replay_Suspension_detection.cpp \
-	../attack_detection/Malicous_uds_detection.cpp \
+	../attack_detection/Malicious_uds_detection.cpp \
         ../attack_detection/AttackFilter.cpp \
 	../ui/ui.cpp
-
 OBJS = $(SRCS:.cpp=.o)
 
 # 실행 파일 이름

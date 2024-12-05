@@ -63,11 +63,10 @@ void updateIDMsg(uint32_t can_id, const std::string& type, const std::string& le
     std::sort(sorted_can_ids.begin(), sorted_can_ids.end(), [](const auto& a, const auto& b) {
         return a.second > b.second; // num 값이 큰 순서대로 정렬
     });
-
-    // 최대 10개의 CAN ID만 출력하도록 함
+    
     int max_display = 10;
     int row = current_row;
-
+    
     for (size_t i = 0; i < sorted_can_ids.size() && i < max_display; ++i) {
         const auto& [id, num_value] = sorted_can_ids[i];
         id_to_row[id] = row++;
