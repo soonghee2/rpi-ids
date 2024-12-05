@@ -32,25 +32,6 @@ void updateReasonMsg(uint32_t can_id, const std::string& type, const std::string
               << "] " << buffer << std::flush;
 }
 
-/*// 특정 CAN ID에 대한 메시지를 출력
-void updateAttackMsg(uint32_t can_id, const std::string& type, const std::string& level, const std::string& message, const int num) {
-    std::lock_guard<std::mutex> lock(cout_mutex);
-
-    if (id_to_row.find(can_id) == id_to_row.end()) {
-        id_to_row[can_id] = current_row++;  // 새로운 줄 번호 할당 후 current_row 증가
-    } 
-
-    int row = id_to_row[can_id]; // 해당 CAN ID의 줄 번호
-
-    // 커서를 해당 줄로 이동 후 메시지 출력
-    std::cout << "\033[" << row << ";1H"; // 커서를 특정 줄(row)로 이동
-    std::cout << "\033[K";                // 현재 줄 지우기
-    std::cout << "[CAN ID: " << std::setw(3) << std::setfill('0') << can_id
-              << "] [Type: " << type
-              << "] [Severity: " << level
-              << "] " << message << ">> " << num << std::flush;
-}*/
-
 // 특정 CAN ID에 대한 메시지를 출력
 void updateIDMsg(uint32_t can_id, const std::string& type, const std::string& level, const std::string& message, const int num) {
     std::lock_guard<std::mutex> lock(cout_mutex);
