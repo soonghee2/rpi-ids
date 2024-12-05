@@ -1,14 +1,15 @@
 #include "AttackFilter.h"
 
 int normal_packet = 0;
-int time_dos_packet = 1;
-int payload_dos_packet = 2;
-int dbc_fuzzing_packet = 3;
-int similarity_fuzzing_packet = 4;
-int replay_packet = 5;
-int uds_suspension_packet = 6;
-int time_suspension_packet = 7;
-int masquerade_packet = 8;
+int dbc_dos_packet = 1;
+int time_dos_packet = 2;
+int payload_dos_packet = 3;
+int dbc_fuzzing_packet = 4;
+int similarity_fuzzing_packet = 5;
+int replay_packet = 6;
+int uds_suspension_packet = 7;
+int time_suspension_packet = 8;
+int masquerade_packet = 9;
 
 uint32_t last_can_id = 0;
 uint8_t last_payload[8] = {0};
@@ -30,11 +31,9 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
         //printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
         stats.mal_count++;
-        if(dequeuedMsg->timestamp - stats.last_timestamp <= DoS_DETECT_THRESHOLD) {
-            return time_dos_packet;
-        } else if(dequeuedMsg->can_id == last_can_id && memcmp(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data))){
+        if(dequeuedMsg->timestamp - stats.last_timestamp <= DoS_DETECT_THRESHOLD || (dequeuedMsg->can_id == last_can_id && memcmp(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data)))){
             updateIDMsg(dequeuedMsg->can_id, "DoS", "High", "DoS attack detected.", stats.mal_count);
-            return payload_dos_packet;
+            return dbc_dos_packet;
         } else {
             updateIDMsg(dequeuedMsg->can_id, "Fuzzing", "Medium", "Payload not matching DBC.", stats.mal_count);
             return dbc_fuzzing_packet;
@@ -43,7 +42,7 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         last_can_id = dequeuedMsg->can_id;
         memcpy(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data));
         updateIDMsg(dequeuedMsg->can_id, "DBC", "Medium", "Payload not matching DBC.", stats.mal_count);
-        return payload_dos_packet;
+        return dbc_dos_packet;
     }
 
     if(stats.count > 200){
