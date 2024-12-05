@@ -47,6 +47,7 @@ void calc_periodic(uint32_t can_id, double timestamp) {
                 // printf("1st analysis 0x%x's periodic: stddev:%.6f, cv: %.6f, true( %.6f )\n", can_id, stddev, cv, stats.periodic);
 
             } else { 
+                stats.periodic = -1;
                 stats.is_periodic = false;
                 // printf("1st analysis 0x%x's periodic: stddev:%.6f, cv: %.6f,false \n", can_id, stddev, cv); 
             }
@@ -63,6 +64,7 @@ void calc_periodic(uint32_t can_id, double timestamp) {
                 // printf("2nd analysis 0x%x's periodic: stddev:%.6f, cv: %.6f, true( %.6f )\n", can_id, stddev, cv, stats.periodic);
 
             } else { 
+                stats.periodic = -1;
                 stats.is_periodic = false;
                 // printf("2nd analysis 0x%x's periodic: stddev:%.6f, cv: %.6f,false \n", can_id, stddev, cv);
             }
