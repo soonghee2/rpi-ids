@@ -14,10 +14,15 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     CANStats& stats = can_stats[dequeuedMsg->can_id];
     
-    if(isMaliciousUDS(stats,dequeuedMsg->data, dequeuedMsg->can_id)){
+    if (isMaliciousUDS(stats, dequeuedMsg->data, dequeuedMsg->can_id)) {
+        printf("Here\n");
+        return suspension_packet;
+    }
+
+    /*if(isMaliciousUDS(stats,dequeuedMsg->data, dequeuedMsg->can_id)){
 	    printf("Here\n");
 	    return suspension_packet;
-    }
+    }*/
 
     //DBC 검증 체크 
     #ifdef SET_DBC_CHECK
