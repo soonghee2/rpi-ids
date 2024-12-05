@@ -133,7 +133,7 @@ int receive_can_frame(int s, EnqueuedCANMsg* msg) {
 
 // 큐에서 메시지를 꺼내고 처리하는 함수
 void process_can_msg(const char *log_filename){
-    int mal_count = 0;
+    // int mal_count = 0;
     FILE *logfile_whole = fopen(log_filename, "w");
     bool check = true;
     while(!done){
