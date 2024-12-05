@@ -32,6 +32,8 @@ struct CANStats {
     
     int similarity_percent = 0;
 
+    int mal_count = 0;
+
 };
 
 typedef struct qCANMsg {

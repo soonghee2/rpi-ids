@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -O2 -pthread -I. -I../protocol -I../attack_detection -I../core
+CXXFLAGS = -Wall -O2 -pthread -I. -I../protocol -I../attack_detection -I../core -I../ui
 
 TARGET_DIR = ../scripts
 
@@ -19,7 +19,8 @@ SRCS += ../attack_detection/ClockSkew_detection.cpp \
         ../attack_detection/Normal_detection.cpp \
         ../attack_detection/Replay_Suspension_detection.cpp \
 	../attack_detection/Malicous_uds_detection.cpp \
-        ../attack_detection/AttackFilter.cpp
+        ../attack_detection/AttackFilter.cpp \
+	../ui/ui.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

@@ -16,13 +16,15 @@ bool check_DoS(const EnqueuedCANMsg& dequeuedMsg) {
             is_Attack = 1;
             memset(stats.dos_payload, 0, sizeof(stats.dos_payload));
             memcpy(stats.dos_payload, dequeuedMsg.data, sizeof(dequeuedMsg.data));
-	        printf("[DoS Attack] [%03x] [High] 5번 이상 %d개 패킷이 5ms이내 로 빠르게 동일한 페이로드로 수신되었습니다.\n", dequeuedMsg.can_id, stats.dos_count);
+	    //updateReasonMsg(dequeuedMsg.can_id, "DoS", "High", "5번 이상 %d개 패킷이 5ms이내로 빠르게 동일한 페이로드로 수신되었습니다.\n",stats.dos_count);
+	    //printf("[DoS Attack] [%03x] [High] 5번 이상 %d개 패킷이 5ms이내 로 빠르게 동일한 페이로드로 수신되었습니다.\n", dequeuedMsg.can_id, stats.dos_count);
             return true;
         }
     }
 
     if(memcmp(stats.dos_payload, dequeuedMsg.data, sizeof(dequeuedMsg.data)) == 0){
-        printf("[DoS Attack] [%03x] [High] 5ms 이내로 빠르게 들어오지는 않았지만 이전까지의 DoS Attack으로 판명된 페이로드로 비정상 주기로 수신되었습니다.\n",dequeuedMsg.can_id);
+	 //updateReasonMsg(dequeuedMsg.can_id, "DoS", "High", "5ms이내로 빠르게 들어오지는 않았찌만 이전까지의 DoS Attack으로 판명된 페이로드로 비정상 주기로 수신되었습니다.");
+        //printf("[DoS Attack] [%03x] [High] 5ms 이내로 빠르게 들어오지는 않았지만 이전까지의 DoS Attack으로 판명된 페이로드로 비정상 주기로 수신되었습니다.\n",dequeuedMsg.can_id);
         DoS_last_time = dequeuedMsg.timestamp;
         return true;
     }

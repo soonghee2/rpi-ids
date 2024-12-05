@@ -3,6 +3,7 @@
 
 #include "CANStats.h"
 #include "dbcparsed_dbc.h"
+#include "ui.h"
 
 #include <unordered_set>
 #include <iostream>

@@ -12,10 +12,7 @@ bool isValidUDS(uint8_t data[],  uint32_t can_id){
                 return false;
         }
 
-        //dlc?
-        //printf("%02x%02x%02x\n", data[0],data[1],data[2]);
         if(std::find(VALID_UDS_REQUESTS.begin(), VALID_UDS_REQUESTS.end(), data[1]) != VALID_UDS_REQUESTS.end()) {
-                //printf("Malicous UDS %03x \n", can_id);
                 return true;
         }
 
@@ -39,7 +36,7 @@ bool isMalicousUDS(CANStats& stats, uint8_t data[], uint32_t can_id){
                         stats.reset_timestamp = stats.last_timestamp;
                 }
                 if(stats.resetcount >= COUNT_THRESHOLD){
-                        printf("Malcious UDs %03x\n", can_id);
+                        //printf("Malcious UDs %03x\n", can_id);
                         return true;
                 }
                 return false;
