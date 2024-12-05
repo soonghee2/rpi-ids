@@ -19,7 +19,6 @@ void logClockSkewData(const ClockSkewDetector& detector, uint32_t can_id, double
     std::ofstream log_file(log_file_path, std::ios_base::app);
     if (log_file.is_open()) {
         log_file << std::fixed << std::setprecision(6)
-                //  << detector.m_detect_cnt << " "
                  << can_id
                  << " " << time_diff
                  << " " << error
