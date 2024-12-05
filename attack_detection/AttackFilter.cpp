@@ -32,7 +32,6 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     //DBC 검증 체크
     #ifdef SET_DBC_CHECK
     if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
-        //printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
         stats.mal_count++;
         if(is_Attack == 1 && dequeuedMsg->can_id == last_can_id && memcmp(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data))){
             updateIDMsg(dequeuedMsg->can_id, "DoS", "High", "DoS attack detected.", stats.mal_count);
@@ -53,9 +52,7 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
 
     if(stats.count > 200){
-        //printf("percent : %d\n", stats.similarity_percent);
         if(stats.is_periodic){
-        //if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, 100 - ((100 - stats.similarity_percent) * 5), stats.count)) {
             if(!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data,stats.similarity_percent-13, stats.count)){
                 stats.mal_count++;
                 updateIDMsg(dequeuedMsg->can_id, "Replay", "Medium", "Fuzzing or Replay attack detected.", stats.mal_count);
@@ -64,7 +61,6 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
                 return fuzzing_packet;
             }
         } else{
-            //if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, 100 - ((100 - stats.similarity_percent) * 10), stats.count)) {
             if(!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data,stats.similarity_percent-10, stats.count)){
                 printf("non periodic %f\n", stats.similarity_percent);
                 return fuzzing_packet;
@@ -83,7 +79,6 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         } else {
 
         }
-        //std::copy(std::begin(dequeuedMsg->data), std::end(dequeuedMsg->data), std::begin(stats.valid_last_data));
         for (size_t i = 0; i < sizeof(stats.valid_last_data) / sizeof(stats.valid_last_data[0]); ++i) {
             stats.valid_last_data[i] = dequeuedMsg->data[i];
         }
@@ -94,15 +89,12 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     double time_diff = dequeuedMsg->timestamp - stats.last_timestamp;
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp, stats)) {
-            //memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
             stats.normal_count++;
             if(stats.normal_count >= 5){
-                // memset(stats., 0, sizeof(stats.replay_payload));
                 stats.replay_count = 0;
                 is_Attack = 0;
             }
-            //std::copy(std::begin(dequeuedMsg->data), std::end(dequeuedMsg->data), std::begin(stats.valid_last_data));
             for (size_t i = 0; i < sizeof(stats.valid_last_data) / sizeof(stats.valid_last_data[0]); ++i) {
                 stats.valid_last_data[i] = dequeuedMsg->data[i];
             }
@@ -120,7 +112,6 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     // 최하위 CAN ID인가?
     if((is_Attack == 0 || is_Attack == 1) && check_DoS(*dequeuedMsg, false)) {
-        //printf("%03x Dos Attack\n", dequeuedMsg->can_id);
         stats.mal_count++;
         updateIDMsg(dequeuedMsg->can_id, "DoS", "High", "DoS attack detected.", stats.mal_count);
         updateAttackMsg("DoS");
@@ -130,7 +121,6 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     // Suspension 체크
     if (check_over_double_periodic(dequeuedMsg->timestamp, stats, dequeuedMsg->can_id)) {
-        //printf("%03x Suspenstion\n", dequeuedMsg->can_id);
         stats.mal_count++;
         updateIDMsg(dequeuedMsg->can_id, "Suspension", "High", "Suspension attack detected.", stats.mal_count);
         updateAttackMsg("Suspension");
@@ -139,7 +129,6 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     // On-Event 패킷인가?
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id, dequeuedMsg->data)) {
-        //std::copy(std::begin(dequeuedMsg->data), std::end(dequeuedMsg->data), std::begin(stats.valid_last_data));
         printf("Event ID: %03x\n",dequeuedMsg->can_id);
         for (size_t i = 0; i < sizeof(stats.valid_last_data) / sizeof(stats.valid_last_data[0]); ++i) {
             stats.valid_last_data[i] = dequeuedMsg->data[i];
@@ -160,7 +149,6 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
 
     stats.last_normal_timestamp = dequeuedMsg->timestamp;
-    //std::copy(std::begin(dequeuedMsg->data), std::end(dequeuedMsg->data), std::begin(stats.valid_last_data));
     for (size_t i = 0; i < sizeof(stats.valid_last_data) / sizeof(stats.valid_last_data[0]); ++i) {
         stats.valid_last_data[i] = dequeuedMsg->data[i];
     }
