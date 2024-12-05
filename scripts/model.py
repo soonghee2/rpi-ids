@@ -83,6 +83,9 @@ def detect_intrusion(model_path, log_filename, output_log_filename, payload_size
                                 else:
                                     output_log.write(line)
 
+                else:
+                    # 네 번째 값이 0이 아닌 경우 그대로 저장
+                    output_log.write(line)
                 # 속도 조절을 위해 잠시 대기
                 time.sleep(1)
             else:
