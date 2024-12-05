@@ -36,6 +36,8 @@ struct CANStats {
     float clock_skew_lowerlimit = 0;
     float clock_skew_upperlimit = 0;
 
+    int mal_count = 0;
+
 };
 
 typedef struct qCANMsg {

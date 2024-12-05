@@ -12,10 +12,11 @@ bool isValidUDS(uint8_t data[],  uint32_t can_id){
                 return false;
         }
 
-        //dlc?
-        //printf("%02x%02x%02x\n", data[0],data[1],data[2]);
         if(std::find(VALID_UDS_REQUESTS.begin(), VALID_UDS_REQUESTS.end(), data[1]) != VALID_UDS_REQUESTS.end()) {
+<<<<<<< HEAD:attack_detection/Malicous_uds_detection.cpp
+=======
                 //printf("Malicious UDS %03x \n", can_id);
+>>>>>>> cd075e990a057f5e1da28150d907157f1b3c783c:attack_detection/Malicious_uds_detection_buf.cpp
                 return true;
         }
 
@@ -39,12 +40,16 @@ bool isMaliciousUDS(CANStats& stats, uint8_t data[], uint32_t can_id){
                         stats.reset_timestamp = stats.last_timestamp;
                 }
                 if(stats.resetcount >= COUNT_THRESHOLD){
+<<<<<<< HEAD:attack_detection/Malicous_uds_detection.cpp
+                        //printf("Malcious UDs %03x\n", can_id);
+=======
                         printf("Malcious UDs %03x\n", can_id);
 			printf("Data: ");
     			for (int i = 0; i < 8; i++) {
         			printf("0x%02X ", data[i]); // Hexadecimal format with leading zeros
     			}
     			printf("\n");
+>>>>>>> cd075e990a057f5e1da28150d907157f1b3c783c:attack_detection/Malicious_uds_detection_buf.cpp
                         return true;
                 }
                 return false;

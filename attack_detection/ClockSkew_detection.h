@@ -2,6 +2,7 @@
 #define CHECK_CLOCK_ERROR_H
 
 #include "CANStats.h"
+#include "ui.h"
 #include <cstdint>
 #include <cmath>
 #include <fstream>

@@ -11,6 +11,37 @@ struct timeval tv;
 int under_attack = 0;
 int sum=0;
 int susp[2303] = {0,};
+int current_row = 0;
+
+void printAsciiArt() {
+    //std::lock_guard<std::mutex> lock(cout_mutex);
+    std::cout << R"(
+ _____   ___   _   _   _____ ______  _____
+/  __ \ / _ \ | \ | | |_   _||  _  \/  ___|
+| /  \// /_\ \|  \| |   | |  | | | |\ `--.
+| |    |  _  || . ` |   | |  | | | | `--. \
+| \__/\| | | || |\  |  _| |_ | |/ / /\__/ /
+ \____/\_| |_/\_| \_/  \___/ |___/  \____/
+    )" << std::endl;
+}
+void printoneiArt() {
+    //std::lock_guard<std::mutex> lock(cout_mutex);
+    std::cout << R"(
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+======================================================================================
+    )" << std::endl;
+    initializeAttackTypes();
+}
 
 // CAN 메시지 수신 처리 함수 정의
 void onCanMessageReceived(int canId) {
@@ -133,7 +164,7 @@ void process_can_msg(const char *log_filename){
                 susp[dequeuedMsg.can_id] = 0;
                 stats.event_count = -1;
                 stats.prev_timediff = 0;
-                printf("Suspended packet! count: %d\n", mal_count++);
+                //printf("Suspended packet! count: %d\n", mal_count++);
                 fprintf(logfile_whole, " 4\n");
             } else if(check){
 	            fprintf(logfile_whole, " 0\n");
@@ -171,7 +202,7 @@ void process_can_msg(const char *log_filename){
                             break;
                     }
                     
-                    printf("Malicious packet! count: %d\n", mal_count++);
+                    //printf("Malicious packet! count: %d\n", mal_count++);
                 }
             }
             stats.last_timestamp = dequeuedMsg.timestamp;
@@ -185,7 +216,7 @@ void process_can_msg(const char *log_filename){
 
 // 저장된 CAN 메시지 출력 (디버그용)
 void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
-	printf("Timestamp: %.6f\n", dequeuedMsg->timestamp);
+    printf("Timestamp: %.6f\n", dequeuedMsg->timestamp);
     printf("CAN ID:%03X\n",dequeuedMsg->can_id);
     printf("DLC: %d\n", dequeuedMsg->DLC);
     printf("Data: ");
@@ -196,6 +227,8 @@ void debugging_dequeuedMsg(EnqueuedCANMsg* dequeuedMsg){
 }
 
 int main(int argc, char *argv[]) {
+    printAsciiArt();
+
     int s;
     //char log_filename[100];
     char *log_filename=argv[1];
@@ -230,15 +263,25 @@ int main(int argc, char *argv[]) {
     timerThread.detach();  // 타이머 확인 스레드를 메인 스레드와 분리하여 백그라운드에서 실행
 
     q_init(&canMsgQueue, sizeof(EnqueuedCANMsg), CAN_MSSG_QUEUE_SIZE, IMPLEMENTATION, false);
-        
+    
+    int rows, cols;
+    if (getCursorPosition(rows, cols) == 0) {
+        std::cout << "현재 커서 위치: " << rows << "행, " << cols << "열" << std::endl;
+	current_row = rows+2;
+    }
+    printoneiArt();
+    std::cout << "\033[" << rows << ";" << cols << "H";
+
     std::thread producerThread(receive_can_frame, s, &can_msg);
     std::thread consumerThread(process_can_msg, log_filename);
     
     // Wait for the threads to finish before exiting the program
     producerThread.join();
     consumerThread.join();
-    
 
+    // 커서를 마지막 줄 다음 줄로 이동
+    std::cout << "\033[3B" << std::flush;
+    
     close(s);
     return 0;
 }
