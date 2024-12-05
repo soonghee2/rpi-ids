@@ -9,4 +9,5 @@
 !*.c
 !*.cpp
 !*.h
+!*.log
 !scripts/*
