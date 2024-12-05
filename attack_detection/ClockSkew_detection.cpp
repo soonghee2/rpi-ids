@@ -56,13 +56,9 @@ void calculateAndUpdateLimits(ClockSkewDetector& detector) {
     double average = sum / window;
     if (detector.m_detect_cnt == window - 1){
         detector.prev_average = average;
-        // printf("avg:%lf\n", average);
         return;
     }
-
-    // double diff_average = average - detector.prev_average;
     detector.prev_average = average;
-    // printf("avg:%lf, diff_avg: %lf\n", average, diff_average);
 
     detector.upperLimit = std::max(detector.upperLimit, detector.prev_average);
     detector.lowerLimit = std::min(detector.lowerLimit, detector.prev_average);
@@ -94,7 +90,7 @@ bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats) {
         return false;
     }
 
-        // ClockSkewDetector가 없으면 새로 생성
+    // ClockSkewDetector가 없으면 새로 생성
     if (clockSkewDetectors.find(can_id) == clockSkewDetectors.end()) {
         clockSkewDetectors[can_id] = ClockSkewDetector(can_id);
     }
@@ -104,24 +100,10 @@ bool check_clock_error(uint32_t can_id, double timestamp, CANStats& stats) {
     if (detector.m_detect_cnt < MIN_DATA_CNT) {
         updateCumClockSkew(detector, error, can_id);
         calculateAndUpdateLimits(detector);  // 초기화 단계 완료 시 평균값 계산
-            // 로그 파일 기록(디버그용)
-        // if (detector.m_detect_cnt > window){
-        //     logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
-        // }
         return false;
     }
     if (detector.m_detect_cnt==MIN_DATA_CNT){
-        // std::ofstream log_file("/home/song/YESICAN/canlogs/temp/masq_test.log", std::ios_base::app);
-        // if (log_file.is_open()) {
-        //     log_file << std::fixed << std::setprecision(6)
-        //             //  << detector.m_detect_cnt << " "
-        //             << "final_Limit: "<<detector.can_id << " " << detector.lowerLimit << " "<< detector.upperLimit<<"\n";
-        //     log_file.close();
-        // } else {
-        //     std::cerr << "Failed to open log file: " << "/home/song/YESICAN/canlogs/temp/masq_test.log" << std::endl;
-        // }
     }
-    //logClockSkewData(detector, can_id, time_diff, error, "/home/song/YESICAN/canlogs/temp/masq_test.log");
 
 
     bool result=detectAnomaly(detector, error, can_id);  
