@@ -26,6 +26,7 @@
 #include <queue>
 #include <map>
 
+#include "ui.h"
 #include "periodic.h"
 #include "AttackFilter.h"
 

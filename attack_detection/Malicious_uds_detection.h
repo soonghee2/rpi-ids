@@ -2,6 +2,7 @@
 #define MALICIOUS_UDS_DETECTION_H
 
 #include "CANStats.h"
+#include "ui.h"
 #include <cstdint>
 #include <cstdio>
 #include <cstring>

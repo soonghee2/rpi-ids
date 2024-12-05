@@ -2,6 +2,7 @@
 #define REPLAY_DETECTION_H
 
 #include "CANStats.h"
+#include "ui.h"
 #include <cstdint>
 #include <cstdio>
 #include <cstring>

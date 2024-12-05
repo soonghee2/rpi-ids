@@ -2,6 +2,7 @@
 #define NORMAL_PACKET_CHECKER_H
 
 #include "CANStats.h"
+#include "ui.h"
 #include <cstdint>    
 
 bool check_periodic_range(double time_diff, double periodic);

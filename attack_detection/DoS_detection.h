@@ -2,6 +2,7 @@
 #define DOS_DETECTION_H
 
 #include "CANStats.h"
+#include "ui.h"
 #include <cstdint>
 #include <cstring>
 #include <cstdio>

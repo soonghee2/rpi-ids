@@ -1,4 +1,11 @@
 #include "AttackFilter.h"
+#include "header.h"
+#include <map>
+#include <iostream>
+#include <iomanip> // std::setw, std::setfill 사용
+#include <string>
+#include <cstring> // memset, memcpy 사용
+#include <mutex>   // 멀티스레드 보호를 위한 mutex
 
 int normal_packet = 0;
 int dos_packet = 1;
@@ -13,32 +20,44 @@ uint8_t last_payload[8] = {0};
 int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     CANStats& stats = can_stats[dequeuedMsg->can_id];
-    
-    if(isMaliciousUDS(stats,dequeuedMsg->data, dequeuedMsg->can_id)){
-	    printf("Here\n");
-	    return suspension_packet;
+
+    // Malicious UDS 체크
+    if (isMaliciousUDS(stats, dequeuedMsg->data, dequeuedMsg->can_id)) {
+        stats.mal_count++;
+        updateIDMsg(dequeuedMsg->can_id, "UDS", "High", "Malicious UDS packet detected.",stats.mal_count);
+        updateAttackMsg("Suspension");
+        return suspension_packet;
     }
 
-    //DBC 검증 체크 
+    //DBC 검증 체크
     #ifdef SET_DBC_CHECK
     if(!validation_check(dequeuedMsg->can_id,dequeuedMsg->data,dequeuedMsg->DLC)){
         //printf("Fuzzing or Dos : Not match with DBC %03x\n", dequeuedMsg->can_id);
+        stats.mal_count++;
         if(is_Attack == 1 && dequeuedMsg->can_id == last_can_id && memcmp(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data))){
+            updateIDMsg(dequeuedMsg->can_id, "DoS", "High", "DoS attack detected.", stats.mal_count);
             return dos_packet;
-        } else return fuzzing_packet;
+        } else {
+            updateIDMsg(dequeuedMsg->can_id, "Fuzzing", "Medium", "Payload not matching DBC.", stats.mal_count);
+            return fuzzing_packet;
+        }
 
         last_can_id = dequeuedMsg->can_id;
         memcpy(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data));
         is_Attack = 1;
+        updateIDMsg(dequeuedMsg->can_id, "DBC", "Medium", "Payload not matching DBC.", stats.mal_count);
         return dos_packet;
     }
-    
+
     if(stats.count > 200){
         //printf("percent : %d\n", stats.similarity_percent);
         if(stats.is_periodic){
         //if (!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data, 100 - ((100 - stats.similarity_percent) * 5), stats.count)) {
             if(!check_similarity_with_previous_packet(dequeuedMsg->can_id, dequeuedMsg->data, dequeuedMsg->DLC, stats.valid_last_data,stats.similarity_percent-13, stats.count)){
+                stats.mal_count++;
+                updateIDMsg(dequeuedMsg->can_id, "Replay", "Medium", "Fuzzing or Replay attack detected.", stats.mal_count);
                 printf("periodic %f\n", stats.similarity_percent);
+                updateAttackMsg("Replay");
                 return fuzzing_packet;
             }
         } else{
@@ -59,6 +78,9 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         if(stats.fast_periodic == 0 && check_DoS(*dequeuedMsg)){
             // printf("time_diff: %.6lf fast_periodic: %.6lf\n", time_diff, stats.fast_periodic);
             stats.normal_count = 0;
+            stats.mal_count++;
+            updateIDMsg(dequeuedMsg->can_id, "DoS", "High", "DoS attack detected.", stats.mal_count);
+            updateAttackMsg("DoS");
             return dos_packet;
         }
         //std::copy(std::begin(dequeuedMsg->data), std::end(dequeuedMsg->data), std::begin(stats.valid_last_data));
@@ -91,6 +113,9 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
             return normal_packet;
         } else {
             //printf("%03x Masquarade attack \n",dequeuedMsg->can_id);
+            stats.mal_count++;
+            updateIDMsg(dequeuedMsg->can_id, "Clock Skew", "High", "Clock skew detected.", stats.mal_count);
+            updateAttackMsg("Masquerade");
             return masquerade_packet;
         }
     }
@@ -100,13 +125,19 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     // 최하위 CAN ID인가?
     if((is_Attack == 0 || is_Attack == 1) && stats.fast_periodic == 0 && check_DoS(*dequeuedMsg)) {
         //printf("%03x Dos Attack\n", dequeuedMsg->can_id);
+        stats.mal_count++;
+        updateIDMsg(dequeuedMsg->can_id, "DoS", "High", "DoS attack detected.", stats.mal_count);
+        updateAttackMsg("DoS");
         stats.replay_count = 0;
         return dos_packet;
     }
 
-    // 오차가 정상 주기의 2배 이상인가?
+    // Suspension 체크
     if (check_over_double_periodic(dequeuedMsg->timestamp, stats, dequeuedMsg->can_id)) {
         //printf("%03x Suspenstion\n", dequeuedMsg->can_id);
+        stats.mal_count++;
+        updateIDMsg(dequeuedMsg->can_id, "Suspension", "High", "Suspension attack detected.", stats.mal_count);
+        updateAttackMsg("Suspension");
         return suspension_packet;
     }
 
@@ -117,14 +148,16 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         for (size_t i = 0; i < sizeof(stats.valid_last_data) / sizeof(stats.valid_last_data[0]); ++i) {
             stats.valid_last_data[i] = dequeuedMsg->data[i];
         }
-        
         return normal_packet;
     }
 
-    //Replay 공격 체크 
-    if (stats.prev_timediff == 0 && !check_periodic_range(dequeuedMsg->timestamp - stats.last_normal_timestamp, stats.periodic)){
-        if ((is_Attack == 0 || is_Attack == 2) && check_replay(stats, dequeuedMsg->data, dequeuedMsg->can_id)){
-            //printf("%03x Replay\n", dequeuedMsg->can_id);
+    // Replay 체크
+    if (stats.prev_timediff == 0 &&
+        !check_periodic_range(dequeuedMsg->timestamp - stats.last_normal_timestamp, stats.periodic)) {
+        if ((is_Attack == 0 || is_Attack == 2) && check_replay(stats, dequeuedMsg->data, dequeuedMsg->can_id)) {
+            stats.mal_count++;
+            updateIDMsg(dequeuedMsg->can_id, "Replay", "Medium", "Replay attack detected.", stats.mal_count);
+            updateAttackMsg("Replay");
             stats.dos_count = 0;
             return replay_packet;
         }
@@ -137,3 +170,4 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
     return normal_packet;
 }
+
