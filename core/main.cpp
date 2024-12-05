@@ -162,7 +162,6 @@ void process_can_msg(const char *log_filename){
                 susp[dequeuedMsg.can_id] = 0;
                 stats.event_count = -1;
                 stats.prev_timediff = 0;
-                //printf("Suspended packet! count: %d\n", mal_count++);
                 fprintf(logfile_whole, " 4\n");
             } else if(check){
 	            fprintf(logfile_whole, " 0\n");
