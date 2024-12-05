@@ -51,29 +51,36 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     }
     #endif
 
+    // 주기 패킷일 경우
+    double time_diff = dequeuedMsg->timestamp - stats.last_timestamp;
+
     // 비주기 패킷일 경우
     if (!stats.is_periodic || stats.count<=1) {
-        if((dequeuedMsg->can_id == 0x000 && check_DoS(*dequeuedMsg, false)) || (check_DoS(*dequeuedMsg, true))){
-            //printf("%03x DoS Attack\n", dequeuedMsg->can_id);
+        if(stats.fast_periodic == 0 && check_DoS(*dequeuedMsg)){
+            // printf("time_diff: %.6lf fast_periodic: %.6lf\n", time_diff, stats.fast_periodic);
+            stats.normal_count = 0;
             return dos_packet;
-        } else {
-
         }
         //std::copy(std::begin(dequeuedMsg->data), std::end(dequeuedMsg->data), std::begin(stats.valid_last_data));
         for (size_t i = 0; i < sizeof(stats.valid_last_data) / sizeof(stats.valid_last_data[0]); ++i) {
             stats.valid_last_data[i] = dequeuedMsg->data[i];
         }
+
+        stats.normal_count++;
+        if(stats.normal_count >= 5){
+            stats.dos_count = 0;
+        }
+
         return normal_packet;
     }
-    // 주기 패킷일 경우
-    double time_diff = dequeuedMsg->timestamp - stats.last_timestamp;
+    
     if (check_periodic_range(time_diff, stats.periodic) || check_previous_packet_of_avg(time_diff, stats)) {
         if (!check_clock_error(dequeuedMsg->can_id, dequeuedMsg->timestamp, stats)) {
             //memcpy(stats.valid_last_data, dequeuedMsg->data, sizeof(dequeuedMsg->data));
             stats.last_normal_timestamp = dequeuedMsg->timestamp;
             stats.normal_count++;
             if(stats.normal_count >= 5){
-                // memset(stats., 0, sizeof(stats.replay_payload));
+                stats.dos_count = 0;
                 stats.replay_count = 0;
                 is_Attack = 0;
             }
@@ -91,7 +98,7 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
     stats.normal_count = 0;
 
     // 최하위 CAN ID인가?
-    if((is_Attack == 0 || is_Attack == 1) && check_DoS(*dequeuedMsg, false)) {
+    if((is_Attack == 0 || is_Attack == 1) && stats.fast_periodic == 0 && check_DoS(*dequeuedMsg)) {
         //printf("%03x Dos Attack\n", dequeuedMsg->can_id);
         stats.replay_count = 0;
         return dos_packet;

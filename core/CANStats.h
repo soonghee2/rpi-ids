@@ -7,12 +7,14 @@
 
 struct CANStats {
     double periodic = 0;
+    double fast_periodic = 0;
     double squared_diff_sum = 0;
     double last_timestamp = 0;
     uint8_t last_data[8];
     double prev_timediff = 0;
     bool is_periodic=false;
     int count = 0;
+    int fast_count = 0;
     int normal_count = 0;
 
     int event_count = 0;
