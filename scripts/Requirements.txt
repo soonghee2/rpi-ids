@@ -1,0 +1,6 @@
+numpy
+tflite-runtime
+python-can
+matplotlib
+pandas
+

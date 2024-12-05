@@ -14,7 +14,6 @@ int susp[2303] = {0,};
 int current_row = 0;
 
 void printAsciiArt() {
-    //std::lock_guard<std::mutex> lock(cout_mutex);
     std::cout << R"(
  _____   ___   _   _   _____ ______  _____
 /  __ \ / _ \ | \ | | |_   _||  _  \/  ___|
@@ -24,8 +23,8 @@ void printAsciiArt() {
  \____/\_| |_/\_| \_/  \___/ |___/  \____/
     )" << std::endl;
 }
+
 void printoneiArt() {
-    //std::lock_guard<std::mutex> lock(cout_mutex);
     std::cout << R"(
     
     
@@ -133,7 +132,6 @@ int receive_can_frame(int s, EnqueuedCANMsg* msg) {
 
 // 큐에서 메시지를 꺼내고 처리하는 함수
 void process_can_msg(const char *log_filename){
-    int mal_count = 0;
     FILE *logfile_whole = fopen(log_filename, "w");
     bool check = true;
     while(!done){
@@ -201,8 +199,6 @@ void process_can_msg(const char *log_filename){
                             fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf clock_skew: %.6lf clock_skew_lowerlimit: %.6lf clock_skew_upperlimit: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.clock_skew, stats.clock_skew_lowerlimit, stats.clock_skew_upperlimit);
                             break;
                     }
-                    
-                    //printf("Malicious packet! count: %d\n", mal_count++);
                 }
             }
             stats.last_timestamp = dequeuedMsg.timestamp;
@@ -230,14 +226,11 @@ int main(int argc, char *argv[]) {
     printAsciiArt();
 
     int s;
-    //char log_filename[100];
     char *log_filename=argv[1];
     struct sockaddr_can addr;
     struct ifreq ifr;
     EnqueuedCANMsg can_msg;  // 수신된 CAN 메시지를 저장할 구조체
-    //std::cout << "Enter the name of the log file (e.g., ../dataset/whole_replay.log): ";
-    //std::cin.getline(log_filename, sizeof(log_filename));
-
+    
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Socket creation error");
         return 1;

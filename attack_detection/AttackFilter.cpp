@@ -36,17 +36,20 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
         stats.mal_count++;
         if(is_Attack == 1 && dequeuedMsg->can_id == last_can_id && memcmp(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data))){
             updateIDMsg(dequeuedMsg->can_id, "DoS", "High", "DoS attack detected.", stats.mal_count);
-            return dos_packet;
+            updateAttackMsg("DoS");
+	    return dos_packet;
         } else {
             updateIDMsg(dequeuedMsg->can_id, "Fuzzing", "Medium", "Payload not matching DBC.", stats.mal_count);
-            return fuzzing_packet;
+            updateAttackMsg("Fuzzing");
+	    return fuzzing_packet;
         }
 
         last_can_id = dequeuedMsg->can_id;
         memcpy(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data));
         is_Attack = 1;
         updateIDMsg(dequeuedMsg->can_id, "DBC", "Medium", "Payload not matching DBC.", stats.mal_count);
-        return dos_packet;
+        updateAttackMsg("DBC");
+	return dos_packet;
     }
 
     if(stats.count > 200){

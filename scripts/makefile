@@ -1,6 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -O2 -pthread -I. -I../protocol -I../attack_detection -I../core -I../ui
-
+CXXFLAGS = -Wall -O2 -pthread -I. -I../protocol -I../attack_detection -I../core -I../ui -Wno-psabi
 TARGET_DIR = ../scripts
 
 # 기본 소스 파일과 오브젝트 파일

@@ -1,67 +1,64 @@
 #!/bin/bash
 
-# 로그 파일이 있는 디렉토리
-log_dir1=~/dataset/all_log/MIRGU
-log_dir=~/dataset/result/
-# CAN 인터페이스 이름
-can_interface="vcan0"
-
-# 패킷 수신 확인용 로그 파일
-can_monitor_log="/tmp/can_monitor.log"
-
-# 수신이 멈춘 시간을 감지할 최대 시간 (60초)
-timeout_duration=60
-
-# 로그 파일을 하나씩 처리
-for log_file in "$log_dir"/*.log; do
-  echo "Processing file: $log_file"
-
-  # ids 프로그램 실행, 로그 파일과 -1 인자를 전달
-  ./ids << EOF &
-$log_file
--1
-EOF
-
-  # canplayer로 로그 파일을 vcan0 인터페이스로 전송
-  canplayer -I "$log_file" -I vcan0=can0 &
-
-  # 패킷 수신 여부 확인을 위해 candump로 모니터링 시작
-  candump "$can_interface" > "$can_monitor_log" &
-
-  # 패킷 수신 시간 확인을 위한 시간 기록
-  last_packet_time=$(date +%s)
-
-  # 무한 루프 시작 - 패킷 수신을 확인
-  while true; do
-    current_time=$(date +%s)
-    
-    # 패킷 수신 로그 업데이트 확인
-    if [ -s "$can_monitor_log" ]; then
-      last_packet_time=$(date +%s)  # 패킷이 수신되면 시간 업데이트
-      echo "Packet received from $log_file"
-      
-      # 모니터 로그 파일을 초기화
-      > "$can_monitor_log"
+# 1. Python 파일 실행 여부 확인
+read -p "DBC 파일을 새롭게 적용하시겠습니까? (y/n): " apply_dbc
+if [ "$apply_dbc" = "y" ]; then
+    python3 cpp_parser.py
+    if [ $? -ne 0 ]; then
+        echo "DBC 파일 적용 실패!"
+        exit 1
     fi
 
-    # 패킷이 60초 동안 수신되지 않으면 다음 로그로 이동
-    if (( current_time - last_packet_time > timeout_duration )); then
-      echo "No packets received for $timeout_duration seconds, moving to next log."
-      
-      # 현재 실행 중인 ids 및 canplayer 프로세스 종료
-      pkill -f "ids"
-      pkill -f "canplayer"
-      pkill -f "candump"
-      
-      break
+    echo "Running make..."
+    make
+    if [ $? -ne 0 ]; then
+        echo "Make command failed!"
+        exit 1
+    fi
+fi
+
+# 2. AI와 룰셋 통합 IDS 실행 여부 확인
+read -p "AI와 룰셋 통합 IDS로 실행하시겠습니까? (y/n): " use_ai
+
+# 3. ./ids 실행
+log_filename=$(date +"../log/%Y-%m-%d_%H-%M-%S.log")
+
+if [ "$use_ai" = "n" ]; then
+    echo "Executing ./ids with log file: $log_filename"
+    echo "Clearing Terminal to Start IDS CLI"
+    sleep 3
+    clear
+    ./ids "$log_filename"
+    if [ $? -ne 0 ]; then
+        echo "./ids execution failed!"
+        exit 1
+    fi
+else
+    # AI 통합 실행
+    echo "Clearing Terminal to Start IDS CLI"
+    sleep 3
+    clear
+
+    echo "AI 통합 IDS 실행 준비 중..."
+    tflite_model_path="autoencoder.tflite"
+    output_log_file_path=$(date +"../log/%Y-%m-%d_%H-%M-%S_after_AI.log")
+
+    # AI Python 코드 실행
+    python3.9 model.py "$log_filename" "$output_log_file_path" &
+    model_pid=$!
+
+    echo "Executing ./ids with log file: $log_filename"
+    ./ids "$log_filename"
+    if [ $? -ne 0 ]; then
+        echo "./ids execution failed!"
+        kill $model_pid
+        exit 1
     fi
 
-    sleep 5  # 5초 간격으로 체크
-  done
+    # Python 모델 프로세스 종료
+    kill $model_pid
+    echo "AI 모델 프로세스를 종료했습니다."
+fi
 
-  echo "Finished processing $log_file"
-  echo "--------------------------------"
-done
-
-echo "All log files processed."
+echo "All steps completed successfully."
 
