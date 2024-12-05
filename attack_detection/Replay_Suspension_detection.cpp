@@ -1,5 +1,5 @@
 #include "Replay_Suspension_detection.h"
-#include "DoS_detection.h"
+
 bool check_replay(CANStats& stats, uint8_t data[], uint32_t can_id){
     if(memcmp(stats.replay_payload, data, sizeof(*data)) == 0){
         stats.replay_count++;
