@@ -129,7 +129,7 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
     // On-Event 패킷인가?
     if (check_onEvent(dequeuedMsg->timestamp, stats,dequeuedMsg->can_id, dequeuedMsg->data)) {
-        printf("Event ID: %03x\n",dequeuedMsg->can_id);
+        // printf("Event ID: %03x\n",dequeuedMsg->can_id);
         for (size_t i = 0; i < sizeof(stats.valid_last_data) / sizeof(stats.valid_last_data[0]); ++i) {
             stats.valid_last_data[i] = dequeuedMsg->data[i];
         }
