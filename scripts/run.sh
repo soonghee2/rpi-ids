@@ -17,6 +17,18 @@ if [ "$apply_dbc" = "y" ]; then
     fi
 fi
 
+read -p "예시로 dbc 사전 파싱된 .cpp 파일을 삭제할까요? (y/n): " rm_cpp
+if [ "$rm_cpp" = "y" ]; then
+    rm ../protocol/dbc.dbc
+    rm ../protocol/dbcparsed_dbc.cpp
+fi
+
+read -p "컴파일을 진행할까요? (최소 한번 필수) (y/n): " first_run
+if [ "$first_run" = "y" ]; then
+    echo "Running make..."
+    make
+fi
+
 # 2. AI와 룰셋 통합 IDS 실행 여부 확인
 read -p "AI와 룰셋 통합 IDS로 실행하시겠습니까? (y/n): " use_ai
 
