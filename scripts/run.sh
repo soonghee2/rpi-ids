@@ -17,17 +17,23 @@ if [ "$apply_dbc" = "y" ]; then
     fi
 fi
 
-read -p "예시로 dbc 사전 파싱된 .cpp 파일을 삭제할까요? (y/n): " rm_cpp
-if [ "$rm_cpp" = "y" ]; then
-    rm ../protocol/dbc.dbc
-    rm ../protocol/dbcparsed_dbc.cpp
+# DBC 적용 안 할 경우 폴더 체크 및 삭제
+target_folder="../protocol/dbcparsed_dbc.cpp"
+if [ -e "$target_folder" ]; then
+    echo "$target_folder 폴더가 존재합니다. 삭제 중..."
+    rm -rf "$target_folder"
+    if [ $? -eq 0 ]; then
+        echo "$target_folder 폴더가 삭제되었습니다."
+    else
+        echo "$target_folder 폴더 삭제 실패!"
+        exit 1
+    fi
+else
+    echo "$target_folder 폴더가 존재하지 않습니다. 넘어갑니다."
 fi
 
-read -p "컴파일을 진행할까요? (최소 한번 필수) (y/n): " first_run
-if [ "$first_run" = "y" ]; then
-    echo "Running make..."
-    make
-fi
+echo "Running make..."
+make
 
 # 2. AI와 룰셋 통합 IDS 실행 여부 확인
 read -p "AI와 룰셋 통합 IDS로 실행하시겠습니까? (y/n): " use_ai
