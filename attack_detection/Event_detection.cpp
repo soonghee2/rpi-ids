@@ -19,8 +19,6 @@ bool check_onEvent(double timestamp, CANStats& stats, uint32_t can_id, uint8_t d
                 return true;
             }
             else {
-		//updateMessage(can_id, "DoS", "Medium", " 짧은 %.5fms 시간동안 너무 많은 패킷이 들어왔습니다.(30ms)",event_time_diff);
-                //printf("[On-Event] %03x 짧은 시간동안 너무 많은 패킷이 들어왔습니다.(30ms)\n",can_id);
                 stats.event_count = -1;
                 return false;
             }

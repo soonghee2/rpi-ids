@@ -5,8 +5,6 @@ bool check_replay(CANStats& stats, uint8_t data[], uint32_t can_id){
         stats.replay_count++;
         if(stats.replay_count >= 5){
             is_Attack = 2;
-	        //updateReasonMsg(can_id, "Replay", "Medium", " PE 메세지가 아니나, 정상 주기 패킷 직전에 동일한 페이로드의 패킷이 비정상적인 주기를 가지고 %d개 수신되었습니다", stats.replay_count);
-            //printf("[Replay] [%03x] [Medium] PE 메세지는 아니나, 정상 주기 패킷 직전에 동일한 페이로드의 패킷이 비정상적인 주기를 가지고 %d개 수신되었습니다.\n", can_id, stats.replay_count);
             return true;
         }
     } else if(stats.replay_count > 0){

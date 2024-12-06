@@ -150,19 +150,22 @@ def parse_dbc_file(file_path):
     return messages
 
 
-# 메인 함수
 def main():
+    # 사용자로부터 C++ 파일 경로를 입력받기
     cpp_file = "../protocol/dbcparsed_dbc.cpp"
 
+    # DBC 파일 경로를 입력받기
+    dbc_file = input("DBC 파일 경로를 입력하세요 (예: ../protocol/dbc.dbc): ")
+
     # DBC 파일 파싱 및 CAN 메시지 목록 생성
-    # messages = parse_dbc_file("./hyundai_kia_generic(2).dbc")
-    messages = parse_dbc_file("../protocol/dbc.dbc")
+    messages = parse_dbc_file(dbc_file)
 
     # CAN ID 기준으로 메시지를 오름차순 정렬하여 JSON 파일에 기록
     write_cpp(messages, cpp_file)
 
     # DBC 파일에서 CAN ID의 수를 출력
     print(f"DBC 파일에서 CAN ID 갯수: {len(messages)}")
+
 
 if __name__ == "__main__":
     main()
