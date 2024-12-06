@@ -181,22 +181,14 @@ void process_can_msg(const char *log_filename){
                 } else {
                     stats.event_count = -1;
                     stats.prev_timediff = 0;
-                    switch (filtering_result){
-                        case 1:
-                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp);
-                            break;
-                        case 2:
-                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf similarity: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.similarity_percent);
-                            break;
-                        case 3:
-                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp);
-                            break;                        
-                        case 4:
-                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf reset_count: %d\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.resetcount);
-                            break;
-                        case 5:
-                            fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf clock_skew: %.6lf clock_skew_lowerlimit: %.6lf clock_skew_upperlimit: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.clock_skew, stats.clock_skew_lowerlimit, stats.clock_skew_upperlimit);
-                            break;
+                    if(filtering_result == 1 || filtering_result == 2 || filtering_result == 3 || filtering_result == 6){
+                        fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp);
+                    } else if(filtering_result == 4 || filtering_result == 5) {
+                        fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf similarity: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.similarity_percent);
+                    } else if(filtering_result == 7 || filtering_result == 8){
+                        fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf reset_count: %d\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.resetcount);
+                    } else {
+                        fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf clock_skew: %.6lf clock_skew_lowerlimit: %.6lf clock_skew_upperlimit: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.clock_skew, stats.clock_skew_lowerlimit, stats.clock_skew_upperlimit);
                     }
                 }
             }
