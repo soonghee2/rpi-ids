@@ -42,7 +42,7 @@ int filtering_process(EnqueuedCANMsg* dequeuedMsg) {
 
         last_can_id = dequeuedMsg->can_id;
         memcpy(dequeuedMsg->data, last_payload, sizeof(dequeuedMsg->data));
-        updateIDMsg(dequeuedMsg->can_id, "DBC", "Medium", "Payload not matching DBC.", stats.mal_count);
+        updateIDMsg(dequeuedMsg->can_id, "DoS", "Medium", "Payload not matching DBC.", stats.mal_count);
         updateAttackMsg("DBC");
 	return dbc_dos_packet;
     }
