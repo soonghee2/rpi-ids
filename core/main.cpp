@@ -150,7 +150,7 @@ void process_can_msg(const char *log_filename){
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
           
-            if(dequeuedMsg.timestamp - start_time <= 40&&stats.count < 201){
+            if(dequeuedMsg.timestamp - start_time <= 40 && stats.count < 201){
                 fprintf(logfile_whole, " 0\n");
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                 
@@ -162,22 +162,25 @@ void process_can_msg(const char *log_filename){
                 susp[dequeuedMsg.can_id] = 0;
                 stats.event_count = -1;
                 stats.prev_timediff = 0;
-                fprintf(logfile_whole, " 4\n");
+                fprintf(logfile_whole, " 8 periodic: %.6lf time_diff: %.6lf reset_count: %d\n", stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.resetcount);
             } else if(check){
-	            fprintf(logfile_whole, " 0\n");
+	            fprintf(logfile_whole, " 0 periodic: %.6lf\n", stats.periodic);
 	            #ifdef SET_DBC_CHECK
                 calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
                 #endif
                 check = false;
             } else {
                 int filtering_result = filtering_process(&dequeuedMsg);
+
+                if(stats.last_timestamp == 0)
+                    stats.last_timestamp = dequeuedMsg.timestamp;
                 
                 if (filtering_result == 0){
                     onCanMessageReceived(dequeuedMsg.can_id);
                     #ifdef SET_DBC_CHECK
                     calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
                     #endif
-                    fprintf(logfile_whole, " 0\n");
+                    fprintf(logfile_whole, " 0 periodic: %.6lf\n", stats.periodic);
                 } else {
                     stats.event_count = -1;
                     stats.prev_timediff = 0;
