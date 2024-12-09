@@ -1,4 +1,6 @@
 #include "header.h"
+#define MAX_LINES 100     // log_print_buffer의 최대 줄 수
+#define MAX_LENGTH 1024   // 각 줄의 최대 문자열 길이
 
 std::map<int, std::chrono::steady_clock::time_point> canIdTimers;
 std::mutex timerMutex;
@@ -140,12 +142,26 @@ void process_can_msg(const char *log_filename){
     sprintf(log_filename_ver, "%s%d", log_filename, log_num);
 
     FILE *logfile_whole = fopen(log_filename_ver, "w");
+    
+    // char log_print_buffer[MAX_LINES][MAX_LENGTH];
+    char log_print_buffer[MAX_LINES*MAX_LENGTH]="";
+
+    char log_buffer[MAX_LENGTH];  // 충분히 큰 버퍼를 미리 할당
+    char log_temp[MAX_LENGTH];
+    int log_index = 0;   
 
     bool check = true;
+
+    auto log_start_time=std::chrono::steady_clock::now();   
+
     while(!done){
+                 
+
         std::unique_lock<std::mutex> lock(queueMutex);
         queueCondVar.wait(lock, []{return !q_isEmpty(&canMsgQueue)|| done; });
+
         while ((!q_isEmpty(&canMsgQueue))){
+
             EnqueuedCANMsg dequeuedMsg;
             q_pop(&canMsgQueue, &dequeuedMsg);
             
@@ -158,15 +174,18 @@ void process_can_msg(const char *log_filename){
             }
             lock.unlock();
 
-            fprintf(logfile_whole, "%.6f can0 %03X#", dequeuedMsg.timestamp, dequeuedMsg.can_id);
+            sprintf(log_buffer, "%.6f can0 %03X#", dequeuedMsg.timestamp, dequeuedMsg.can_id);
+
             for (int i = 0; i < dequeuedMsg.DLC; i++) {
-                fprintf(logfile_whole, "%02X", dequeuedMsg.data[i]);
+                sprintf(log_temp, "%02X", dequeuedMsg.data[i]);
+                strcat(log_buffer, log_temp);
             }
 
             CANStats& stats = can_stats[dequeuedMsg.can_id];
           
             if(dequeuedMsg.timestamp - start_time <= 40 && stats.count < 201){
-                fprintf(logfile_whole, " 0\n");
+                strcat(log_buffer, " 0\n");
+
                 calc_periodic(dequeuedMsg.can_id, dequeuedMsg.timestamp);
                 
                 #ifdef SET_DBC_CHECK
@@ -177,9 +196,15 @@ void process_can_msg(const char *log_filename){
                 susp[dequeuedMsg.can_id] = 0;
                 stats.event_count = -1;
                 stats.prev_timediff = 0;
-                fprintf(logfile_whole, " 8 periodic: %.6lf time_diff: %.6lf reset_count: %d\n", stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.resetcount);
+                
+                sprintf(log_temp, " 8 periodic: %.6lf time_diff: %.6lf reset_count: %d\n", stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.resetcount);
+                strcat(log_buffer, log_temp);
             } else if(check){
-	            fprintf(logfile_whole, " 0 periodic: %.6lf\n", stats.periodic);
+	            
+	            sprintf(log_temp, " 0 periodic: %.6lf\n", stats.periodic);
+                strcat(log_buffer, log_temp);
+
+
 	            #ifdef SET_DBC_CHECK
                 calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
                 #endif
@@ -195,27 +220,71 @@ void process_can_msg(const char *log_filename){
                     #ifdef SET_DBC_CHECK
                     calc_similarity(dequeuedMsg.can_id, dequeuedMsg.data, dequeuedMsg.DLC, stats.valid_last_data, stats.similarity_percent, stats.count);
                     #endif
-                    fprintf(logfile_whole, " 0 periodic: %.6lf\n", stats.periodic);
+                    
+                    sprintf(log_temp, " 0 periodic: %.6lf\n", stats.periodic);
+                    strcat(log_buffer, log_temp);
+
                 } else {
                     stats.event_count = -1;
                     stats.prev_timediff = 0;
                     if(filtering_result == 1 || filtering_result == 2 || filtering_result == 3 || filtering_result == 6){
-                        fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp);
+                        
+                        sprintf(log_temp, " %d periodic: %.6lf time_diff: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp);
+                        strcat(log_buffer, log_temp);
+
                     } else if(filtering_result == 4 || filtering_result == 5) {
-                        fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf similarity: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.similarity_percent);
+                        
+                        sprintf(log_temp, " %d periodic: %.6lf time_diff: %.6lf similarity: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.similarity_percent);
+                        strcat(log_buffer, log_temp);
+
                     } else if(filtering_result == 7 || filtering_result == 8){
-                        fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf reset_count: %d\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.resetcount);
+                        
+                        sprintf(log_temp, " %d periodic: %.6lf time_diff: %.6lf reset_count: %d\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.resetcount);
+                        strcat(log_buffer, log_temp);
+
                     } else {
-                        fprintf(logfile_whole, " %d periodic: %.6lf time_diff: %.6lf clock_skew: %.6lf clock_skew_lowerlimit: %.6lf clock_skew_upperlimit: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.clock_skew, stats.clock_skew_lowerlimit, stats.clock_skew_upperlimit);
+                        
+                        sprintf(log_temp, " %d periodic: %.6lf time_diff: %.6lf clock_skew: %.6lf clock_skew_lowerlimit: %.6lf clock_skew_upperlimit: %.6lf\n", filtering_result, stats.periodic, dequeuedMsg.timestamp - stats.last_timestamp, stats.clock_skew, stats.clock_skew_lowerlimit, stats.clock_skew_upperlimit);
+                        strcat(log_buffer, log_temp);
+
                     }
                 }
             }
+            // fprintf(logfile_whole, log_buffer);
+//모든 log_buffer는 \n\0로 끝남
+            strncat(log_print_buffer, log_buffer, strlen(log_buffer));
+            // printf(log_print_buffer);
+            log_index++;
+            // printf("%d\n", log_index);
+
+            // 100개가 모이면 파일에 출력
+            if (log_index == MAX_LINES) {
+                fprintf(logfile_whole, log_print_buffer);
+                memset(log_print_buffer, 0, sizeof(log_print_buffer));  // 버퍼의 모든 바이트를 0으로 설정ㄴ
+                log_index = 0;  // 버퍼 초기화
+                // 끝 시간 측정
+                auto log_end_time = std::chrono::steady_clock::now();
+                // 실행 시간 계산
+                auto elapsed_time = std::chrono::duration_cast<std::chrono::microseconds>(log_end_time - log_start_time).count();
+                // printf( "process_can_msg 실행 시간: %.6fms\n", (elapsed_time/ 1000.0 )/MAX_LINES);
+                printf( "process_can_msg 실행 시간: %.6fms\n", (elapsed_time/ 1000.0 )/MAX_LINES);
+                log_start_time=std::chrono::steady_clock::now();   
+            }
+            //초기화들
+            memset(log_buffer, 0, sizeof(log_buffer));  // 버퍼의 모든 바이트를 0으로 설정ㄴ
+
             stats.last_timestamp = dequeuedMsg.timestamp;
             memcpy(stats.last_data, dequeuedMsg.data, sizeof(stats.last_data));
+
 	        fflush(logfile_whole);
 
-            lock.lock();
+            lock.lock();            
         }
+    }
+    printf("%d\n",log_index);
+    // 100개가 모이면 파일에 출력
+    if (log_index > 0) {
+        fprintf(logfile_whole, log_print_buffer);
     }
 }
 
