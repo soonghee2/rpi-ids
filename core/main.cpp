@@ -132,7 +132,15 @@ int receive_can_frame(int s, EnqueuedCANMsg* msg) {
 
 // 큐에서 메시지를 꺼내고 처리하는 함수
 void process_can_msg(const char *log_filename){
-    FILE *logfile_whole = fopen(log_filename, "w");
+    int packet_limit=110000;
+    int packet_cnt=0;
+    int log_num=0;
+
+    char log_filename_ver[100]; // 충분히 큰 버퍼 크기를 설정
+    sprintf(log_filename_ver, "%s%d", log_filename, log_num);
+
+    FILE *logfile_whole = fopen(log_filename_ver, "w");
+
     bool check = true;
     while(!done){
         std::unique_lock<std::mutex> lock(queueMutex);
@@ -140,7 +148,14 @@ void process_can_msg(const char *log_filename){
         while ((!q_isEmpty(&canMsgQueue))){
             EnqueuedCANMsg dequeuedMsg;
             q_pop(&canMsgQueue, &dequeuedMsg);
-
+            
+            packet_cnt++;
+            if (packet_cnt>packet_limit){
+                log_num++;
+                sprintf(log_filename_ver, "%s%d", log_filename, log_num);
+                logfile_whole = fopen(log_filename_ver, "w");
+                packet_cnt=0;
+            }
             lock.unlock();
 
             fprintf(logfile_whole, "%.6f can0 %03X#", dequeuedMsg.timestamp, dequeuedMsg.can_id);
