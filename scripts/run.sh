@@ -40,24 +40,29 @@ else
     clear
 
     echo "AI 통합 IDS 실행 준비 중..."
-    tflite_model_path="autoencoder.tflite"
+    tflite_model_path="xgboost_model.tflite"
     output_log_file_path=$(date +"../log/%Y-%m-%d_%H-%M-%S_after_AI.log")
 
     # AI Python 코드 실행
-    python3.9 model.py "$log_filename" "$output_log_file_path" &
+    python3.9 mode_xgboost_thrid.py "$log_filename" "$output_log_file_path" &
     model_pid=$!
 
     echo "Executing ./ids with log file: $log_filename"
     ./ids "$log_filename"
+    ids_pid=$!
+
+    # wait for model process to finish
+    wait $model_pid
+
+    # If the model process exits, terminate the ./ids process
+    echo "AI model process completed. Terminating ./ids process..."
+    kill $ids_pid
+    
     if [ $? -ne 0 ]; then
         echo "./ids execution failed!"
         kill $model_pid
         exit 1
     fi
-
-    # Python 모델 프로세스 종료
-    kill $model_pid
-    echo "AI 모델 프로세스를 종료했습니다."
 fi
 
 echo "All steps completed successfully."
