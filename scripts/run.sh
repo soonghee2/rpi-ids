@@ -35,6 +35,15 @@ else
     make
 fi
 
+read -p "컴파일을 하시겠습니까?(최초 1회 필수) (y/n): " replay_compile
+if [ "$replay_compile" = "y" ]; then
+    make
+    if [ $? -ne 0 ]; then
+        echo "Make command failed!"
+        exit 1
+    fi
+fi
+
 # 2. AI와 룰셋 통합 IDS 실행 여부 확인
 read -p "AI와 룰셋 통합 IDS로 실행하시겠습니까? (y/n): " use_ai
 
