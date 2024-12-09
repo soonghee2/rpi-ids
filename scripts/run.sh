@@ -31,8 +31,6 @@ else
     else
         echo "$target_folder 폴더가 존재하지 않습니다. 넘어갑니다."
     fi
-    echo "Running make..."
-    make
 fi
 
 read -p "컴파일을 하시겠습니까?(최초 1회 필수) (y/n): " replay_compile
