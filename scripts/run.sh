@@ -15,6 +15,24 @@ if [ "$apply_dbc" = "y" ]; then
         echo "Make command failed!"
         exit 1
     fi
+
+else	
+    # DBC 적용 안 할 경우 폴더 체크 및 삭제
+    target_folder="../protocol/dbcparsed_dbc.cpp"
+    if [ -e "$target_folder" ]; then
+        echo "$target_folder 폴더가 존재합니다. 삭제 중..."
+        rm -rf "$target_folder"
+        if [ $? -eq 0 ]; then
+            echo "$target_folder 폴더가 삭제되었습니다."
+        else
+            echo "$target_folder 폴더 삭제 실패!"
+            exit 1
+        fi
+    else
+        echo "$target_folder 폴더가 존재하지 않습니다. 넘어갑니다."
+    fi
+    echo "Running make..."
+    make
 fi
 
 # 2. AI와 룰셋 통합 IDS 실행 여부 확인
