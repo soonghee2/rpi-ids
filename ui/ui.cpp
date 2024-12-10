@@ -48,7 +48,7 @@ void updateIDMsg(uint32_t can_id, const std::string& type, const std::string& le
     int max_display = 10;
     int row = current_row;
     
-    for (size_t i = 0; i < sorted_can_ids.size() && i < max_display; ++i) {
+    for (size_t i = 0; i < sorted_can_ids.size() && i < static_cast<size_t>(max_display); ++i) {
         const auto& [id, num_value] = sorted_can_ids[i];
         id_to_row[id] = row++;
 
@@ -134,7 +134,6 @@ int getCursorPosition(int& rows, int& cols) {
 
     // 터미널 응답 읽기
     char buffer[32];
-    int i = 0;
 
     // 응답을 읽기 위해 터미널에서 raw 모드로 설정
     struct termios orig_term, raw_term;
@@ -144,6 +143,7 @@ int getCursorPosition(int& rows, int& cols) {
     tcsetattr(STDIN_FILENO, TCSANOW, &raw_term);
 
     // '\033[rows;colsR' 형식의 응답 읽기
+    size_t i = 0;
     while (i < sizeof(buffer) - 1) {
         if (read(STDIN_FILENO, &buffer[i], 1) != 1) {
             break;

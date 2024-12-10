@@ -247,7 +247,7 @@ void process_can_msg(const char *log_filename){
                 }
             }
             fprintf(logfile_whole, log_buffer);
-//모든 log_buffer는 \n\0로 끝남
+
             //초기화들
             memset(log_buffer, 0, sizeof(log_buffer));  // 버퍼의 모든 바이트를 0으로 설정ㄴ
 
