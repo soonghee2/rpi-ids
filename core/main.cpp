@@ -252,7 +252,7 @@ void process_can_msg(const char *log_filename){
             }
             // fprintf(logfile_whole, log_buffer);
 //모든 log_buffer는 \n\0로 끝남
-            strncat(log_print_buffer, log_buffer, strlen(log_buffer));
+            strncat(log_print_buffer, log_buffer, sizeof(log_print_buffer) - strlen(log_print_buffer) - 1);
             // printf(log_print_buffer);
             log_index++;
             // printf("%d\n", log_index);
@@ -286,7 +286,7 @@ void process_can_msg(const char *log_filename){
     printf("%d\n",log_index);
     // 100개가 모이면 파일에 출력
     if (log_index > 0) {
-        fprintf(logfile_whole, log_print_buffer);
+        fprintf(logfile_whole, "%s", log_print_buffer);
     }
 }
 
