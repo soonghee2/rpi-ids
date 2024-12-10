@@ -30,8 +30,8 @@
 #include "periodic.h"
 #include "AttackFilter.h"
 
-#define CAN_MSSG_QUEUE_SIZE 100 //큐에 담을수 있는 데이터 사이즈
+#define CAN_MSSG_QUEUE_SIZE 1500 //큐에 담을수 있는 데이터 사이즈
 #define IMPLEMENTATION FIFO //선입선출로 큐를 초기화할때 사용
-#define INTERFACE_NAME "can0"
+#define INTERFACE_NAME "vcan0"
 
 #endif // HEADER_H
