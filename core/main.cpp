@@ -1,5 +1,5 @@
 #include "header.h"
-#define MAX_LINES 100     // log_print_buffer의 최대 줄 수
+// #define MAX_LINES 100     // log_print_buffer의 최대 줄 수
 #define MAX_LENGTH 1024   // 각 줄의 최대 문자열 길이
 
 std::map<int, std::chrono::steady_clock::time_point> canIdTimers;
@@ -144,15 +144,11 @@ void process_can_msg(const char *log_filename){
     FILE *logfile_whole = fopen(log_filename_ver, "w");
     
     // char log_print_buffer[MAX_LINES][MAX_LENGTH];
-    char log_print_buffer[MAX_LINES*MAX_LENGTH]="";
 
     char log_buffer[MAX_LENGTH];  // 충분히 큰 버퍼를 미리 할당
     char log_temp[MAX_LENGTH];
-    int log_index = 0;   
 
     bool check = true;
-
-    auto log_start_time=std::chrono::steady_clock::now();   
 
     while(!done){
                  
@@ -250,28 +246,8 @@ void process_can_msg(const char *log_filename){
                     }
                 }
             }
-            // fprintf(logfile_whole, log_buffer);
+            fprintf(logfile_whole, log_buffer);
 //모든 log_buffer는 \n\0로 끝남
-            strncat(log_print_buffer, log_buffer, strlen(log_buffer));
-            // printf(log_print_buffer);
-            log_index++;
-            // printf("%d\n", log_index);
-
-            // 100개가 모이면 파일에 출력
-            if (log_index == MAX_LINES) {
-                // fprintf(logfile_whole, log_print_buffer);
-                fwrite(log_print_buffer, sizeof(char), strlen(log_print_buffer), logfile_whole);
-
-                memset(log_print_buffer, 0, sizeof(log_print_buffer));  // 버퍼의 모든 바이트를 0으로 설정ㄴ
-                log_index = 0;  // 버퍼 초기화
-                // 끝 시간 측정
-                auto log_end_time = std::chrono::steady_clock::now();
-                // 실행 시간 계산
-                auto elapsed_time = std::chrono::duration_cast<std::chrono::microseconds>(log_end_time - log_start_time).count();
-                // printf( "process_can_msg 실행 시간: %.6fms\n", (elapsed_time/ 1000.0 )/MAX_LINES);
-                printf( "process_can_msg 실행 시간: %.6fms\n", (elapsed_time/ 1000.0 )/MAX_LINES);
-                log_start_time=std::chrono::steady_clock::now();   
-            }
             //초기화들
             memset(log_buffer, 0, sizeof(log_buffer));  // 버퍼의 모든 바이트를 0으로 설정ㄴ
 
@@ -282,11 +258,6 @@ void process_can_msg(const char *log_filename){
 
             lock.lock();            
         }
-    }
-    printf("%d\n",log_index);
-    // 100개가 모이면 파일에 출력
-    if (log_index > 0) {
-        fprintf(logfile_whole, log_print_buffer);
     }
 }
 
