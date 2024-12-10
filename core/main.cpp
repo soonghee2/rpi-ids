@@ -259,7 +259,9 @@ void process_can_msg(const char *log_filename){
 
             // 100개가 모이면 파일에 출력
             if (log_index == MAX_LINES) {
-                fprintf(logfile_whole, log_print_buffer);
+                // fprintf(logfile_whole, log_print_buffer);
+                fwrite(log_print_buffer, sizeof(char), strlen(log_print_buffer), logfile_whole);
+
                 memset(log_print_buffer, 0, sizeof(log_print_buffer));  // 버퍼의 모든 바이트를 0으로 설정ㄴ
                 log_index = 0;  // 버퍼 초기화
                 // 끝 시간 측정
