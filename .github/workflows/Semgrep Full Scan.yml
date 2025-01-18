@@ -38,6 +38,6 @@ jobs:
             
         # step 4
         - name: Download report
-          uses: actions/download-artifact@v2
+          uses: actions/download-artifact@v3
           with: 
             name: report.sarif
