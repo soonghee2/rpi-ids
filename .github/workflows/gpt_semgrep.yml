@@ -25,27 +25,39 @@ jobs:
             --sarif --output report.sarif \
             --metrics=off \
             --config="p/default"
-
+      # step 3
+      - name: save report as pipeline artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: report.sarif
+          path: report.sarif
+            
+      # step 4
+      - name: Download report
+        uses: actions/download-artifact@v3
+        with: 
+          name: report.sarif
+      
       # Step 3: Parse SARIF and create GitHub Issues
-      - name: Create GitHub Issues from SARIF
+      - name: Parse SARIF and Create Issues
         run: |
-          # Install jq if not already installed
+          # Install jq to parse JSON
           sudo apt-get install -y jq
 
-          # Extract information from the SARIF report
-          issues=$(jq -c '.runs[].results[] | {message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}' report.sarif)
+          # Parse SARIF and extract results
+          results=$(jq -c '.runs[].tool.driver.rules[]' report.sarif)
 
-          # Loop through each issue and create a GitHub issue
-          echo "${issues}" | while read -r issue; do
-            # Extract details
-            message=$(echo "$issue" | jq -r '.message')
-            file=$(echo "$issue" | jq -r '.file')
-            line=$(echo "$issue" | jq -r '.line')
+          # Iterate through each result and create an issue
+          echo "${results}" | while read -r result; do
+            rule_id=$(echo "$result" | jq -r '.id')
+            description=$(echo "$result" | jq -r '.fullDescription.text')
+            help_url=$(echo "$result" | jq -r '.helpUri')
+            severity=$(echo "$result" | jq -r '.properties.precision')
 
             # Create GitHub Issue
             gh api repos/${{ github.repository }}/issues \
-              -f title="Semgrep Issue: ${message}" \
-              -f body="File: \`${file}\`\nLine: \`${line}\`\n\n**Details:**\n${message}" \
+              -f title="Semgrep Issue: ${rule_id}" \
+              -f body="**Description:**\n${description}\n\n**Severity:** ${severity}\n\n[Learn more about this issue](${help_url})" \
               -f labels="semgrep,security"
           done
         env:
