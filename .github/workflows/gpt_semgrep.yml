@@ -41,9 +41,6 @@ jobs:
       # Step 3: Parse SARIF and create GitHub Issues
       - name: Parse SARIF and Create Issues
         run: |
-          # Install jq to parse JSON
-          # sudo apt-get install -y jq
-
           # Parse SARIF and extract results
           results=$(jq -c '.runs[].tool.driver.rules[]' report.sarif)
 
