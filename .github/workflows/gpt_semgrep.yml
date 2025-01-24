@@ -1,0 +1,52 @@
+name: Semgrep Full Scan with Issues
+
+on:
+  workflow_dispatch:
+    branches:
+      - develop
+  schedule:
+    - cron: '0 1 * * 6'
+
+jobs:
+  semgrep-full:
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+
+    steps:
+      # Step 1: Clone application source code
+      - name: Clone application source code
+        uses: actions/checkout@v3
+
+      # Step 2: Full scan with Semgrep
+      - name: Full scan with Semgrep
+        run: |
+          semgrep \
+            --sarif --output report.sarif \
+            --metrics=off \
+            --config="p/default"
+
+      # Step 3: Parse SARIF and create GitHub Issues
+      - name: Create GitHub Issues from SARIF
+        run: |
+          # Install jq if not already installed
+          sudo apt-get install -y jq
+
+          # Extract information from the SARIF report
+          issues=$(jq -c '.runs[].results[] | {message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}' report.sarif)
+
+          # Loop through each issue and create a GitHub issue
+          echo "${issues}" | while read -r issue; do
+            # Extract details
+            message=$(echo "$issue" | jq -r '.message')
+            file=$(echo "$issue" | jq -r '.file')
+            line=$(echo "$issue" | jq -r '.line')
+
+            # Create GitHub Issue
+            gh api repos/${{ github.repository }}/issues \
+              -f title="Semgrep Issue: ${message}" \
+              -f body="File: \`${file}\`\nLine: \`${line}\`\n\n**Details:**\n${message}" \
+              -f labels="semgrep,security"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
