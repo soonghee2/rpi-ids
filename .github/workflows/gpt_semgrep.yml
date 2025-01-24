@@ -42,7 +42,7 @@ jobs:
       - name: Parse SARIF and Create Issues
         run: |
           # Install jq to parse JSON
-          sudo apt-get install -y jq
+          # sudo apt-get install -y jq
 
           # Parse SARIF and extract results
           results=$(jq -c '.runs[].tool.driver.rules[]' report.sarif)
