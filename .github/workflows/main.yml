@@ -1,6 +1,6 @@
 name: cppcheck-action-test
 on: 
-  pull_request:
+  workflow_dispatch:
     branches: [ "develop" ]
 
 jobs:
