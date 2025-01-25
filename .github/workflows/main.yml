@@ -8,16 +8,18 @@ jobs:
     name: cppcheck-test
     runs-on: ubuntu-latest
     steps:
+      # 리포지토리 체크아웃
       - uses: actions/checkout@v2
           
-      - name: cppcheck
-        uses: deep5050/cppcheck-action@main
+      # Cppcheck 실행
+      - name: Run Cppcheck
+        run: |
+          cppcheck --enable=all --project=compile_commands.json \
+                   --output-file=cppcheck-results.sarif --template=sarif
+        continue-on-error: true # 오류가 있어도 실행을 계속함
+      
+      # SARIF 파일 업로드 (GitHub Security 탭)
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN}}
-          
-        
-      - name: publish report    
-        uses: mikeal/publish-to-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: 'main' # your branch name goes here
+          sarif_file: cppcheck-results.sarif
