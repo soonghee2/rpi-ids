@@ -28,13 +28,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential
+          
     # Step 4: Build project with CodeQL trace
       - name: Build project with CodeQL trace
         run: |
-          cd scripts
-          # Run the build command with CodeQL's `trace-command`
-          /opt/hostedtoolcache/CodeQL/*/x64/codeql/codeql database trace-command -- \
-            make
+          # Set working directory for tracing
+          mkdir -p codeql-database
+          codeql database create codeql-database --language=cpp --command="make -C scripts"
         env:
           CC: gcc   # 필요한 경우 컴파일러를 지정
 
