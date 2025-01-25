@@ -2,54 +2,47 @@ name: Semgrep Full Scan with Issues
 
 on:
   workflow_dispatch:
-    branches:
-      - develop
   schedule:
     - cron: '0 1 * * 6'
 
 jobs:
   semgrep-full:
     runs-on: ubuntu-latest
-    container:
-      image: returntocorp/semgrep
 
     steps:
       # Step 1: Clone application source code
       - name: Clone application source code
         uses: actions/checkout@v3
 
-      # Step 2: Full scan with Semgrep
+      # Step 2: Install dependencies (jq, GitHub CLI)
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y gh
+
+      # Step 3: Full scan with Semgrep
       - name: Full scan with Semgrep
         run: |
           semgrep \
             --sarif --output report.sarif \
             --metrics=off \
             --config="p/default"
-      # step 3
-      - name: save report as pipeline artifact
+        env:
+          PATH: /usr/local/bin:$PATH  # Ensure semgrep is in PATH
+
+      # Step 4: Save report as pipeline artifact
+      - name: Save report as pipeline artifact
         uses: actions/upload-artifact@v3
         with:
           name: report.sarif
           path: report.sarif
-            
-      # step 4
-      - name: Download report
-        uses: actions/download-artifact@v3
-        with: 
-          name: report.sarif
-          
-     # Step 2: Install GitHub CLI
-      - name: Install GitHub CLI
-        run: |
-          apt-get update
-          apt-get install -y jq curl
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          apt-get update
-          apt-get install -y gh
-      
-      # Step 3: Parse SARIF and create GitHub Issues
+
+      # Step 5: Parse SARIF and create GitHub Issues
       - name: Parse SARIF and Create Issues
         run: |
           # Parse SARIF and extract results
