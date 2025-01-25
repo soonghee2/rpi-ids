@@ -30,7 +30,7 @@ jobs:
 
       # Step 3
         - name: Upload SARIF to GitHub Security
-          uses: github/codeql-action/upload-sarif@v2
+          uses: github/codeql-action/upload-sarif@v3
           with:
             sarif_file: report.sarif
 
