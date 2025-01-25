@@ -28,6 +28,12 @@ jobs:
               --metrics=off \
               --config="p/default"
 
+      # Step 3
+        - name: Upload SARIF to GitHub Security
+          uses: github/codeql-action/upload-sarif@v2
+          with:
+            sarif_file: report.sarif
+
         # step 3
         
         - name: save report as pipeline artifact
