@@ -1,7 +1,7 @@
-name: Semgrep Code Scan
+name: Run Semgrep on Demand
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:
 
 jobs:
   semgrep:
@@ -29,3 +29,10 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
+
+      - name: Upload SARIF as an artifact (for download)
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results
+          path: semgrep.sarif
+          retention-days: 7  # SARIF 파일을 7일 동안 보관
