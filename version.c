@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #ifdef linux
-int JenkinsBuilderFileVersion[4] __attribute__((section ("FileVersion"))) = { 2,0,2,51 };
+int JenkinsBuilderFileVersion[4] __attribute__((section ("FileVersion"))) = { 2,0,2,2.0.2.1 };
 int JenkinsBuilderProductVersion[4] __attribute__((section ("ProductVersion"))) = FILE_VERSION;
 #endif
 
