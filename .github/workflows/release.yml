@@ -19,7 +19,6 @@ jobs:
       - name: "🔍 Load Previous Version"
         run: echo "PREV_VERSION=$(cat version.txt)" >> $GITHUB_ENV
 
-      name: "Release Automation"
 
 on:
   push:
