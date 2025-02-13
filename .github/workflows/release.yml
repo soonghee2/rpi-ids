@@ -5,29 +5,10 @@ on:
     branches:
       - main  # `main` 브랜치에 push 될 때 실행
       - develop
+
 permissions:
   contents: write   # ✅ GitHub Releases 생성/업데이트 가능하도록 설정
-  
-jobs:
-  release:
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: "📥 Checkout Repository"
-        uses: actions/checkout@v3
-
-      - name: "🔍 Load Previous Version"
-        run: echo "PREV_VERSION=$(cat version.txt)" >> $GITHUB_ENV
-
-
-on:
-  push:
-    branches:
-      - main  # `main` 브랜치에 push 될 때 실행
-      - develop
-permissions:
-  contents: write   # ✅ GitHub Releases 생성/업데이트 가능하도록 설정
-  
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -45,46 +26,15 @@ jobs:
           VERSION_MINOR=0
           VERSION_PATCH=$(($(cat version.txt) + 1))
           echo $VERSION_PATCH > version.txt
-          echo "NEW_VERSION=${VERSION_MAJOR}.${VERSION_MINOR}.2.${VERSION_PATCH}" >> $GITHUB_ENV
+          echo "NEW_VERSION=${VERSION_MAJOR},${VERSION_MINOR},2,${VERSION_PATCH}" >> $GITHUB_ENV
 
       - name: "📝 Update `version.c` File"
         run: |
-          sed -i "s/{ 2,0,2,[0-9]* }/{ 2,0,2,${{ env.NEW_VERSION }} }/g" version.c
+          sed -i "s/{ 2,0,2,[0-9]* }/{ ${{ env.NEW_VERSION }} }/g" version.c
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git commit -am "🔄 Update version to ${{ env.NEW_VERSION }}"
           git push origin main
-
-      - name: "🏷 Create GitHub Tag"
-        run: |
-          git tag -a v${{ env.NEW_VERSION }} -m "Release version ${{ env.NEW_VERSION }}"
-          git push origin v${{ env.NEW_VERSION }}
-
-      - name: "📜 Generate Release Notes"
-        run: |
-          echo "## Release Notes for v${{ env.NEW_VERSION }}" > release_notes.md
-          echo "" >> release_notes.md
-          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s (%an)" >> release_notes.md
-
-      - name: "🚀 Publish GitHub Release"
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ env.NEW_VERSION }}
-          name: "Release v${{ env.NEW_VERSION }}"
-          body_path: release_notes.md
-          draft: false
-          prerelease: false
-
-      - name: "🔧 Build Executable"
-        run: |
-          gcc version.c -o version
-          chmod +x version
-
-      - name: "📂 Upload Release Binary"
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ env.NEW_VERSION }}
-          files: version
 
       - name: "🏷 Create GitHub Tag"
         run: |
