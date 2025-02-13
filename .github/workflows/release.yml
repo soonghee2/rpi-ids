@@ -4,7 +4,10 @@ on:
   push:
     branches:
       - main  # `main` 브랜치에 push 될 때 실행
-
+      - develop
+permissions:
+  contents: write   # ✅ GitHub Releases 생성/업데이트 가능하도록 설정
+  
 jobs:
   release:
     runs-on: ubuntu-latest
